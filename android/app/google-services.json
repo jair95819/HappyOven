@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1098384504032",
+    "project_id": "homs-b9feb",
+    "storage_bucket": "homs-b9feb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1098384504032:android:724499c5ec3e876cf8cc85",
+        "android_client_info": {
+          "package_name": "com.example.mi_aplicacion"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDO-CT4PxADLAhhSePDJzEF0ssQ3owBWsU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
