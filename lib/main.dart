@@ -1,34 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:happy_oven/firebase_options.dart';
-import 'package:happy_oven/shared/router/app_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'core/router/app_router.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+
+  await Supabase.initialize(
+    url: 'https://rfzsqcgiuroncdnnhpmp.supabase.co/rest/v1/',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmenNxY2dpdXJvbmNkbm5ocG1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMTcyMzUsImV4cCI6MjA5MzY5MzIzNX0._cAZIkuGVFb0EryM1rTvTUSkZpb0SfoLA72xl7Y6kUM',
   );
-  runApp(const MyApp());
+
+  runApp(const ProviderScope(child: HappyOvenApp()));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class HappyOvenApp extends ConsumerWidget {
+  const HappyOvenApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(appRouterProvider);
     return MaterialApp.router(
-      title: 'Happy Oven Management System',
+      title: 'Happy Oven',
       debugShowCheckedModeBanner: false,
-      routerConfig: appRouter,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFFF8C42),
-          primary: const Color(0xFFFF8C42),
-          secondary: const Color(0xFFE67635),
-        ),
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
+      routerConfig: router,
     );
   }
 }
