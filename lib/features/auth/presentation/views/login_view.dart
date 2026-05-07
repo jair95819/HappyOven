@@ -123,7 +123,7 @@ class _LoginViewState extends State<LoginView> {
             const SizedBox(height: 6),
             _buildTextField(
               controller: _emailController,
-              hint: 'usuario@happyoven.com',
+              hint: 'usuario@gmail.com',
               icon: Icons.mail_outline_rounded,
               keyboardType: TextInputType.emailAddress,
             ),

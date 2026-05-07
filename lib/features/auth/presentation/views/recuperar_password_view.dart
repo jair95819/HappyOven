@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class RecuperarPasswordView extends StatefulWidget {
   const RecuperarPasswordView({super.key});
@@ -53,7 +54,7 @@ class _RecuperarPasswordViewState extends State<RecuperarPasswordView> {
         children: [
           // Botón atrás
           GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
+            onTap: () => context.go('/login'),
             child: Container(
               width: 36,
               height: 36,
@@ -194,7 +195,7 @@ class _RecuperarPasswordViewState extends State<RecuperarPasswordView> {
                   style: TextStyle(fontSize: 13, color: _textGray),
                 ),
                 GestureDetector(
-                  onTap: () => Navigator.of(context).pop(),
+                  onTap: () => context.go('/login'),
                   child: Text(
                     'Inicia sesión',
                     style: TextStyle(
