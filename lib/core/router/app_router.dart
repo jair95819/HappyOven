@@ -7,6 +7,7 @@ import 'package:happy_oven/features/analitica_alertas/presentation/views/dashboa
 import 'package:happy_oven/features/analitica_alertas/presentation/views/centro_alertas_view.dart';
 import 'package:happy_oven/features/analitica_alertas/presentation/views/reportes_view.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/views/catalogo_general_view.dart';
+import 'package:happy_oven/features/visualizacion_inventario/presentation/views/formulario_articulo_view.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
@@ -36,6 +37,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/catalogo',
       builder: (context, state) => const CatalogoGeneralView(),
+    ),
+    GoRoute(
+      path: '/catalogo/nuevo',
+      builder: (context, state) => const FormularioArticuloView(),
     ),
   ],
 );

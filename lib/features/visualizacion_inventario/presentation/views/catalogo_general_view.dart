@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class CatalogoGeneralView extends StatefulWidget {
   const CatalogoGeneralView({super.key});
@@ -174,9 +175,7 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
                   ),
                   // Botón nuevo
                   GestureDetector(
-                    onTap: () {
-                      // TODO: navegar a formulario_articulo_view
-                    },
+                    onTap: () => context.go('/catalogo/nuevo'),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
