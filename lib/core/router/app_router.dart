@@ -11,6 +11,8 @@ import 'package:happy_oven/features/visualizacion_inventario/presentation/views/
 import 'package:happy_oven/features/registro_movimientos/presentation/views/historial_kardex_view.dart';
 import 'package:happy_oven/features/registro_movimientos/presentation/views/ingreso_ocr_view.dart';
 import 'package:happy_oven/features/registro_movimientos/presentation/views/salida_almacen_view.dart';
+import 'package:happy_oven/features/recetas_costeo/presentation/views/recetario_view.dart';
+import 'package:happy_oven/features/recetas_costeo/presentation/views/costeo_dinamico_view.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
@@ -56,6 +58,14 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/movimientos/salida',
       builder: (context, state) => const SalidaAlmacenView(),
+    ),
+    GoRoute(
+      path: '/recetas',
+      builder: (context, state) => const RecetarioView(),
+    ),
+    GoRoute(
+      path: '/recetas/costeo-dinamico',
+      builder: (context, state) => const CosteoDinamicoView(),
     ),
   ],
 );
