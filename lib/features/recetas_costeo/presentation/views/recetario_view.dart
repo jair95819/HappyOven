@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:happy_oven/core/widgets/bottom_nav_bar.dart';
 
 class RecetarioView extends StatefulWidget {
   const RecetarioView({super.key});
@@ -105,13 +107,14 @@ class _RecetarioViewState extends State<RecetarioView> {
 
   @override
   Widget build(BuildContext context) {
+    final rutaActual = GoRouterState.of(context).uri.path;
     return Scaffold(
       backgroundColor: _beige,
       body: Column(
         children: [
           _buildHeader(),
           Expanded(child: _buildGrid()),
-          _buildBottomNav(),
+          BottomNavBar(rutaActual: rutaActual),
         ],
       ),
     );

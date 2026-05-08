@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
+import 'package:happy_oven/core/widgets/bottom_nav_bar.dart';
 
 class HistorialKardexView extends StatelessWidget {
   const HistorialKardexView({super.key});
@@ -92,6 +94,7 @@ class HistorialKardexView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final rutaActual = GoRouterState.of(context).uri.path;
     final agrupados = _agruparPorFecha();
     return Scaffold(
       backgroundColor: _beige,
@@ -99,7 +102,7 @@ class HistorialKardexView extends StatelessWidget {
         children: [
           _buildHeader(),
           Expanded(child: _buildLista(agrupados)),
-          _buildBottomNav(),
+          BottomNavBar(rutaActual: rutaActual),
         ],
       ),
     );

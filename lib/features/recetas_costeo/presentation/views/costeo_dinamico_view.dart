@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class CosteoDinamicoView extends StatefulWidget {
   const CosteoDinamicoView({super.key});
@@ -140,7 +141,7 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
                 ],
               ),
               GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
+                onTap: () => context.pop(),
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:happy_oven/core/widgets/bottom_nav_bar.dart';
 
 class CatalogoGeneralView extends StatefulWidget {
   const CatalogoGeneralView({super.key});
@@ -130,13 +131,14 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
 
   @override
   Widget build(BuildContext context) {
+    final rutaActual = GoRouterState.of(context).uri.path;
     return Scaffold(
       backgroundColor: _beige,
       body: Column(
         children: [
           _buildHeader(context),
           Expanded(child: _buildBody()),
-          _buildBottomNav(),
+          BottomNavBar(rutaActual: rutaActual),
         ],
       ),
     );

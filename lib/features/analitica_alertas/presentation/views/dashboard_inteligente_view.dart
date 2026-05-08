@@ -1,5 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:happy_oven/core/widgets/bottom_nav_bar.dart';
 
 class DashboardInteligenteView extends StatelessWidget {
   const DashboardInteligenteView({super.key});
@@ -20,13 +22,14 @@ class DashboardInteligenteView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final rutaActual = GoRouterState.of(context).uri.path;
     return Scaffold(
       backgroundColor: _beige,
       body: Column(
         children: [
           _buildHeader(),
           Expanded(child: _buildBody()),
-          _buildBottomNav(context),
+          BottomNavBar(rutaActual: rutaActual),
         ],
       ),
     );
@@ -436,82 +439,6 @@ class DashboardInteligenteView extends StatelessWidget {
   }
 
   // ── Bottom navigation
-  Widget _buildBottomNav(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: _beigeDeep, width: 0.5)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(
-                icono: Icons.bar_chart_rounded,
-                etiqueta: 'Dashboard',
-                activo: true,
-              ),
-              _buildNavItem(
-                icono: Icons.inventory_2_outlined,
-                etiqueta: 'Inventario',
-                activo: false,
-              ),
-              _buildNavItem(
-                icono: Icons.menu_book_outlined,
-                etiqueta: 'Recetas',
-                activo: false,
-              ),
-              _buildNavItem(
-                icono: Icons.swap_horiz_rounded,
-                etiqueta: 'Movimientos',
-                activo: false,
-              ),
-              _buildNavItem(
-                icono: Icons.notifications_outlined,
-                etiqueta: 'Alertas',
-                activo: false,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem({
-    required IconData icono,
-    required String etiqueta,
-    required bool activo,
-  }) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        activo
-            ? Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: _orange,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icono, color: Colors.white, size: 18),
-              )
-            : Icon(icono, color: _textMuted, size: 24),
-        const SizedBox(height: 3),
-        Text(
-          etiqueta,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: activo ? FontWeight.w500 : FontWeight.normal,
-            color: activo ? _orange : _textMuted,
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 // Modelo local temporal — luego viene del ViewModel
