@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../viewmodels/auth_viewmodel.dart';
 
-class RecuperarPasswordView extends StatefulWidget {
+class RecuperarPasswordView extends ConsumerStatefulWidget {
   const RecuperarPasswordView({super.key});
 
   @override
-  State<RecuperarPasswordView> createState() => _RecuperarPasswordViewState();
+  ConsumerState<RecuperarPasswordView> createState() =>
+      _RecuperarPasswordViewState();
 }
 
-class _RecuperarPasswordViewState extends State<RecuperarPasswordView> {
+class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
   final TextEditingController _emailController = TextEditingController();
+  bool _emailEnviado = false;
 
   static const _beige = Color(0xFFF5F0E8);
   static const _orange = Color(0xFFFF8C42);
@@ -19,6 +23,8 @@ class _RecuperarPasswordViewState extends State<RecuperarPasswordView> {
   static const _textMuted = Color(0xFFBFB5A0);
   static const _textDark = Color(0xFF2C2C2A);
   static const _textGray = Color(0xFF5F5E5A);
+  static const _success = Color(0xFF3B6D11);
+  static const _danger = Color(0xFFA32D2D);
 
   @override
   void dispose() {
@@ -28,6 +34,22 @@ class _RecuperarPasswordViewState extends State<RecuperarPasswordView> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authViewModelProvider);
+    final authViewModel = ref.read(authViewModelProvider.notifier);
+
+    // Escuchar errores
+    ref.listen(authViewModelProvider, (previous, next) {
+      if (next.error != null && !_emailEnviado) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.error!),
+            backgroundColor: _danger,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    });
+
     return Scaffold(
       backgroundColor: _beige,
       body: SafeArea(
@@ -37,7 +59,10 @@ class _RecuperarPasswordViewState extends State<RecuperarPasswordView> {
             Expanded(flex: 5, child: _buildHero(context)),
 
             // ── Formulario (tarjeta blanca)
-            Expanded(flex: 5, child: _buildFormCard(context)),
+            Expanded(
+              flex: 5,
+              child: _buildFormCard(context, authState, authViewModel),
+            ),
           ],
         ),
       ),
@@ -106,7 +131,11 @@ class _RecuperarPasswordViewState extends State<RecuperarPasswordView> {
     );
   }
 
-  Widget _buildFormCard(BuildContext context) {
+  Widget _buildFormCard(
+    BuildContext context,
+    AuthState authState,
+    AuthViewModel authViewModel,
+  ) {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -121,69 +150,116 @@ class _RecuperarPasswordViewState extends State<RecuperarPasswordView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Label
-            Text(
-              'CORREO ELECTRÓNICO',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: _brownMid,
-                letterSpacing: 0.5,
-              ),
-            ),
-            const SizedBox(height: 6),
-
-            // Campo email
-            Container(
-              decoration: BoxDecoration(
-                color: _orangeLight,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: _brownLight, width: 0.5),
-              ),
-              child: TextField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                style: TextStyle(fontSize: 14, color: _textDark),
-                decoration: InputDecoration(
-                  hintText: 'usuario@gmail.com',
-                  hintStyle: TextStyle(color: _textMuted, fontSize: 14),
-                  prefixIcon: const Icon(
-                    Icons.mail_outline_rounded,
-                    color: _brownMid,
-                    size: 18,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 14,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 28),
-
-            // Botón enviar
-            GestureDetector(
-              onTap: () {
-                // TODO: conectar con AuthViewModel → resetPassword()
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+            if (_emailEnviado)
+              Container(
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: _orange,
-                  borderRadius: BorderRadius.circular(12),
+                  color: Color(0xFFEAF3DE),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Color(0xFFC2DFA8), width: 1),
                 ),
-                child: const Text(
-                  'Enviar enlace',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
+                child: Row(
+                  children: [
+                    Icon(Icons.check_circle_outline, color: _success, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Email enviado correctamente.\nRevisa tu bandeja de entrada.',
+                        style: TextStyle(fontSize: 12, color: _success),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else ...[
+              // Label
+              Text(
+                'CORREO ELECTRÓNICO',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: _brownMid,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 6),
+
+              // Campo email
+              Container(
+                decoration: BoxDecoration(
+                  color: _orangeLight,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: _brownLight, width: 0.5),
+                ),
+                child: TextField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  enabled: !authState.cargando,
+                  style: TextStyle(fontSize: 14, color: _textDark),
+                  decoration: InputDecoration(
+                    hintText: 'usuario@gmail.com',
+                    hintStyle: TextStyle(color: _textMuted, fontSize: 14),
+                    prefixIcon: const Icon(
+                      Icons.mail_outline_rounded,
+                      color: _brownMid,
+                      size: 18,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 14,
+                    ),
                   ),
                 ),
               ),
-            ),
+              const SizedBox(height: 28),
+
+              // Botón enviar
+              GestureDetector(
+                onTap: authState.cargando
+                    ? null
+                    : () async {
+                        final exito = await authViewModel.recuperarPassword(
+                          _emailController.text.trim(),
+                        );
+                        if (exito && mounted) {
+                          setState(() => _emailEnviado = true);
+                        }
+                      },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: authState.cargando ? Colors.grey[400] : _orange,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: authState.cargando
+                      ? SizedBox(
+                          height: 20,
+                          child: Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                valueColor: const AlwaysStoppedAnimation<Color>(
+                                  _beige,
+                                ),
+                                strokeWidth: 2,
+                              ),
+                            ),
+                          ),
+                        )
+                      : const Text(
+                          'Enviar enlace',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
+                ),
+              ),
+            ],
             const SizedBox(height: 20),
 
             // Volver al login

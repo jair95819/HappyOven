@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:happy_oven/core/widgets/bottom_nav_bar.dart';
 
 class CentroAlertasView extends StatefulWidget {
   const CentroAlertasView({super.key});
@@ -76,13 +78,14 @@ class _CentroAlertasViewState extends State<CentroAlertasView> {
 
   @override
   Widget build(BuildContext context) {
+    final rutaActual = GoRouterState.of(context).uri.path;
     return Scaffold(
       backgroundColor: _beige,
       body: Column(
         children: [
           _buildHeader(),
           Expanded(child: _buildLista()),
-          _buildBottomNav(),
+          BottomNavBar(rutaActual: rutaActual),
         ],
       ),
     );
