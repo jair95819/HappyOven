@@ -2,8 +2,8 @@ import '../../domain/repositories/i_auth_repository.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/entities/auth_request.dart';
 import '../../domain/entities/auth_response.dart';
-import '../../../core/services/supabase_service.dart';
-import '../../../core/services/local_storage_service.dart';
+import 'package:happy_oven/core/services/supabase_service.dart';
+import 'package:happy_oven/core/services/local_storage_service.dart';
 
 class AuthRepository implements IAuthRepository {
   final SupabaseService _supabaseService;
@@ -55,7 +55,7 @@ class AuthRepository implements IAuthRepository {
         nombre: userProfile?['nombre'] ?? response.user!.email ?? 'Usuario',
         email: response.user!.email ?? '',
         fotoPerfil: userProfile?['foto_perfil'],
-        createdAt: response.user!.createdAt,
+        createdAt: DateTime.parse(response.user!.createdAt),
         activo: true,
       );
 
@@ -126,7 +126,7 @@ class AuthRepository implements IAuthRepository {
         id: response.user!.id,
         nombre: request.nombre,
         email: response.user!.email ?? '',
-        createdAt: response.user!.createdAt,
+        createdAt: DateTime.parse(response.user!.createdAt),
         activo: true,
       );
 
@@ -186,7 +186,7 @@ class AuthRepository implements IAuthRepository {
         nombre: userProfile?['nombre'] ?? user.email ?? 'Usuario',
         email: user.email ?? '',
         fotoPerfil: userProfile?['foto_perfil'],
-        createdAt: user.createdAt,
+        createdAt: DateTime.parse(user.createdAt),
         activo: true,
       );
     } catch (e) {

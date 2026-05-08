@@ -4,8 +4,8 @@ import '../../domain/entities/auth_request.dart';
 import '../../domain/entities/user.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../domain/repositories/i_auth_repository.dart';
-import '../../../core/services/supabase_service.dart';
-import '../../../core/services/local_storage_service.dart';
+import 'package:happy_oven/core/services/supabase_service.dart';
+import 'package:happy_oven/core/services/local_storage_service.dart';
 
 // ── Proveedores de servicios
 final supabaseServiceProvider = Provider<SupabaseService>((ref) {
