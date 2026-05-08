@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../viewmodels/auth_viewmodel.dart';
 
-class LoginView extends StatefulWidget {
+class LoginView extends ConsumerStatefulWidget {
   const LoginView({super.key});
 
   @override
-  State<LoginView> createState() => _LoginViewState();
+  ConsumerState<LoginView> createState() => _LoginViewState();
 }
 
-class _LoginViewState extends State<LoginView> {
+class _LoginViewState extends ConsumerState<LoginView> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _hidePassword = true;
@@ -23,6 +25,7 @@ class _LoginViewState extends State<LoginView> {
   static const _textMuted = Color(0xFFBFB5A0);
   static const _textDark = Color(0xFF2C2C2A);
   static const _textGray = Color(0xFF5F5E5A);
+  static const _danger = Color(0xFFA32D2D);
 
   @override
   void dispose() {
@@ -33,6 +36,24 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authViewModelProvider);
+    final authViewModel = ref.read(authViewModelProvider.notifier);
+
+    // Observar cambios de autenticación
+    ref.listen(authViewModelProvider, (previous, next) {
+      if (next.autenticado) {
+        context.go('/dashboard');
+      } else if (next.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.error!),
+            backgroundColor: _danger,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    });
+
     return Scaffold(
       backgroundColor: _olive,
       body: SafeArea(
@@ -42,7 +63,10 @@ class _LoginViewState extends State<LoginView> {
             Expanded(flex: 4, child: _buildHero()),
 
             // ── Formulario (tarjeta blanca)
-            Expanded(flex: 6, child: _buildFormCard(context)),
+            Expanded(
+              flex: 6,
+              child: _buildFormCard(context, authState, authViewModel),
+            ),
           ],
         ),
       ),
@@ -87,7 +111,11 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
-  Widget _buildFormCard(BuildContext context) {
+  Widget _buildFormCard(
+    BuildContext context,
+    AuthState authState,
+    AuthViewModel authViewModel,
+  ) {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -126,13 +154,14 @@ class _LoginViewState extends State<LoginView> {
               hint: 'usuario@gmail.com',
               icon: Icons.mail_outline_rounded,
               keyboardType: TextInputType.emailAddress,
+              enabled: !authState.cargando,
             ),
             const SizedBox(height: 16),
 
             // Campo contraseña
             _buildLabel('Contraseña'),
             const SizedBox(height: 6),
-            _buildPasswordField(),
+            _buildPasswordField(authState.cargando),
             const SizedBox(height: 10),
 
             // Olvidé contraseña
@@ -153,7 +182,18 @@ class _LoginViewState extends State<LoginView> {
             const SizedBox(height: 32),
 
             // Botón iniciar sesión
-            _buildPrimaryButton(),
+            _buildPrimaryButton(
+              authState,
+              () async {
+                final exito = await authViewModel.login(
+                  _emailController.text.trim(),
+                  _passwordController.text,
+                );
+                if (!exito && mounted) {
+                  // El error se muestra por el listener
+                }
+              },
+            ),
             const SizedBox(height: 20),
 
             // Nota inferior
@@ -185,6 +225,7 @@ class _LoginViewState extends State<LoginView> {
     required String hint,
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
+    bool enabled = true,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -195,6 +236,7 @@ class _LoginViewState extends State<LoginView> {
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
+        enabled: enabled,
         style: TextStyle(fontSize: 14, color: _textDark),
         decoration: InputDecoration(
           hintText: hint,
@@ -210,7 +252,7 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
-  Widget _buildPasswordField() {
+  Widget _buildPasswordField(bool cargando) {
     return Container(
       decoration: BoxDecoration(
         color: _orangeLight,
@@ -220,6 +262,7 @@ class _LoginViewState extends State<LoginView> {
       child: TextField(
         controller: _passwordController,
         obscureText: _hidePassword,
+        enabled: !cargando,
         style: TextStyle(fontSize: 14, color: _textDark),
         decoration: InputDecoration(
           hintText: '••••••••',
@@ -249,27 +292,43 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
-  Widget _buildPrimaryButton() {
+  Widget _buildPrimaryButton(
+    AuthState authState,
+    VoidCallback onPressed,
+  ) {
     return GestureDetector(
-      onTap: () {
-        // TODO: conectar con AuthViewModel
-      },
+      onTap: authState.cargando ? null : onPressed,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: _orange,
+          color: authState.cargando ? Colors.grey[400] : _orange,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Text(
-          'Iniciar sesión',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-          ),
-        ),
+        child: authState.cargando
+            ? SizedBox(
+                height: 20,
+                child: Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(_olive),
+                      strokeWidth: 2,
+                    ),
+                  ),
+                ),
+              )
+            : const Text(
+                'Iniciar sesión',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+              ),
       ),
     );
   }
 }
+
