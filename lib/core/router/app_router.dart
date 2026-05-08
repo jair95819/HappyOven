@@ -9,6 +9,7 @@ import 'package:happy_oven/features/analitica_alertas/presentation/views/reporte
 import 'package:happy_oven/features/visualizacion_inventario/presentation/views/catalogo_general_view.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/views/formulario_articulo_view.dart';
 import 'package:happy_oven/features/registro_movimientos/presentation/views/historial_kardex_view.dart';
+import 'package:happy_oven/features/registro_movimientos/presentation/views/ingreso_ocr_view.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
@@ -46,6 +47,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/movimientos',
       builder: (context, state) => const HistorialKardexView(),
+    ),
+    GoRoute(
+      path: '/movimientos/ingreso-ocr',
+      builder: (context, state) => const IngresoOcrView(),
     ),
   ],
 );
