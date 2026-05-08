@@ -12,8 +12,8 @@ class AuthRepository implements IAuthRepository {
   AuthRepository({
     required SupabaseService supabaseService,
     required LocalStorageService localStorageService,
-  })  : _supabaseService = supabaseService,
-        _localStorageService = localStorageService;
+  }) : _supabaseService = supabaseService,
+       _localStorageService = localStorageService;
 
   @override
   Future<AuthResponse> login(LoginRequest request) async {
@@ -46,7 +46,9 @@ class AuthRepository implements IAuthRepository {
       await _localStorageService.saveUserEmail(response.user!.email ?? '');
 
       // Obtener perfil del usuario desde BD
-      final userProfile = await _supabaseService.getUserProfile(response.user!.id);
+      final userProfile = await _supabaseService.getUserProfile(
+        response.user!.id,
+      );
 
       final usuario = User(
         id: response.user!.id,
@@ -115,13 +117,10 @@ class AuthRepository implements IAuthRepository {
       await _localStorageService.saveUserEmail(response.user!.email ?? '');
 
       // TODO: Crear registro en tabla users con nombre
-      await _supabaseService.updateUserProfile(
-        response.user!.id,
-        {
-          'nombre': request.nombre,
-          'email': response.user!.email,
-        },
-      );
+      await _supabaseService.updateUserProfile(response.user!.id, {
+        'nombre': request.nombre,
+        'email': response.user!.email,
+      });
 
       final usuario = User(
         id: response.user!.id,

@@ -182,18 +182,15 @@ class _LoginViewState extends ConsumerState<LoginView> {
             const SizedBox(height: 32),
 
             // Botón iniciar sesión
-            _buildPrimaryButton(
-              authState,
-              () async {
-                final exito = await authViewModel.login(
-                  _emailController.text.trim(),
-                  _passwordController.text,
-                );
-                if (!exito && mounted) {
-                  // El error se muestra por el listener
-                }
-              },
-            ),
+            _buildPrimaryButton(authState, () async {
+              final exito = await authViewModel.login(
+                _emailController.text.trim(),
+                _passwordController.text,
+              );
+              if (!exito && mounted) {
+                // El error se muestra por el listener
+              }
+            }),
             const SizedBox(height: 20),
 
             // Nota inferior
@@ -292,10 +289,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
     );
   }
 
-  Widget _buildPrimaryButton(
-    AuthState authState,
-    VoidCallback onPressed,
-  ) {
+  Widget _buildPrimaryButton(AuthState authState, VoidCallback onPressed) {
     return GestureDetector(
       onTap: authState.cargando ? null : onPressed,
       child: Container(
@@ -331,4 +325,3 @@ class _LoginViewState extends ConsumerState<LoginView> {
     );
   }
 }
-

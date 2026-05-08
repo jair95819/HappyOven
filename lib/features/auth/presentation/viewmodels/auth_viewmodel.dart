@@ -41,8 +41,9 @@ final logoutUseCaseProvider = Provider<LogoutUseCase>((ref) {
   return LogoutUseCase(repository);
 });
 
-final recuperarPasswordUseCaseProvider =
-    Provider<RecuperarPasswordUseCase>((ref) {
+final recuperarPasswordUseCaseProvider = Provider<RecuperarPasswordUseCase>((
+  ref,
+) {
   final repository = ref.watch(authRepositoryProvider);
   return RecuperarPasswordUseCase(repository);
 });
@@ -97,11 +98,11 @@ class AuthViewModel extends StateNotifier<AuthState> {
     required RegisterUseCase registerUseCase,
     required LogoutUseCase logoutUseCase,
     required RecuperarPasswordUseCase recuperarPasswordUseCase,
-  })  : _loginUseCase = loginUseCase,
-        _registerUseCase = registerUseCase,
-        _logoutUseCase = logoutUseCase,
-        _recuperarPasswordUseCase = recuperarPasswordUseCase,
-        super(AuthState());
+  }) : _loginUseCase = loginUseCase,
+       _registerUseCase = registerUseCase,
+       _logoutUseCase = logoutUseCase,
+       _recuperarPasswordUseCase = recuperarPasswordUseCase,
+       super(AuthState());
 
   // ── Login
   Future<bool> login(String email, String password) async {
@@ -128,10 +129,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
         return false;
       }
     } catch (e) {
-      state = state.copyWith(
-        error: 'Error: ${e.toString()}',
-        cargando: false,
-      );
+      state = state.copyWith(error: 'Error: ${e.toString()}', cargando: false);
       return false;
     }
   }
@@ -156,10 +154,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
       }
 
       if (email.isEmpty || !email.contains('@')) {
-        state = state.copyWith(
-          error: 'Email inválido',
-          cargando: false,
-        );
+        state = state.copyWith(error: 'Email inválido', cargando: false);
         return false;
       }
 
@@ -205,10 +200,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
         return false;
       }
     } catch (e) {
-      state = state.copyWith(
-        error: 'Error: ${e.toString()}',
-        cargando: false,
-      );
+      state = state.copyWith(error: 'Error: ${e.toString()}', cargando: false);
       return false;
     }
   }
@@ -234,10 +226,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
     try {
       if (email.isEmpty || !email.contains('@')) {
-        state = state.copyWith(
-          error: 'Email inválido',
-          cargando: false,
-        );
+        state = state.copyWith(error: 'Email inválido', cargando: false);
         return false;
       }
 
@@ -251,10 +240,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
       return exito;
     } catch (e) {
-      state = state.copyWith(
-        error: 'Error: ${e.toString()}',
-        cargando: false,
-      );
+      state = state.copyWith(error: 'Error: ${e.toString()}', cargando: false);
       return false;
     }
   }
@@ -266,8 +252,9 @@ class AuthViewModel extends StateNotifier<AuthState> {
 }
 
 // ── Proveedor del ViewModel
-final authViewModelProvider =
-    StateNotifierProvider<AuthViewModel, AuthState>((ref) {
+final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((
+  ref,
+) {
   final loginUseCase = ref.watch(loginUseCaseProvider);
   final registerUseCase = ref.watch(registerUseCaseProvider);
   final logoutUseCase = ref.watch(logoutUseCaseProvider);

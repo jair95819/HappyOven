@@ -219,8 +219,9 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
                 onTap: authState.cargando
                     ? null
                     : () async {
-                        final exito = await authViewModel
-                            .recuperarPassword(_emailController.text.trim());
+                        final exito = await authViewModel.recuperarPassword(
+                          _emailController.text.trim(),
+                        );
                         if (exito && mounted) {
                           setState(() => _emailEnviado = true);
                         }
@@ -239,9 +240,9 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
-                                valueColor:
-                                    const AlwaysStoppedAnimation<Color>(
-                                        _beige),
+                                valueColor: const AlwaysStoppedAnimation<Color>(
+                                  _beige,
+                                ),
                                 strokeWidth: 2,
                               ),
                             ),
@@ -288,4 +289,3 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
     );
   }
 }
-

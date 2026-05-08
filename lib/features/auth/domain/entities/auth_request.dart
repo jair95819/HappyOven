@@ -2,10 +2,7 @@ class LoginRequest {
   final String email;
   final String password;
 
-  LoginRequest({
-    required this.email,
-    required this.password,
-  });
+  LoginRequest({required this.email, required this.password});
 }
 
 class RegisterRequest {
@@ -25,7 +22,5 @@ class RegisterRequest {
 class RecuperarPasswordRequest {
   final String email;
 
-  RecuperarPasswordRequest({
-    required this.email,
-  });
+  RecuperarPasswordRequest({required this.email});
 }

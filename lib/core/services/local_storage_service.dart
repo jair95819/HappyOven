@@ -1,8 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorageService {
-  static final LocalStorageService _instance =
-      LocalStorageService._internal();
+  static final LocalStorageService _instance = LocalStorageService._internal();
   late SharedPreferences _prefs;
 
   LocalStorageService._internal();

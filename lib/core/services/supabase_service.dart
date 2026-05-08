@@ -17,10 +17,7 @@ class SupabaseService {
     required String url,
     required String anonKey,
   }) async {
-    await Supabase.initialize(
-      url: url,
-      anonKey: anonKey,
-    );
+    await Supabase.initialize(url: url, anonKey: anonKey);
     _client = Supabase.instance.client;
   }
 
@@ -93,7 +90,10 @@ class SupabaseService {
   }
 
   // ── DB: Actualizar perfil
-  Future<void> updateUserProfile(String userId, Map<String, dynamic> data) async {
+  Future<void> updateUserProfile(
+    String userId,
+    Map<String, dynamic> data,
+  ) async {
     try {
       await _client.from('users').update(data).eq('id', userId);
     } catch (e) {
