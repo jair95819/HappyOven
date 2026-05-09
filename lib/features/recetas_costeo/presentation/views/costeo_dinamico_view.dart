@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:happy_oven/core/theme/theme.dart';
 
 class CosteoDinamicoView extends StatefulWidget {
   const CosteoDinamicoView({super.key});
@@ -9,21 +10,6 @@ class CosteoDinamicoView extends StatefulWidget {
 }
 
 class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
-  static const _olive = Color(0xFFC8CA9E);
-  static const _oliveDark = Color(0xFF4A4A38);
-  static const _orange = Color(0xFFFF8C42);
-  static const _orangeLight = Color(0xFFFFF3EB);
-  static const _orangeBorde = Color(0xFFFFD9BE);
-  static const _beige = Color(0xFFF5F0E8);
-  static const _beigeDeep = Color(0xFFEDE5D6);
-  static const _textDark = Color(0xFF2C2C2A);
-  static const _textMuted = Color(0xFFBFB5A0);
-  static const _danger = Color(0xFFA32D2D);
-  static const _dangerLight = Color(0xFFFCEBEB);
-  static const _success = Color(0xFF3B6D11);
-  static const _successLight = Color(0xFFEAF3DE);
-  static const _brownLight = Color(0xFFD4A47A);
-
   final TextEditingController _nombreRecetaController = TextEditingController();
   final TextEditingController _precioCostoController = TextEditingController();
   final TextEditingController _precioVentaController = TextEditingController();
@@ -33,7 +19,6 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
   double _margenGanancia = 0.0;
   double _rentabilidad = 0.0;
 
-  // Datos de ejemplo de ingredientes
   final List<_Ingrediente> _ingredientes = [
     _Ingrediente(
       nombre: 'Harina',
@@ -71,15 +56,14 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
       _margenGanancia = 0;
       _rentabilidad = 0;
     }
-
     setState(() {});
   }
 
   Color _getColorRentabilidad() {
-    if (_rentabilidad >= 40) return _success;
-    if (_rentabilidad >= 20) return _orange;
-    if (_rentabilidad > 0) return _brownLight;
-    return _danger;
+    if (_rentabilidad >= 40) return AppTheme.colors.statusNormal;
+    if (_rentabilidad >= 20) return AppTheme.colors.primary;
+    if (_rentabilidad > 0) return AppTheme.colors.brownLight;
+    return AppTheme.colors.statusCritical;
   }
 
   String _getTextoRentabilidad() {
@@ -101,7 +85,7 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _beige,
+      backgroundColor: AppTheme.colors.bg,
       body: Column(
         children: [
           _buildHeader(),
@@ -111,10 +95,9 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
     );
   }
 
-  // ── Header oliva
   Widget _buildHeader() {
     return Container(
-      color: _olive,
+      color: AppTheme.colors.accent,
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -125,18 +108,13 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Costeo Dinámico',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                      color: _textDark,
-                    ),
-                  ),
+                  Text('Costeo Dinámico', style: AppTheme.font.h3),
                   const SizedBox(height: 2),
                   Text(
                     'Calcula costos y rentabilidad',
-                    style: TextStyle(fontSize: 12, color: _oliveDark),
+                    style: AppTheme.font.caption.copyWith(
+                      color: AppTheme.colors.accentDark,
+                    ),
                   ),
                 ],
               ),
@@ -145,10 +123,14 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: _textDark,
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppTheme.colors.titleText,
+                    borderRadius: AppTheme.radius.brSm,
                   ),
-                  child: Icon(Icons.close_rounded, color: _olive, size: 18),
+                  child: Icon(
+                    Icons.close_rounded,
+                    color: AppTheme.colors.accent,
+                    size: 18,
+                  ),
                 ),
               ),
             ],
@@ -158,28 +140,26 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
     );
   }
 
-  // ── Cuerpo scrollable
   Widget _buildBody() {
     return Container(
-      decoration: const BoxDecoration(
-        color: _beige,
+      decoration: BoxDecoration(
+        color: AppTheme.colors.bg,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+          topLeft: Radius.circular(AppTheme.radius.xl),
+          topRight: Radius.circular(AppTheme.radius.xl),
         ),
       ),
       transform: Matrix4.translationValues(0, -16, 0),
       child: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(AppTheme.radius.xl),
+          topRight: Radius.circular(AppTheme.radius.xl),
         ),
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Datos básicos
               _buildSectionTitle('Información Básica'),
               const SizedBox(height: 12),
               _buildTextField(
@@ -197,7 +177,6 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
               _buildTimeSelector(),
               const SizedBox(height: 20),
 
-              // Ingredientes
               _buildSectionTitle('Ingredientes'),
               const SizedBox(height: 12),
               _buildIngredientesList(),
@@ -205,13 +184,11 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
               _buildAgregarIngredienteBtn(),
               const SizedBox(height: 20),
 
-              // Cálculo de costos
               _buildSectionTitle('Análisis de Costos'),
               const SizedBox(height: 12),
               _buildCostoResumen(),
               const SizedBox(height: 16),
 
-              // Precios y rentabilidad
               _buildSectionTitle('Precios y Rentabilidad'),
               const SizedBox(height: 12),
               _buildTextField(
@@ -224,7 +201,6 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
               _buildRentabilidadCard(),
               const SizedBox(height: 24),
 
-              // Botones de acción
               _buildBotonGuardar(),
               const SizedBox(height: 12),
             ],
@@ -234,19 +210,16 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
     );
   }
 
-  // ── Título de sección
   Widget _buildSectionTitle(String titulo) {
     return Text(
       titulo,
-      style: TextStyle(
+      style: AppTheme.font.label.copyWith(
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        color: _textDark,
       ),
     );
   }
 
-  // ── TextField personalizado
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -255,20 +228,21 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: _beigeDeep, width: 1),
+        color: AppTheme.colors.card,
+        borderRadius: AppTheme.radius.brSm,
+        border: Border.all(color: AppTheme.colors.border, width: 1),
       ),
       child: TextField(
         controller: controller,
-        onChanged: (_) {
-          onChanged?.call();
-        },
-        style: TextStyle(fontSize: 13, color: _textDark),
+        onChanged: (_) => onChanged?.call(),
+        style: AppTheme.font.bodySmall.copyWith(
+          fontSize: 13,
+          color: AppTheme.colors.titleText,
+        ),
         decoration: InputDecoration(
           hintText: label,
-          hintStyle: TextStyle(fontSize: 13, color: _textMuted),
-          prefixIcon: Icon(icon, color: _orange, size: 16),
+          hintStyle: AppTheme.font.hint.copyWith(fontSize: 13),
+          prefixIcon: Icon(icon, color: AppTheme.colors.primary, size: 16),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 12,
@@ -279,24 +253,27 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
     );
   }
 
-  // ── Selector de tiempo
   Widget _buildTimeSelector() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: _beigeDeep, width: 1),
+        color: AppTheme.colors.card,
+        borderRadius: AppTheme.radius.brSm,
+        border: Border.all(color: AppTheme.colors.border, width: 1),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         child: Row(
           children: [
-            Icon(Icons.schedule_outlined, color: _orange, size: 16),
+            Icon(
+              Icons.schedule_outlined,
+              color: AppTheme.colors.primary,
+              size: 16,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 _tiempoProduccion,
-                style: TextStyle(fontSize: 13, color: _textDark),
+                style: AppTheme.font.bodySmall.copyWith(fontSize: 13),
               ),
             ),
             PopupMenuButton<String>(
@@ -310,7 +287,7 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
               ],
               child: Icon(
                 Icons.expand_more_rounded,
-                color: _textMuted,
+                color: AppTheme.colors.hint,
                 size: 18,
               ),
             ),
@@ -320,7 +297,6 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
     );
   }
 
-  // ── Lista de ingredientes
   Widget _buildIngredientesList() {
     return Column(
       children: _ingredientes.asMap().entries.map((entry) {
@@ -330,9 +306,9 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
           padding: const EdgeInsets.only(bottom: 8),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: _beigeDeep, width: 1),
+              color: AppTheme.colors.card,
+              borderRadius: AppTheme.radius.brSm,
+              border: Border.all(color: AppTheme.colors.border, width: 1),
             ),
             child: Padding(
               padding: const EdgeInsets.all(10),
@@ -345,16 +321,12 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
                       children: [
                         Text(
                           ing.nombre,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: _textDark,
-                          ),
+                          style: AppTheme.font.label.copyWith(fontSize: 13),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           '${ing.cantidad} ${ing.unidad} × \$${ing.precioUnitario.toStringAsFixed(2)}',
-                          style: TextStyle(fontSize: 11, color: _textMuted),
+                          style: AppTheme.font.caption,
                         ),
                       ],
                     ),
@@ -364,10 +336,9 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
                     children: [
                       Text(
                         '\$${ing.costo.toStringAsFixed(2)}',
-                        style: TextStyle(
+                        style: AppTheme.font.h3.copyWith(
                           fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: _orange,
+                          color: AppTheme.colors.primary,
                         ),
                       ),
                       GestureDetector(
@@ -375,7 +346,7 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
                             setState(() => _ingredientes.removeAt(idx)),
                         child: Icon(
                           Icons.close_rounded,
-                          color: _danger,
+                          color: AppTheme.colors.statusCritical,
                           size: 16,
                         ),
                       ),
@@ -390,31 +361,27 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
     );
   }
 
-  // ── Botón agregar ingrediente
   Widget _buildAgregarIngredienteBtn() {
     return GestureDetector(
-      onTap: () {
-        // TODO: Implementar modal para agregar ingrediente
-      },
+      onTap: () {},
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: _orangeLight,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: _orangeBorde, width: 1),
+          color: AppTheme.colors.primaryLight,
+          borderRadius: AppTheme.radius.brSm,
+          border: Border.all(color: AppTheme.colors.primaryBorder, width: 1),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_rounded, color: _orange, size: 16),
+            Icon(Icons.add_rounded, color: AppTheme.colors.primary, size: 16),
             const SizedBox(width: 6),
             Text(
               'Agregar Ingrediente',
-              style: TextStyle(
+              style: AppTheme.font.label.copyWith(
                 fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: _orange,
+                color: AppTheme.colors.primary,
               ),
             ),
           ],
@@ -423,13 +390,12 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
     );
   }
 
-  // ── Resumen de costo
   Widget _buildCostoResumen() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: _beigeDeep, width: 1),
+        color: AppTheme.colors.card,
+        borderRadius: AppTheme.radius.brSm,
+        border: Border.all(color: AppTheme.colors.border, width: 1),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -440,34 +406,33 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
               children: [
                 Text(
                   'Costo Total Ingredientes:',
-                  style: TextStyle(fontSize: 12, color: _textMuted),
+                  style: AppTheme.font.caption.copyWith(fontSize: 12),
                 ),
                 Text(
                   '\$${_costoTotal.toStringAsFixed(2)}',
-                  style: TextStyle(
+                  style: AppTheme.font.label.copyWith(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: _textDark,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            Divider(color: _beigeDeep, height: 1),
+            Divider(color: AppTheme.colors.border, height: 1),
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Costo por Unidad:',
-                  style: TextStyle(fontSize: 12, color: _textMuted),
+                  style: AppTheme.font.caption.copyWith(fontSize: 12),
                 ),
                 Text(
                   '\$${(_costoTotal / (double.tryParse(_rendimientoController.text) ?? 1)).toStringAsFixed(2)}',
-                  style: TextStyle(
+                  style: AppTheme.font.label.copyWith(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: _orange,
+                    color: AppTheme.colors.primary,
                   ),
                 ),
               ],
@@ -478,16 +443,15 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
     );
   }
 
-  // ── Card de rentabilidad
   Widget _buildRentabilidadCard() {
     Color colorRent = _getColorRentabilidad();
     String textoRent = _getTextoRentabilidad();
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: _beigeDeep, width: 1),
+        color: AppTheme.colors.card,
+        borderRadius: AppTheme.radius.brSm,
+        border: Border.all(color: AppTheme.colors.border, width: 1),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -498,11 +462,11 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
               children: [
                 Text(
                   'Margen de Ganancia:',
-                  style: TextStyle(fontSize: 12, color: _textMuted),
+                  style: AppTheme.font.caption.copyWith(fontSize: 12),
                 ),
                 Text(
                   '\$${_margenGanancia.toStringAsFixed(2)}',
-                  style: TextStyle(
+                  style: AppTheme.font.label.copyWith(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: colorRent,
@@ -511,14 +475,14 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
               ],
             ),
             const SizedBox(height: 8),
-            Divider(color: _beigeDeep, height: 1),
+            Divider(color: AppTheme.colors.border, height: 1),
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Rentabilidad:',
-                  style: TextStyle(fontSize: 12, color: _textMuted),
+                  style: AppTheme.font.caption.copyWith(fontSize: 12),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -526,12 +490,12 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: colorRent.withOpacity(0.1),
+                    color: colorRent.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     '${_rentabilidad.toStringAsFixed(1)}% - $textoRent',
-                    style: TextStyle(
+                    style: AppTheme.font.label.copyWith(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: colorRent,
@@ -546,30 +510,30 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
     );
   }
 
-  // ── Botón guardar
   Widget _buildBotonGuardar() {
     return GestureDetector(
-      onTap: () {
-        // TODO: Guardar receta con costos
-      },
+      onTap: () {},
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: _olive,
-          borderRadius: BorderRadius.circular(10),
+          color: AppTheme.colors.accent,
+          borderRadius: AppTheme.radius.brSm,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.save_outlined, color: _textDark, size: 16),
+            Icon(
+              Icons.save_outlined,
+              color: AppTheme.colors.titleText,
+              size: 16,
+            ),
             const SizedBox(width: 8),
             Text(
               'Guardar Receta',
-              style: TextStyle(
+              style: AppTheme.font.label.copyWith(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: _textDark,
               ),
             ),
           ],
@@ -579,14 +543,12 @@ class _CosteoDinamicoViewState extends State<CosteoDinamicoView> {
   }
 }
 
-// ── Modelo de Ingrediente
 class _Ingrediente {
   final String nombre;
   final double cantidad;
   final String unidad;
   final double precioUnitario;
   final double costo;
-
   _Ingrediente({
     required this.nombre,
     required this.cantidad,
