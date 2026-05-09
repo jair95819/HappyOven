@@ -1,23 +1,90 @@
 import 'package:flutter/material.dart';
 
+import 'package:happy_oven/core/theme/theme_notifier.dart';
+
 class AppTheme {
-  // --- COLORES ---
-  static const colors = _Colors();
+  // --- INSTANCIAS CONSTANTES ---
+  static const _lightColors = AppColors(
+    bg: Color(0xFFFAF8F5),
+    card: Color(0xFFFFFFFF),
+    surface: Color(0xFFF5F2ED),
+    primary: Color(0xFFFF8C42),
+    primaryDark: Color(0xFF6B3E26),
+    primaryLight: Color(0xFFFFF3EB),
+    primaryBorder: Color(0xFFFFD9BE),
+    accent: Color(0xFFC8CA9E),
+    accentDark: Color(0xFF4A4A38),
+    titleText: Color(0xFF2C1810),
+    bodyText: Color(0xFF6B5B4E),
+    hint: Color(0xFFAA9990),
+    border: Color(0xFFE8E0D8),
+    borderActive: Color(0xFFFF8C42),
+    statusNormal: Color(0xFF27AE60),
+    successLight: Color(0xFFEAF3DE),
+    successBorder: Color(0xFFC2DFA8),
+    statusCritical: Color(0xFFE74C3C),
+    dangerLight: Color(0xFFFCEBEB),
+    dangerBorder: Color(0xFFF5C6C6),
+    statusLow: Color(0xFFF1C27D),
+    brownLight: Color(0xFFD4A47A),
+    brownMid: Color(0xFFA8714A),
+    white: Color(0xFFFFFFFF),
+    black: Color(0xFF000000),
+  );
 
-  // --- ESPACIADO ---
+  static const _darkColors = AppColors(
+    bg: Color(0xFF121212),
+    card: Color(0xFF1E1E1E),
+    surface: Color(0xFF2C2C2C),
+    primary: Color(0xFFFF8C42),
+    primaryDark: Color(0xFFE57C3A),
+    primaryLight: Color(0xFF3B2A1E),
+    primaryBorder: Color(0xFF4A3222),
+    accent: Color(0xFFC8CA9E),
+    accentDark: Color(0xFFE0E2BE),
+    titleText: Color(0xFFF5F5F5),
+    bodyText: Color(0xFFCCCCCC),
+    hint: Color(0xFF888888),
+    border: Color(0xFF333333),
+    borderActive: Color(0xFFFF8C42),
+    statusNormal: Color(0xFF27AE60),
+    successLight: Color(0xFF1A3B22),
+    successBorder: Color(0xFF245531),
+    statusCritical: Color(0xFFE74C3C),
+    dangerLight: Color(0xFF4A1A1A),
+    dangerBorder: Color(0xFF6B2222),
+    statusLow: Color(0xFFF1C27D),
+    brownLight: Color(0xFFD4A47A),
+    brownMid: Color(0xFFA8714A),
+    white: Color(0xFFFFFFFF),
+    black: Color(0xFF000000),
+  );
+
   static const spacing = _Spacing();
-
-  // --- RADIOS ---
   static const radius = _Radius();
 
-  // --- FUENTES / ESTILOS DE TEXTO ---
-  static final font = _Font();
+  // --- ACCESO CON CONTEXTO (PARA MODO OSCURO) ---
+  static AppColors colorsOf(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? _darkColors
+        : _lightColors;
+  }
+
+  static AppFont fontOf(BuildContext context) {
+    return AppFont(colors: colorsOf(context));
+  }
+
+  // --- RETROCOMPATIBILIDAD MAGICA ---
+  static AppColors get colors =>
+      ThemeNotifier.currentMode == ThemeMode.dark ? _darkColors : _lightColors;
+  static AppFont get font => AppFont(colors: colors);
 
   // Helpers para el estado de stock
-  static Color getStockStatusColor(String? status) {
-    if (status == 'critical') return colors.statusCritical;
-    if (status == 'low') return colors.statusLow;
-    return colors.statusNormal;
+  static Color getStockStatusColor(BuildContext context, String? status) {
+    final c = colorsOf(context);
+    if (status == 'critical') return c.statusCritical;
+    if (status == 'low') return c.statusLow;
+    return c.statusNormal;
   }
 
   static String getStockStatusLabel(String? status) {
@@ -27,53 +94,60 @@ class AppTheme {
   }
 }
 
-class _Colors {
-  const _Colors();
+class AppColors {
+  final Color bg;
+  final Color card;
+  final Color surface;
+  final Color primary;
+  final Color primaryDark;
+  final Color primaryLight;
+  final Color primaryBorder;
+  final Color accent;
+  final Color accentDark;
+  final Color titleText;
+  final Color bodyText;
+  final Color hint;
+  final Color border;
+  final Color borderActive;
+  final Color statusNormal;
+  final Color successLight;
+  final Color successBorder;
+  final Color statusCritical;
+  final Color dangerLight;
+  final Color dangerBorder;
+  final Color statusLow;
+  final Color brownLight;
+  final Color brownMid;
+  final Color white;
+  final Color black;
 
-  // ── Fondos
-  final bg = const Color(0xFFFAF8F5);
-  final card = const Color(0xFFFFFFFF);
-  final surface = const Color(0xFFF5F2ED);
-
-  // ── Primario (naranja)
-  final primary = const Color(0xFFFF8C42);
-  final primaryDark = const Color(0xFF6B3E26);
-  final primaryLight = const Color(0xFFFFF3EB);
-  final primaryBorder = const Color(0xFFFFD9BE);
-
-  // ── Acento (oliva para headers)
-  final accent = const Color(0xFFC8CA9E);
-  final accentDark = const Color(0xFF4A4A38);
-
-  // ── Textos
-  final titleText = const Color(0xFF2C1810);
-  final bodyText = const Color(0xFF6B5B4E);
-  final hint = const Color(0xFFAA9990);
-
-  // ── Bordes
-  final border = const Color(0xFFE8E0D8);
-  final borderActive = const Color(0xFFFF8C42);
-
-  // ── Status: Éxito
-  final statusNormal = const Color(0xFF27AE60);
-  final successLight = const Color(0xFFEAF3DE);
-  final successBorder = const Color(0xFFC2DFA8);
-
-  // ── Status: Peligro
-  final statusCritical = const Color(0xFFE74C3C);
-  final dangerLight = const Color(0xFFFCEBEB);
-  final dangerBorder = const Color(0xFFF5C6C6);
-
-  // ── Status: Warning / Bajo
-  final statusLow = const Color(0xFFF1C27D);
-
-  // ── Marrones decorativos
-  final brownLight = const Color(0xFFD4A47A);
-  final brownMid = const Color(0xFFA8714A);
-
-  // ── Neutros
-  final white = const Color(0xFFFFFFFF);
-  final black = const Color(0xFF000000);
+  const AppColors({
+    required this.bg,
+    required this.card,
+    required this.surface,
+    required this.primary,
+    required this.primaryDark,
+    required this.primaryLight,
+    required this.primaryBorder,
+    required this.accent,
+    required this.accentDark,
+    required this.titleText,
+    required this.bodyText,
+    required this.hint,
+    required this.border,
+    required this.borderActive,
+    required this.statusNormal,
+    required this.successLight,
+    required this.successBorder,
+    required this.statusCritical,
+    required this.dangerLight,
+    required this.dangerBorder,
+    required this.statusLow,
+    required this.brownLight,
+    required this.brownMid,
+    required this.white,
+    required this.black,
+  });
 }
 
 class _Spacing {
@@ -100,63 +174,60 @@ class _Radius {
   BorderRadius get brXl => BorderRadius.circular(xl);
 }
 
-class _Font {
-  final h1 = TextStyle(
+class AppFont {
+  final AppColors colors;
+  AppFont({required this.colors});
+
+  TextStyle get h1 => TextStyle(
     fontSize: 32,
     fontWeight: FontWeight.w700,
-    color: const Color(0xFF2C1810),
+    color: colors.titleText,
     letterSpacing: -0.5,
   );
 
-  final h2 = TextStyle(
+  TextStyle get h2 => TextStyle(
     fontSize: 24,
     fontWeight: FontWeight.w700,
-    color: const Color(0xFF2C1810),
+    color: colors.titleText,
     letterSpacing: -0.3,
   );
 
-  final h3 = TextStyle(
+  TextStyle get h3 => TextStyle(
     fontSize: 20,
     fontWeight: FontWeight.w600,
-    color: const Color(0xFF2C1810),
+    color: colors.titleText,
   );
 
-  final body = TextStyle(
+  TextStyle get body => TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w400,
-    color: const Color(0xFF6B5B4E),
+    color: colors.bodyText,
     height: 1.5,
   );
 
-  final bodySmall = TextStyle(
+  TextStyle get bodySmall => TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w400,
-    color: const Color(0xFF6B5B4E),
+    color: colors.bodyText,
     height: 1.42,
   );
 
-  final hint = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    color: const Color(0xFFAA9990),
-  );
+  TextStyle get hintStyle =>
+      TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: colors.hint);
 
-  final button = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w700,
-    color: Colors.white,
-  );
+  // Note: AppTheme.font.hint was used, we kept the name for retro-compatibility
+  TextStyle get hint => hintStyle;
 
-  final label = TextStyle(
+  TextStyle get button =>
+      TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: colors.white);
+
+  TextStyle get label => TextStyle(
     fontSize: 13,
     fontWeight: FontWeight.w600,
-    color: const Color(0xFF2C1810),
+    color: colors.titleText,
     letterSpacing: 0.3,
   );
 
-  final caption = TextStyle(
-    fontSize: 11,
-    fontWeight: FontWeight.w400,
-    color: const Color(0xFFAA9990),
-  );
+  TextStyle get caption =>
+      TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: colors.hint);
 }

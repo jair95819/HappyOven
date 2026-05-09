@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
+import 'package:happy_oven/core/theme/theme_notifier.dart';
 import 'package:happy_oven/core/widgets/bottom_nav_bar.dart';
 
-class PerfilAjustesView extends StatelessWidget {
+class PerfilAjustesView extends ConsumerWidget {
   const PerfilAjustesView({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final rutaActual = GoRouterState.of(context).uri.path;
+    final isDarkMode = ref.watch(themeProvider) == ThemeMode.dark;
     return Scaffold(
       backgroundColor: AppTheme.colors.bg,
       body: SafeArea(
@@ -73,11 +76,14 @@ class PerfilAjustesView extends StatelessWidget {
                             _SettingItem(
                               icon: Icons.dark_mode_outlined,
                               title: 'Modo oscuro',
-                              subtitle: 'Próximamente',
+                              subtitle: isDarkMode ? 'Activado' : 'Desactivado',
                               trailing: Switch.adaptive(
-                                value: false,
-                                onChanged: null,
+                                value: isDarkMode,
+                                onChanged: (val) {
+                                  ref.read(themeProvider.notifier).toggleTheme(val);
+                                },
                                 activeThumbColor: AppTheme.colors.primary,
+                                activeTrackColor: AppTheme.colors.primary.withValues(alpha: 0.3),
                               ),
                             ),
                             _SettingItem(

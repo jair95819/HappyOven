@@ -1,61 +1,77 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/core/widgets/bottom_nav_bar.dart';
+import 'package:happy_oven/core/models/alerta.dart';
+import 'package:happy_oven/features/analitica_alertas/presentation/viewmodels/alertas_viewmodel.dart';
+import 'package:intl/intl.dart';
 
-class CentroAlertasView extends StatefulWidget {
+class CentroAlertasView extends ConsumerStatefulWidget {
   const CentroAlertasView({super.key});
 
   @override
-  State<CentroAlertasView> createState() => _CentroAlertasViewState();
+  ConsumerState<CentroAlertasView> createState() => _CentroAlertasViewState();
 }
 
-class _CentroAlertasViewState extends State<CentroAlertasView> {
-  _FiltroAlerta _filtroActivo = _FiltroAlerta.todas;
+class _CentroAlertasViewState extends ConsumerState<CentroAlertasView> {
+  String _filtroActivo = 'todas';
 
-  final List<_Alerta> _alertas = [
-    _Alerta(tipo: _FiltroAlerta.stockBajo, titulo: 'Stock bajo',
-        mensaje: 'Stock de harina por debajo del mínimo de seguridad (8 kg restantes).',
-        tiempo: 'Hace 15 min', leida: false),
-    _Alerta(tipo: _FiltroAlerta.anomalia, titulo: 'Anomalía detectada',
-        mensaje: 'Merma inusual de 15 kg de azúcar registrada el día de hoy.',
-        tiempo: 'Hace 1 hora', leida: false),
-    _Alerta(tipo: _FiltroAlerta.ia, titulo: 'Restock sugerido IA',
-        mensaje: 'Se recomienda comprar 50 kg de harina en los próximos 2 días.',
-        tiempo: 'Hace 2 horas', leida: false),
-    _Alerta(tipo: _FiltroAlerta.ingreso, titulo: 'Ingreso registrado',
-        mensaje: 'Se ingresaron 30 kg de mantequilla al almacén. (OCR)',
-        tiempo: 'Ayer, 4:30 pm', leida: true),
-    _Alerta(tipo: _FiltroAlerta.stockBajo, titulo: 'Stock bajo',
-        mensaje: 'Stock de levadura por debajo del mínimo (2 kg restantes).',
-        tiempo: 'Ayer, 9:00 am', leida: true),
-  ];
+  final Map<String, String> _filtros = {
+    'todas': 'Todas',
+    'stock_bajo': 'Stock bajo',
+    'anomalia': 'Anomalías',
+    'ia': 'IA',
+    'ingreso': 'Ingresos',
+    'sistema': 'Sistema',
+  };
 
-  List<_Alerta> get _alertasFiltradas {
-    if (_filtroActivo == _FiltroAlerta.todas) return _alertas;
-    return _alertas.where((a) => a.tipo == _filtroActivo).toList();
+  String _formatTiempo(DateTime fecha) {
+    final ahora = DateTime.now();
+    final diff = ahora.difference(fecha);
+
+    if (diff.inMinutes < 1) return 'Ahora mismo';
+    if (diff.inMinutes < 60) return 'Hace ${diff.inMinutes} min';
+    if (diff.inHours < 24) return 'Hace ${diff.inHours} hora${diff.inHours > 1 ? 's' : ''}';
+    if (diff.inDays < 2) return 'Ayer, ${DateFormat('h:mm a').format(fecha)}';
+    return DateFormat('dd/MM/yyyy, h:mm a').format(fecha);
   }
-
-  int get _noLeidas => _alertas.where((a) => !a.leida).length;
 
   @override
   Widget build(BuildContext context) {
     final rutaActual = GoRouterState.of(context).uri.path;
+    final alertasState = ref.watch(alertasViewModelProvider);
+    final colors = AppTheme.colorsOf(context);
+    final font = AppTheme.fontOf(context);
+
     return Scaffold(
-      backgroundColor: AppTheme.colors.bg,
+      backgroundColor: colors.bg,
       body: Column(
         children: [
-          _buildHeader(),
-          Expanded(child: _buildLista()),
+          _buildHeader(alertasState, colors, font),
+          Expanded(
+            child: alertasState.when(
+              data: (alertas) {
+                final filtradas = _filtroActivo == 'todas'
+                    ? alertas
+                    : alertas.where((a) => a.tipo == _filtroActivo).toList();
+                return _buildLista(filtradas, colors, font);
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text('Error al cargar alertas')),
+            ),
+          ),
           BottomNavBar(rutaActual: rutaActual),
         ],
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(AsyncValue<List<Alerta>> alertasState, AppColors colors, AppFont font) {
+    final noLeidas = alertasState.value?.where((a) => !a.leida).length ?? 0;
+
     return Container(
-      color: AppTheme.colors.accent,
+      color: colors.accent,
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -69,32 +85,49 @@ class _CentroAlertasViewState extends State<CentroAlertasView> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Centro de alertas', style: AppTheme.font.h3),
+                      Text('Centro de alertas', style: font.h3),
                       const SizedBox(height: 2),
-                      Text(
-                        '$_noLeidas notificaciones sin leer',
-                        style: AppTheme.font.caption.copyWith(
-                          color: AppTheme.colors.accentDark,
+                      Text('$noLeidas notificaciones sin leer',
+                          style: font.caption.copyWith(color: colors.accentDark)),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      if (noLeidas > 0)
+                        GestureDetector(
+                          onTap: () async {
+                            await ref.read(alertasViewModelProvider.notifier).marcarTodasComoLeidas();
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: const Text('Todas las alertas marcadas como leídas'),
+                                backgroundColor: colors.statusNormal,
+                                behavior: SnackBarBehavior.floating,
+                              ));
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: colors.card,
+                              borderRadius: AppTheme.radius.brSm,
+                            ),
+                            child: Text('Leer todas', style: font.caption.copyWith(
+                                fontSize: 10, fontWeight: FontWeight.w500, color: colors.titleText)),
+                          ),
+                        ),
+                      const SizedBox(width: 8),
+                      Container(
+                        width: 36, height: 36,
+                        decoration: BoxDecoration(
+                          color: noLeidas > 0 ? colors.statusCritical : colors.statusNormal,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text('$noLeidas',
+                              style: font.label.copyWith(color: colors.white, fontSize: 14)),
                         ),
                       ),
                     ],
-                  ),
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppTheme.colors.statusCritical,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        '$_noLeidas',
-                        style: AppTheme.font.label.copyWith(
-                          color: AppTheme.colors.white,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
                   ),
                 ],
               ),
@@ -102,28 +135,23 @@ class _CentroAlertasViewState extends State<CentroAlertasView> {
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
-                  children: _FiltroAlerta.values.map((filtro) {
-                    final activo = _filtroActivo == filtro;
+                  children: _filtros.entries.map((entry) {
+                    final activo = _filtroActivo == entry.key;
                     return GestureDetector(
-                      onTap: () => setState(() => _filtroActivo = filtro),
+                      onTap: () => setState(() => _filtroActivo = entry.key),
                       child: Container(
                         margin: const EdgeInsets.only(right: 6, bottom: 16),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                         decoration: BoxDecoration(
-                          color: activo ? AppTheme.colors.titleText : AppTheme.colors.accent,
+                          color: activo ? colors.titleText : colors.accent,
                           borderRadius: BorderRadius.circular(AppTheme.radius.full),
                           border: Border.all(
-                            color: activo ? AppTheme.colors.titleText : AppTheme.colors.accentDark,
-                            width: 0.5,
-                          ),
+                            color: activo ? colors.titleText : colors.accentDark, width: 0.5),
                         ),
-                        child: Text(
-                          filtro.etiqueta,
-                          style: AppTheme.font.caption.copyWith(
-                            fontWeight: activo ? FontWeight.w500 : FontWeight.normal,
-                            color: activo ? AppTheme.colors.white : AppTheme.colors.accentDark,
-                          ),
-                        ),
+                        child: Text(entry.value,
+                            style: font.caption.copyWith(
+                              fontWeight: activo ? FontWeight.w500 : FontWeight.normal,
+                              color: activo ? colors.white : colors.accentDark)),
                       ),
                     );
                   }).toList(),
@@ -136,10 +164,10 @@ class _CentroAlertasViewState extends State<CentroAlertasView> {
     );
   }
 
-  Widget _buildLista() {
+  Widget _buildLista(List<Alerta> alertas, AppColors colors, AppFont font) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.colors.bg,
+        color: colors.bg,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(AppTheme.radius.xl),
           topRight: Radius.circular(AppTheme.radius.xl),
@@ -151,136 +179,138 @@ class _CentroAlertasViewState extends State<CentroAlertasView> {
           topLeft: Radius.circular(AppTheme.radius.xl),
           topRight: Radius.circular(AppTheme.radius.xl),
         ),
-        child: ListView.separated(
-          padding: const EdgeInsets.fromLTRB(14, 20, 14, 8),
-          itemCount: _alertasFiltradas.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 10),
-          itemBuilder: (context, index) => _buildAlertaCard(_alertasFiltradas[index]),
-        ),
+        child: alertas.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.notifications_off_outlined, color: colors.hint, size: 48),
+                    const SizedBox(height: 12),
+                    Text('Sin alertas', style: font.hint.copyWith(fontSize: 13)),
+                  ],
+                ),
+              )
+            : ListView.separated(
+                padding: const EdgeInsets.fromLTRB(14, 20, 14, 8),
+                itemCount: alertas.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (context, index) => _buildAlertaCard(alertas[index], colors, font),
+              ),
       ),
     );
   }
 
-  Widget _buildAlertaCard(_Alerta alerta) {
-    final config = _configPorTipo(alerta.tipo);
-    return Opacity(
-      opacity: alerta.leida ? 0.7 : 1.0,
-      child: Container(
-        padding: const EdgeInsets.all(14),
+  Widget _buildAlertaCard(Alerta alerta, AppColors colors, AppFont font) {
+    final config = _configPorTipo(alerta.tipo, colors);
+    return Dismissible(
+      key: Key(alerta.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
-          color: alerta.leida ? AppTheme.colors.card : config.colorFondo,
+          color: colors.statusCritical,
           borderRadius: BorderRadius.circular(AppTheme.radius.lg),
-          border: Border.all(
-            color: alerta.leida ? AppTheme.colors.border : config.colorBorde,
-            width: 0.5,
-          ),
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 36, height: 36,
-              decoration: BoxDecoration(
-                color: config.colorIconoFondo,
-                borderRadius: AppTheme.radius.brSm,
-              ),
-              child: Icon(config.icono, color: config.colorIcono, size: 18),
+        child: Icon(Icons.delete_outline_rounded, color: colors.white, size: 22),
+      ),
+      onDismissed: (_) {
+        ref.read(alertasViewModelProvider.notifier).eliminarAlerta(alerta.id);
+      },
+      child: GestureDetector(
+        onTap: () {
+          if (!alerta.leida) {
+            ref.read(alertasViewModelProvider.notifier).marcarComoLeida(alerta.id);
+          }
+        },
+        child: Opacity(
+          opacity: alerta.leida ? 0.7 : 1.0,
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: alerta.leida ? colors.card : config.colorFondo,
+              borderRadius: BorderRadius.circular(AppTheme.radius.lg),
+              border: Border.all(
+                color: alerta.leida ? colors.border : config.colorBorde, width: 0.5),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 36, height: 36,
+                  decoration: BoxDecoration(
+                    color: config.colorIconoFondo,
+                    borderRadius: AppTheme.radius.brSm,
+                  ),
+                  child: Icon(config.icono, color: config.colorIcono, size: 18),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        alerta.titulo,
-                        style: AppTheme.font.label.copyWith(
-                          fontSize: 12, color: config.colorIcono,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(alerta.titulo,
+                              style: font.label.copyWith(fontSize: 12, color: config.colorIcono)),
+                          if (!alerta.leida)
+                            Container(
+                              width: 7, height: 7,
+                              decoration: BoxDecoration(
+                                color: config.colorIcono, shape: BoxShape.circle),
+                            ),
+                        ],
                       ),
-                      if (!alerta.leida)
-                        Container(
-                          width: 7, height: 7,
-                          decoration: BoxDecoration(
-                            color: config.colorIcono, shape: BoxShape.circle,
-                          ),
-                        ),
+                      const SizedBox(height: 3),
+                      Text(alerta.mensaje,
+                          style: font.bodySmall.copyWith(
+                            fontSize: 12,
+                            color: alerta.leida ? colors.bodyText : colors.titleText,
+                            height: 1.4,
+                          )),
+                      const SizedBox(height: 4),
+                      Text(_formatTiempo(alerta.createdAt), style: font.caption),
                     ],
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    alerta.mensaje,
-                    style: AppTheme.font.bodySmall.copyWith(
-                      fontSize: 12,
-                      color: alerta.leida ? AppTheme.colors.bodyText : AppTheme.colors.titleText,
-                      height: 1.4,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(alerta.tiempo, style: AppTheme.font.caption),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  _ConfigAlerta _configPorTipo(_FiltroAlerta tipo) {
+  _ConfigAlerta _configPorTipo(String tipo, AppColors colors) {
     switch (tipo) {
-      case _FiltroAlerta.stockBajo:
+      case 'stock_bajo':
         return _ConfigAlerta(icono: Icons.warning_amber_rounded,
-          colorFondo: AppTheme.colors.dangerLight, colorBorde: AppTheme.colors.dangerBorder,
-          colorIcono: AppTheme.colors.statusCritical,
-          colorIconoFondo: AppTheme.colors.statusCritical.withValues(alpha: 0.12));
-      case _FiltroAlerta.anomalia:
+          colorFondo: colors.dangerLight, colorBorde: colors.dangerBorder,
+          colorIcono: colors.statusCritical,
+          colorIconoFondo: colors.statusCritical.withValues(alpha: 0.12));
+      case 'anomalia':
         return _ConfigAlerta(icono: Icons.query_stats_rounded,
-          colorFondo: AppTheme.colors.dangerLight, colorBorde: AppTheme.colors.dangerBorder,
-          colorIcono: AppTheme.colors.statusCritical,
-          colorIconoFondo: AppTheme.colors.statusCritical.withValues(alpha: 0.12));
-      case _FiltroAlerta.ia:
+          colorFondo: colors.dangerLight, colorBorde: colors.dangerBorder,
+          colorIcono: colors.statusCritical,
+          colorIconoFondo: colors.statusCritical.withValues(alpha: 0.12));
+      case 'ia':
         return _ConfigAlerta(icono: Icons.psychology_outlined,
-          colorFondo: AppTheme.colors.primaryLight, colorBorde: AppTheme.colors.primaryBorder,
-          colorIcono: AppTheme.colors.primary,
-          colorIconoFondo: AppTheme.colors.primary.withValues(alpha: 0.12));
-      case _FiltroAlerta.ingreso:
+          colorFondo: colors.primaryLight, colorBorde: colors.primaryBorder,
+          colorIcono: colors.primary,
+          colorIconoFondo: colors.primary.withValues(alpha: 0.12));
+      case 'ingreso':
         return _ConfigAlerta(icono: Icons.move_to_inbox_outlined,
-          colorFondo: AppTheme.colors.successLight, colorBorde: AppTheme.colors.successBorder,
-          colorIcono: AppTheme.colors.statusNormal,
-          colorIconoFondo: AppTheme.colors.statusNormal.withValues(alpha: 0.12));
-      case _FiltroAlerta.todas:
+          colorFondo: colors.successLight, colorBorde: colors.successBorder,
+          colorIcono: colors.statusNormal,
+          colorIconoFondo: colors.statusNormal.withValues(alpha: 0.12));
+      default:
         return _ConfigAlerta(icono: Icons.notifications_outlined,
-          colorFondo: AppTheme.colors.bg, colorBorde: AppTheme.colors.border,
-          colorIcono: AppTheme.colors.titleText,
-          colorIconoFondo: AppTheme.colors.surface);
+          colorFondo: colors.bg, colorBorde: colors.border,
+          colorIcono: colors.titleText,
+          colorIconoFondo: colors.surface);
     }
   }
-}
-
-enum _FiltroAlerta {
-  todas, stockBajo, anomalia, ia, ingreso;
-  String get etiqueta {
-    switch (this) {
-      case _FiltroAlerta.todas: return 'Todas';
-      case _FiltroAlerta.stockBajo: return 'Stock bajo';
-      case _FiltroAlerta.anomalia: return 'Anomalías';
-      case _FiltroAlerta.ia: return 'IA';
-      case _FiltroAlerta.ingreso: return 'Ingresos';
-    }
-  }
-}
-
-class _Alerta {
-  final _FiltroAlerta tipo;
-  final String titulo;
-  final String mensaje;
-  final String tiempo;
-  final bool leida;
-  const _Alerta({required this.tipo, required this.titulo, required this.mensaje,
-    required this.tiempo, required this.leida});
 }
 
 class _ConfigAlerta {

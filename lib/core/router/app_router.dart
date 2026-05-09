@@ -14,6 +14,8 @@ import 'package:happy_oven/features/registro_movimientos/presentation/views/sali
 import 'package:happy_oven/features/recetas_costeo/presentation/views/recetario_view.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/views/costeo_dinamico_view.dart';
 import 'package:happy_oven/features/configuracion/presentation/views/perfil_ajustes_view.dart';
+import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/receta.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
@@ -46,7 +48,10 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/catalogo/nuevo',
-      builder: (context, state) => const FormularioArticuloView(),
+      builder: (context, state) {
+        final articulo = state.extra as Articulo?;
+        return FormularioArticuloView(articulo: articulo);
+      },
     ),
     GoRoute(
       path: '/movimientos',
@@ -63,6 +68,17 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/recetas',
       builder: (context, state) => const RecetarioView(),
+    ),
+    GoRoute(
+      path: '/recetas/nueva',
+      builder: (context, state) => const CosteoDinamicoView(),
+    ),
+    GoRoute(
+      path: '/recetas/editar',
+      builder: (context, state) {
+        final receta = state.extra as Receta?;
+        return CosteoDinamicoView(receta: receta);
+      },
     ),
     GoRoute(
       path: '/recetas/costeo-dinamico',

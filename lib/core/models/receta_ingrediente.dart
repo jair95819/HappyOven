@@ -1,25 +1,22 @@
 class RecetaIngrediente {
   final String id;
   final String recetaId;
-  final String articuloId;
-  final double cantidad;
-  final String unidad;
+  final String insumoId; // referencia a articulos.id
+  final double cantidadRequerida;
 
   RecetaIngrediente({
     required this.id,
     required this.recetaId,
-    required this.articuloId,
-    required this.cantidad,
-    required this.unidad,
+    required this.insumoId,
+    required this.cantidadRequerida,
   });
 
   factory RecetaIngrediente.fromJson(Map<String, dynamic> json) {
     return RecetaIngrediente(
       id: json['id'] as String,
       recetaId: json['receta_id'] as String,
-      articuloId: json['articulo_id'] as String,
-      cantidad: (json['cantidad'] as num).toDouble(),
-      unidad: json['unidad'] as String,
+      insumoId: json['articulo_id'] as String,
+      cantidadRequerida: (json['cantidad'] as num).toDouble(),
     );
   }
 
@@ -27,9 +24,8 @@ class RecetaIngrediente {
     return {
       if (id.isNotEmpty) 'id': id,
       'receta_id': recetaId,
-      'articulo_id': articuloId,
-      'cantidad': cantidad,
-      'unidad': unidad,
+      'articulo_id': insumoId,
+      'cantidad': cantidadRequerida,
     };
   }
 }

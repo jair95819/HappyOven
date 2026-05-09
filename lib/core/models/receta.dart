@@ -1,31 +1,28 @@
 class Receta {
   final String id;
   final String nombre;
-  final int rendimientoUnidades;
-  final int tiempoProduccionMin;
-  final double costoLote;
+  final String? productoId; // Artículo de tipo 'producto_final' que produce esta receta
+  final String? instrucciones;
+  final double rendimiento; // Cantidad de unidades que produce un lote
   final DateTime createdAt;
-  final DateTime updatedAt;
 
   Receta({
     required this.id,
     required this.nombre,
-    required this.rendimientoUnidades,
-    required this.tiempoProduccionMin,
-    required this.costoLote,
+    this.productoId,
+    this.instrucciones,
+    required this.rendimiento,
     required this.createdAt,
-    required this.updatedAt,
   });
 
   factory Receta.fromJson(Map<String, dynamic> json) {
     return Receta(
       id: json['id'] as String,
       nombre: json['nombre'] as String,
-      rendimientoUnidades: json['rendimiento_unidades'] as int,
-      tiempoProduccionMin: json['tiempo_produccion_min'] as int,
-      costoLote: (json['costo_lote'] as num).toDouble(),
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      productoId: json['producto_id'] as String? ?? json['articulo_id'] as String?,
+      instrucciones: json['instrucciones'] as String? ?? json['preparacion'] as String?,
+      rendimiento: (json['rendimiento_unidades'] as num).toDouble(),
+      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at'] as String) : DateTime.now(),
     );
   }
 
@@ -33,9 +30,8 @@ class Receta {
     return {
       if (id.isNotEmpty) 'id': id,
       'nombre': nombre,
-      'rendimiento_unidades': rendimientoUnidades,
-      'tiempo_produccion_min': tiempoProduccionMin,
-      'costo_lote': costoLote,
+      'producto_id': productoId,
+      'rendimiento_unidades': rendimiento.toInt(),
     };
   }
 }

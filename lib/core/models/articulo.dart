@@ -31,13 +31,13 @@ class Articulo {
       nombre: json['nombre'] as String,
       categoriaId: json['categoria_id'] as String?,
       tipo: json['tipo'] as String,
-      unidad: json['unidad'] as String,
+      unidad: json['unidad'] as String? ?? 'unidades',
       stockActual: (json['stock_actual'] as num).toDouble(),
       stockMinimo: (json['stock_minimo'] as num).toDouble(),
-      precioUnitario: (json['precio_unitario'] as num).toDouble(),
-      activo: json['activo'] as bool,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      precioUnitario: (json['precio_unitario'] as num?)?.toDouble() ?? 0.0,
+      activo: json['activo'] as bool? ?? true,
+      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at'] as String) : DateTime.now(),
+      updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at'] as String) : DateTime.now(),
     );
   }
 

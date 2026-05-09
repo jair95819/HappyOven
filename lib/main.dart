@@ -5,6 +5,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'core/router/app_router.dart';
 import 'package:happy_oven/core/services/supabase_service.dart';
 import 'package:happy_oven/core/services/local_storage_service.dart';
+import 'package:happy_oven/core/theme/theme_notifier.dart';
+import 'package:happy_oven/core/theme/theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,16 +33,37 @@ class HappyOvenApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
+    final themeMode = ref.watch(themeProvider);
+
     return MaterialApp.router(
       locale: const Locale('es', 'ES'),
       supportedLocales: const [Locale('es', 'ES'), Locale('es'), Locale('en')],
-      localizationsDelegates: [
+      localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
       title: 'Happy Oven',
       debugShowCheckedModeBanner: false,
+      themeMode: themeMode,
+      theme: ThemeData(
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: AppTheme.colors.bg,
+        colorScheme: ColorScheme.light(
+          primary: AppTheme.colors.primary,
+          secondary: AppTheme.colors.accent,
+          surface: AppTheme.colors.surface,
+        ),
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF121212),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFFFF8C42),
+          secondary: Color(0xFFC8CA9E),
+          surface: Color(0xFF2C2C2C),
+        ),
+      ),
       routerConfig: router,
     );
   }

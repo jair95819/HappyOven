@@ -50,7 +50,7 @@ dependencies:
 
   # OCR (para ingreso_ocr_view)
   google_mlkit_text_recognition: ^0.11.0
-  camera: ^0.10.5
+  image_picker: ^1.0.7
 
   # PDF export (reportes_view)
   pdf: ^3.10.8
@@ -59,6 +59,7 @@ dependencies:
   # Utilidades
   intl: ^0.20.2
   uuid: ^4.3.3
+  lottie: ^3.3.3
 
 dev_dependencies:
   flutter_test:
@@ -82,6 +83,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/lottie/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

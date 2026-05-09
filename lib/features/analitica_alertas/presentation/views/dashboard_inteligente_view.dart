@@ -1,21 +1,26 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/core/widgets/bottom_nav_bar.dart';
+import 'package:happy_oven/features/analitica_alertas/presentation/viewmodels/dashboard_viewmodel.dart';
+import 'package:intl/intl.dart';
 
-class DashboardInteligenteView extends StatelessWidget {
+class DashboardInteligenteView extends ConsumerWidget {
   const DashboardInteligenteView({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final rutaActual = GoRouterState.of(context).uri.path;
+    final state = ref.watch(dashboardViewModelProvider);
+
     return Scaffold(
-      backgroundColor: AppTheme.colors.bg,
+      backgroundColor: AppTheme.colorsOf(context).bg,
       body: Column(
         children: [
           _buildHeader(context),
-          Expanded(child: _buildBody()),
+          Expanded(child: _buildBody(context, state)),
           BottomNavBar(rutaActual: rutaActual),
         ],
       ),
@@ -75,10 +80,18 @@ class DashboardInteligenteView extends StatelessWidget {
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(BuildContext context, DashboardState state) {
+    if (state.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (state.error != null) {
+      return Center(child: Text('Error: ${state.error}', style: AppTheme.fontOf(context).body));
+    }
+
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.colors.bg,
+        color: AppTheme.colorsOf(context).bg,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(AppTheme.radius.xl),
           topRight: Radius.circular(AppTheme.radius.xl),
@@ -100,11 +113,11 @@ class DashboardInteligenteView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildKpiRow(),
+              _buildKpiRow(context, state),
               const SizedBox(height: 16),
-              _buildConsumoSemanal(),
+              _buildConsumoSemanal(context),
               const SizedBox(height: 14),
-              _buildProyeccionIA(),
+              _buildProyeccionIA(context, state),
               const SizedBox(height: 16),
             ],
           ),
@@ -113,28 +126,36 @@ class DashboardInteligenteView extends StatelessWidget {
     );
   }
 
-  Widget _buildKpiRow() {
+  Widget _buildKpiRow(BuildContext context, DashboardState state) {
+    final colors = AppTheme.colorsOf(context);
+    
+    // Formatear el valor monetario
+    final formatter = NumberFormat.currency(symbol: 'S/ ', decimalDigits: 2);
+    final valorFormateado = formatter.format(state.valorTotalInventario);
+
     return Row(
       children: [
         Expanded(
           child: _buildKpiCard(
-            valor: '4',
+            context: context,
+            valor: state.insumosConStockBajo.toString(),
             etiqueta: 'Insumos con\nstock bajo',
             icono: Icons.warning_amber_rounded,
-            colorFondo: AppTheme.colors.dangerLight,
-            colorBorde: AppTheme.colors.dangerBorder,
-            colorIcono: AppTheme.colors.statusCritical,
+            colorFondo: colors.dangerLight,
+            colorBorde: colors.dangerBorder,
+            colorIcono: colors.statusCritical,
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
           child: _buildKpiCard(
-            valor: 'S/ 2,840',
+            context: context,
+            valor: valorFormateado,
             etiqueta: 'Valor total\ninventario',
             icono: Icons.monetization_on_outlined,
-            colorFondo: AppTheme.colors.successLight,
-            colorBorde: AppTheme.colors.successBorder,
-            colorIcono: AppTheme.colors.statusNormal,
+            colorFondo: colors.successLight,
+            colorBorde: colors.successBorder,
+            colorIcono: colors.statusNormal,
           ),
         ),
       ],
@@ -142,6 +163,7 @@ class DashboardInteligenteView extends StatelessWidget {
   }
 
   Widget _buildKpiCard({
+    required BuildContext context,
     required String valor,
     required String etiqueta,
     required IconData icono,
@@ -183,24 +205,26 @@ class DashboardInteligenteView extends StatelessWidget {
     );
   }
 
-  Widget _buildConsumoSemanal() {
+  Widget _buildConsumoSemanal(BuildContext context) {
     final barGroups = [
-      _barGroup(0, 40),
-      _barGroup(1, 55),
-      _barGroup(2, 65),
-      _barGroup(3, 45),
-      _barGroup(4, 30),
-      _barGroup(5, 20),
-      _barGroup(6, 10),
+      _barGroup(context, 0, 40),
+      _barGroup(context, 1, 55),
+      _barGroup(context, 2, 65),
+      _barGroup(context, 3, 45),
+      _barGroup(context, 4, 30),
+      _barGroup(context, 5, 20),
+      _barGroup(context, 6, 10),
     ];
     final dias = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
+    final colors = AppTheme.colorsOf(context);
+    final font = AppTheme.fontOf(context);
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.colors.card,
+        color: colors.card,
         borderRadius: BorderRadius.circular(AppTheme.radius.lg),
-        border: Border.all(color: AppTheme.colors.border, width: 0.5),
+        border: Border.all(color: colors.border, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -210,9 +234,9 @@ class DashboardInteligenteView extends StatelessWidget {
             children: [
               Text(
                 'Consumo semanal',
-                style: AppTheme.font.label.copyWith(fontSize: 13),
+                style: font.label.copyWith(fontSize: 13),
               ),
-              Text('Esta semana', style: AppTheme.font.caption),
+              Text('Esta semana', style: font.caption),
             ],
           ),
           const SizedBox(height: 16),
@@ -249,8 +273,8 @@ class DashboardInteligenteView extends StatelessWidget {
                                   ? FontWeight.w500
                                   : FontWeight.normal,
                               color: esHoy
-                                  ? AppTheme.colors.titleText
-                                  : AppTheme.colors.hint,
+                                  ? colors.titleText
+                                  : colors.hint,
                             ),
                           ),
                         );
@@ -269,7 +293,8 @@ class DashboardInteligenteView extends StatelessWidget {
     );
   }
 
-  BarChartGroupData _barGroup(int x, double y) {
+  BarChartGroupData _barGroup(BuildContext context, int x, double y) {
+    final colors = AppTheme.colorsOf(context);
     final esHoy = x == 2;
     return BarChartGroupData(
       x: x,
@@ -277,8 +302,8 @@ class DashboardInteligenteView extends StatelessWidget {
         BarChartRodData(
           toY: y,
           color: esHoy
-              ? AppTheme.colors.primary
-              : AppTheme.colors.primaryBorder,
+              ? colors.primary
+              : colors.primaryBorder,
           width: 18,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(4),
@@ -289,31 +314,16 @@ class DashboardInteligenteView extends StatelessWidget {
     );
   }
 
-  Widget _buildProyeccionIA() {
-    final insumos = [
-      _InsumoProyeccion(
-        nombre: 'Harina',
-        diasRestantes: 3,
-        stockPorcentaje: 0.20,
-      ),
-      _InsumoProyeccion(
-        nombre: 'Azúcar',
-        diasRestantes: 7,
-        stockPorcentaje: 0.45,
-      ),
-      _InsumoProyeccion(
-        nombre: 'Mantequilla',
-        diasRestantes: 14,
-        stockPorcentaje: 0.75,
-      ),
-    ];
+  Widget _buildProyeccionIA(BuildContext context, DashboardState state) {
+    final colors = AppTheme.colorsOf(context);
+    final font = AppTheme.fontOf(context);
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.colors.card,
+        color: colors.card,
         borderRadius: BorderRadius.circular(AppTheme.radius.lg),
-        border: Border.all(color: AppTheme.colors.border, width: 0.5),
+        border: Border.all(color: colors.border, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -323,18 +333,18 @@ class DashboardInteligenteView extends StatelessWidget {
             children: [
               Text(
                 'Proyección IA',
-                style: AppTheme.font.label.copyWith(fontSize: 13),
+                style: font.label.copyWith(fontSize: 13),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: AppTheme.colors.primaryLight,
+                  color: colors.primaryLight,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'Series de tiempo',
-                  style: AppTheme.font.caption.copyWith(
-                    color: AppTheme.colors.primary,
+                  'Kardex ML',
+                  style: font.caption.copyWith(
+                    color: colors.primary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -342,22 +352,37 @@ class DashboardInteligenteView extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          ...insumos.map((i) => _buildInsumoProyeccion(i)),
+          if (state.proyecciones.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Text(
+                  'No hay suficientes datos de movimientos para proyectar el consumo.',
+                  style: font.hint,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            )
+          else
+            ...state.proyecciones.map((i) => _buildInsumoProyeccion(context, i)),
         ],
       ),
     );
   }
 
-  Widget _buildInsumoProyeccion(_InsumoProyeccion insumo) {
+  Widget _buildInsumoProyeccion(BuildContext context, InsumoProyeccionData insumo) {
+    final colors = AppTheme.colorsOf(context);
+    final font = AppTheme.fontOf(context);
+    
     Color colorBarra;
     String etiqueta = 'Se agota en ${insumo.diasRestantes} días';
 
     if (insumo.diasRestantes <= 5) {
-      colorBarra = AppTheme.colors.statusCritical;
+      colorBarra = colors.statusCritical;
     } else if (insumo.diasRestantes <= 10) {
-      colorBarra = AppTheme.colors.primary;
+      colorBarra = colors.primary;
     } else {
-      colorBarra = AppTheme.colors.statusNormal;
+      colorBarra = colors.statusNormal;
     }
 
     return Padding(
@@ -369,11 +394,11 @@ class DashboardInteligenteView extends StatelessWidget {
             children: [
               Text(
                 insumo.nombre,
-                style: AppTheme.font.bodySmall.copyWith(fontSize: 12),
+                style: font.bodySmall.copyWith(fontSize: 12),
               ),
               Text(
                 etiqueta,
-                style: AppTheme.font.label.copyWith(
+                style: font.label.copyWith(
                   fontSize: 12,
                   color: colorBarra,
                 ),
@@ -386,7 +411,7 @@ class DashboardInteligenteView extends StatelessWidget {
             child: LinearProgressIndicator(
               value: insumo.stockPorcentaje,
               minHeight: 6,
-              backgroundColor: AppTheme.colors.surface,
+              backgroundColor: colors.surface,
               valueColor: AlwaysStoppedAnimation<Color>(colorBarra),
             ),
           ),
@@ -394,16 +419,4 @@ class DashboardInteligenteView extends StatelessWidget {
       ),
     );
   }
-}
-
-class _InsumoProyeccion {
-  final String nombre;
-  final int diasRestantes;
-  final double stockPorcentaje;
-
-  const _InsumoProyeccion({
-    required this.nombre,
-    required this.diasRestantes,
-    required this.stockPorcentaje,
-  });
 }

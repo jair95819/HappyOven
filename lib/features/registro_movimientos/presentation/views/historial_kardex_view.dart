@@ -1,33 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/core/widgets/bottom_nav_bar.dart';
+import 'package:happy_oven/core/models/movimiento.dart';
+import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/features/registro_movimientos/presentation/viewmodels/movimientos_viewmodel.dart';
+import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
 
-class HistorialKardexView extends StatelessWidget {
+class HistorialKardexView extends ConsumerWidget {
   const HistorialKardexView({super.key});
 
-  static final List<_Movimiento> _movimientos = [
-    _Movimiento(insumo: 'Harina', cantidad: 50, unidad: 'kg',
-        tipo: _TipoMovimiento.entrada, responsable: 'Carlos M.',
-        fecha: DateTime(2026, 5, 7, 9, 14), porOCR: false),
-    _Movimiento(insumo: 'Azúcar', cantidad: 12, unidad: 'kg',
-        tipo: _TipoMovimiento.salidaProduccion, responsable: 'Ana R.',
-        fecha: DateTime(2026, 5, 7, 8, 30), porOCR: false),
-    _Movimiento(insumo: 'Mantequilla', cantidad: 3, unidad: 'kg',
-        tipo: _TipoMovimiento.merma, responsable: 'Carlos M.',
-        fecha: DateTime(2026, 5, 7, 7, 55), porOCR: false),
-    _Movimiento(insumo: 'Levadura', cantidad: 10, unidad: 'kg',
-        tipo: _TipoMovimiento.entrada, responsable: 'Ana R.',
-        fecha: DateTime(2026, 5, 6, 16, 20), porOCR: true),
-    _Movimiento(insumo: 'Aceite', cantidad: 2, unidad: 'L',
-        tipo: _TipoMovimiento.ajuste, responsable: 'Carlos M.',
-        fecha: DateTime(2026, 5, 6, 11, 0), porOCR: false),
-  ];
-
-  Map<String, List<_Movimiento>> _agruparPorFecha() {
-    final Map<String, List<_Movimiento>> agrupados = {};
-    for (final m in _movimientos) {
+  Map<String, List<Movimiento>> _agruparPorFecha(List<Movimiento> movimientos) {
+    final Map<String, List<Movimiento>> agrupados = {};
+    for (final m in movimientos) {
       final ahora = DateTime.now();
       final ayer = ahora.subtract(const Duration(days: 1));
       String etiqueta;
@@ -47,24 +34,46 @@ class HistorialKardexView extends StatelessWidget {
       a.year == b.year && a.month == b.month && a.day == b.day;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final rutaActual = GoRouterState.of(context).uri.path;
-    final agrupados = _agruparPorFecha();
+    final movimientosState = ref.watch(movimientosViewModelProvider);
+    final catalogoState = ref.watch(catalogoViewModelProvider);
+    final List<Articulo> articulos = catalogoState.value ?? [];
+
     return Scaffold(
-      backgroundColor: AppTheme.colors.bg,
+      backgroundColor: AppTheme.colorsOf(context).bg,
       body: Column(
         children: [
-          _buildHeader(),
-          Expanded(child: _buildLista(agrupados)),
+          movimientosState.when(
+            data: (movimientos) => _buildHeader(context, movimientos.length),
+            loading: () => _buildHeader(context, 0),
+            error: (_, __) => _buildHeader(context, 0),
+          ),
+          Expanded(
+            child: movimientosState.when(
+              data: (movimientos) {
+                if (movimientos.isEmpty) {
+                  return Center(child: Text('No hay movimientos registrados', style: AppTheme.fontOf(context).hint));
+                }
+                final agrupados = _agruparPorFecha(movimientos);
+                return _buildLista(context, agrupados, articulos);
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, _) => Center(child: Text('Error: $err', style: AppTheme.fontOf(context).body)),
+            ),
+          ),
           BottomNavBar(rutaActual: rutaActual),
         ],
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context, int cantidad) {
+    final colors = AppTheme.colorsOf(context);
+    final font = AppTheme.fontOf(context);
+
     return Container(
-      color: AppTheme.colors.accent,
+      color: colors.accent,
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -75,25 +84,25 @@ class HistorialKardexView extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Historial Kardex', style: AppTheme.font.h3),
+                  Text('Historial Kardex', style: font.h3),
                   const SizedBox(height: 2),
                   Text('Todos los movimientos',
-                      style: AppTheme.font.caption.copyWith(color: AppTheme.colors.accentDark)),
+                      style: font.caption.copyWith(color: colors.accentDark)),
                 ],
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                 decoration: BoxDecoration(
-                  color: AppTheme.colors.primaryLight,
+                  color: colors.primaryLight,
                   borderRadius: AppTheme.radius.brSm,
-                  border: Border.all(color: AppTheme.colors.primaryBorder, width: 0.5),
+                  border: Border.all(color: colors.primaryBorder, width: 0.5),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.format_list_numbered_rounded, color: AppTheme.colors.primary, size: 15),
+                    Icon(Icons.format_list_numbered_rounded, color: colors.primary, size: 15),
                     const SizedBox(width: 6),
-                    Text('${_movimientos.length} registros',
-                        style: AppTheme.font.label.copyWith(fontSize: 12, color: AppTheme.colors.primary)),
+                    Text('$cantidad registros',
+                        style: font.label.copyWith(fontSize: 12, color: colors.primary)),
                   ],
                 ),
               ),
@@ -104,11 +113,13 @@ class HistorialKardexView extends StatelessWidget {
     );
   }
 
-  Widget _buildLista(Map<String, List<_Movimiento>> agrupados) {
+  Widget _buildLista(BuildContext context, Map<String, List<Movimiento>> agrupados, List<Articulo> articulos) {
     final grupos = agrupados.entries.toList();
+    final colors = AppTheme.colorsOf(context);
+
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.colors.bg,
+        color: colors.bg,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(AppTheme.radius.xl),
           topRight: Radius.circular(AppTheme.radius.xl),
@@ -128,11 +139,11 @@ class HistorialKardexView extends StatelessWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSeparadorFecha(grupo.key),
+                _buildSeparadorFecha(context, grupo.key),
                 const SizedBox(height: 10),
                 ...grupo.value.map((m) => Padding(
                   padding: const EdgeInsets.only(bottom: 10),
-                  child: _buildTarjetaMovimiento(m),
+                  child: _buildTarjetaMovimiento(context, m, articulos),
                 )),
                 const SizedBox(height: 6),
               ],
@@ -143,30 +154,45 @@ class HistorialKardexView extends StatelessWidget {
     );
   }
 
-  Widget _buildSeparadorFecha(String etiqueta) {
+  Widget _buildSeparadorFecha(BuildContext context, String etiqueta) {
+    final colors = AppTheme.colorsOf(context);
+    final font = AppTheme.fontOf(context);
     return Row(
       children: [
-        Expanded(child: Divider(color: AppTheme.colors.hint, thickness: 0.5)),
+        Expanded(child: Divider(color: colors.hint, thickness: 0.5)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Text(etiqueta, style: AppTheme.font.caption.copyWith(fontWeight: FontWeight.w500)),
+          child: Text(etiqueta, style: font.caption.copyWith(fontWeight: FontWeight.w500)),
         ),
-        Expanded(child: Divider(color: AppTheme.colors.hint, thickness: 0.5)),
+        Expanded(child: Divider(color: colors.hint, thickness: 0.5)),
       ],
     );
   }
 
-  Widget _buildTarjetaMovimiento(_Movimiento m) {
-    final config = _configPorTipo(m.tipo);
-    final prefijo = m.tipo == _TipoMovimiento.entrada ? '+' : '−';
+  Widget _buildTarjetaMovimiento(BuildContext context, Movimiento m, List<Articulo> articulos) {
+    final colors = AppTheme.colorsOf(context);
+    final font = AppTheme.fontOf(context);
+
+    // Mapear string tipo a enum local para UI
+    _TipoMovimiento tipoEnum = _TipoMovimiento.ajuste;
+    if (m.tipoMovimiento == 'entrada' || m.tipoMovimiento == 'ingreso') tipoEnum = _TipoMovimiento.entrada;
+    if (m.tipoMovimiento == 'salida_produccion' || m.tipoMovimiento == 'venta') tipoEnum = _TipoMovimiento.salidaProduccion;
+    if (m.tipoMovimiento == 'merma') tipoEnum = _TipoMovimiento.merma;
+
+    final config = _configPorTipo(context, tipoEnum);
+    final prefijo = (tipoEnum == _TipoMovimiento.entrada) ? '+' : '−';
     final horaFmt = DateFormat('h:mm a', 'es').format(m.fecha);
+
+    final articulo = articulos.firstWhere((a) => a.id == m.articuloId, orElse: () => Articulo(
+      id: '0', nombre: 'Desconocido', tipo: '', unidad: 'u', stockActual: 0, stockMinimo: 0, precioUnitario: 0, activo: false, createdAt: DateTime.now(), updatedAt: DateTime.now()
+    ));
 
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.colors.card,
+        color: colors.card,
         borderRadius: BorderRadius.circular(AppTheme.radius.lg),
-        border: Border.all(color: AppTheme.colors.border, width: 0.5),
+        border: Border.all(color: colors.border, width: 0.5),
       ),
       child: Row(
         children: [
@@ -186,18 +212,18 @@ class HistorialKardexView extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(m.insumo, style: AppTheme.font.label.copyWith(fontSize: 13)),
-                    Text('$prefijo${m.cantidad} ${m.unidad}',
-                        style: AppTheme.font.label.copyWith(fontSize: 13, color: config.colorPrincipal)),
+                    Text(articulo.nombre, style: font.label.copyWith(fontSize: 13)),
+                    Text('$prefijo${m.cantidad} ${articulo.unidad}',
+                        style: font.label.copyWith(fontSize: 13, color: config.colorPrincipal)),
                   ],
                 ),
                 const SizedBox(height: 3),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('${config.etiqueta}${m.porOCR ? ' (OCR)' : ''} · ${m.responsable}',
-                        style: AppTheme.font.caption),
-                    Text(horaFmt, style: AppTheme.font.caption),
+                    Text('${config.etiqueta}${m.porOcr ? ' (OCR)' : ''} · ${m.observacion ?? 'Sistema'}',
+                        style: font.caption),
+                    Text(horaFmt, style: font.caption),
                   ],
                 ),
               ],
@@ -208,32 +234,26 @@ class HistorialKardexView extends StatelessWidget {
     );
   }
 
-  _ConfigMovimiento _configPorTipo(_TipoMovimiento tipo) {
+  _ConfigMovimiento _configPorTipo(BuildContext context, _TipoMovimiento tipo) {
+    final colors = AppTheme.colorsOf(context);
     switch (tipo) {
       case _TipoMovimiento.entrada:
         return _ConfigMovimiento(icono: Icons.arrow_circle_down_outlined,
-            colorPrincipal: AppTheme.colors.statusNormal, colorFondo: AppTheme.colors.successLight, etiqueta: 'Entrada');
+            colorPrincipal: colors.statusNormal, colorFondo: colors.successLight, etiqueta: 'Entrada');
       case _TipoMovimiento.salidaProduccion:
         return _ConfigMovimiento(icono: Icons.arrow_circle_up_outlined,
-            colorPrincipal: AppTheme.colors.primary, colorFondo: AppTheme.colors.primaryLight, etiqueta: 'Pase a producción');
+            colorPrincipal: colors.primary, colorFondo: colors.primaryLight, etiqueta: 'Pase a producción/Venta');
       case _TipoMovimiento.merma:
         return _ConfigMovimiento(icono: Icons.delete_outline_rounded,
-            colorPrincipal: AppTheme.colors.statusCritical, colorFondo: AppTheme.colors.dangerLight, etiqueta: 'Merma');
+            colorPrincipal: colors.statusCritical, colorFondo: colors.dangerLight, etiqueta: 'Merma');
       case _TipoMovimiento.ajuste:
         return _ConfigMovimiento(icono: Icons.tune_rounded,
-            colorPrincipal: AppTheme.colors.bodyText, colorFondo: AppTheme.colors.surface, etiqueta: 'Ajuste');
+            colorPrincipal: colors.bodyText, colorFondo: colors.surface, etiqueta: 'Ajuste');
     }
   }
 }
 
 enum _TipoMovimiento { entrada, salidaProduccion, merma, ajuste }
-
-class _Movimiento {
-  final String insumo; final double cantidad; final String unidad;
-  final _TipoMovimiento tipo; final String responsable; final DateTime fecha; final bool porOCR;
-  const _Movimiento({required this.insumo, required this.cantidad, required this.unidad,
-    required this.tipo, required this.responsable, required this.fecha, required this.porOCR});
-}
 
 class _ConfigMovimiento {
   final IconData icono; final Color colorPrincipal; final Color colorFondo; final String etiqueta;

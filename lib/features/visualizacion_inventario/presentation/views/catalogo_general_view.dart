@@ -1,40 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
+import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
 import 'package:happy_oven/core/widgets/bottom_nav_bar.dart';
 
-class CatalogoGeneralView extends StatefulWidget {
+class CatalogoGeneralView extends ConsumerStatefulWidget {
   const CatalogoGeneralView({super.key});
 
   @override
-  State<CatalogoGeneralView> createState() => _CatalogoGeneralViewState();
+  ConsumerState<CatalogoGeneralView> createState() => _CatalogoGeneralViewState();
 }
 
-class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
+class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
 
-  final List<_Articulo> _insumos = [
-    _Articulo(nombre: 'Harina', stockActual: 8, stockMinimo: 20, unidad: 'kg', icono: Icons.grain_rounded),
-    _Articulo(nombre: 'Azúcar', stockActual: 15, stockMinimo: 25, unidad: 'kg', icono: Icons.store_outlined),
-    _Articulo(nombre: 'Aceite', stockActual: 12, stockMinimo: 5, unidad: 'litros', icono: Icons.water_drop_outlined),
-    _Articulo(nombre: 'Mantequilla', stockActual: 30, stockMinimo: 10, unidad: 'kg', icono: Icons.egg_outlined),
-    _Articulo(nombre: 'Levadura', stockActual: 2, stockMinimo: 8, unidad: 'kg', icono: Icons.bubble_chart_outlined),
-  ];
+  List<Articulo> _todosArticulos = [];
 
-  final List<_Articulo> _productosFinal = [
-    _Articulo(nombre: 'Pan Francés', stockActual: 120, stockMinimo: 50, unidad: 'unid.', icono: Icons.breakfast_dining_outlined),
-    _Articulo(nombre: 'Torta Tres Leches', stockActual: 4, stockMinimo: 5, unidad: 'unid.', icono: Icons.cake_outlined),
-    _Articulo(nombre: 'Croissant', stockActual: 35, stockMinimo: 20, unidad: 'unid.', icono: Icons.breakfast_dining_outlined),
-    _Articulo(nombre: 'Pan de Yema', stockActual: 8, stockMinimo: 30, unidad: 'unid.', icono: Icons.breakfast_dining_outlined),
-  ];
-
-  List<_Articulo> get _insumosFiltrados =>
-      _insumos.where((a) => a.nombre.toLowerCase().contains(_query.toLowerCase())).toList();
-  List<_Articulo> get _productosFiltrados =>
-      _productosFinal.where((a) => a.nombre.toLowerCase().contains(_query.toLowerCase())).toList();
+  List<Articulo> get _insumosFiltrados =>
+      _todosArticulos.where((a) => a.tipo == 'insumo' && a.nombre.toLowerCase().contains(_query.toLowerCase())).toList();
+  List<Articulo> get _productosFiltrados =>
+      _todosArticulos.where((a) => a.tipo == 'producto_final' && a.nombre.toLowerCase().contains(_query.toLowerCase())).toList();
 
   @override
   void initState() {
@@ -50,7 +40,7 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
     super.dispose();
   }
 
-  _EstadoStock _estadoDeArticulo(_Articulo a) {
+  _EstadoStock _estadoDeArticulo(Articulo a) {
     final ratio = a.stockActual / a.stockMinimo;
     if (ratio <= 0.5) return _EstadoStock.critico;
     if (ratio <= 1.0) return _EstadoStock.bajo;
@@ -59,13 +49,24 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(catalogoViewModelProvider);
     final rutaActual = GoRouterState.of(context).uri.path;
+
     return Scaffold(
-      backgroundColor: AppTheme.colors.bg,
+      backgroundColor: AppTheme.colorsOf(context).bg,
       body: Column(
         children: [
           _buildHeader(context),
-          Expanded(child: _buildBody()),
+          Expanded(
+            child: state.when(
+              data: (articulos) {
+                _todosArticulos = articulos;
+                return _buildBody(context);
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, _) => Center(child: Text('Error: $err', style: AppTheme.fontOf(context).body)),
+            ),
+          ),
           BottomNavBar(rutaActual: rutaActual),
         ],
       ),
@@ -73,8 +74,11 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
   }
 
   Widget _buildHeader(BuildContext context) {
+    final colors = AppTheme.colorsOf(context);
+    final font = AppTheme.fontOf(context);
+
     return Container(
-      color: AppTheme.colors.accent,
+      color: colors.accent,
       child: SafeArea(
         bottom: false,
         child: Column(
@@ -87,10 +91,10 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Catálogo', style: AppTheme.font.h3),
+                      Text('Catálogo', style: font.h3),
                       const SizedBox(height: 2),
                       Text('Maestro de artículos',
-                          style: AppTheme.font.caption.copyWith(color: AppTheme.colors.accentDark)),
+                          style: font.caption.copyWith(color: colors.accentDark)),
                     ],
                   ),
                   GestureDetector(
@@ -98,15 +102,15 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                       decoration: BoxDecoration(
-                        color: AppTheme.colors.titleText,
+                        color: colors.titleText,
                         borderRadius: AppTheme.radius.brSm,
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.add_rounded, color: AppTheme.colors.accent, size: 16),
+                          Icon(Icons.add_rounded, color: colors.accent, size: 16),
                           const SizedBox(width: 6),
-                          Text('Nuevo', style: AppTheme.font.label.copyWith(
-                            color: AppTheme.colors.accent, fontSize: 13)),
+                          Text('Nuevo', style: font.label.copyWith(
+                            color: colors.accent, fontSize: 13)),
                         ],
                       ),
                     ),
@@ -118,17 +122,17 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppTheme.colors.card,
+                  color: colors.card,
                   borderRadius: AppTheme.radius.brSm,
                 ),
                 child: TextField(
                   controller: _searchController,
-                  style: AppTheme.font.bodySmall.copyWith(
-                    fontSize: 13, color: AppTheme.colors.titleText),
+                  style: font.bodySmall.copyWith(
+                    fontSize: 13, color: colors.titleText),
                   decoration: InputDecoration(
                     hintText: 'Buscar artículo...',
-                    hintStyle: AppTheme.font.hint.copyWith(fontSize: 13),
-                    prefixIcon: Icon(Icons.search_rounded, color: AppTheme.colors.hint, size: 18),
+                    hintStyle: font.hint.copyWith(fontSize: 13),
+                    prefixIcon: Icon(Icons.search_rounded, color: colors.hint, size: 18),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   ),
@@ -137,13 +141,13 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
             ),
             TabBar(
               controller: _tabController,
-              labelColor: AppTheme.colors.titleText,
-              unselectedLabelColor: AppTheme.colors.hint,
-              labelStyle: AppTheme.font.label.copyWith(fontSize: 13),
-              unselectedLabelStyle: AppTheme.font.bodySmall.copyWith(fontSize: 13),
-              indicatorColor: AppTheme.colors.titleText,
+              labelColor: colors.titleText,
+              unselectedLabelColor: colors.hint,
+              labelStyle: font.label.copyWith(fontSize: 13),
+              unselectedLabelStyle: font.bodySmall.copyWith(fontSize: 13),
+              indicatorColor: colors.titleText,
               indicatorWeight: 2.5,
-              dividerColor: AppTheme.colors.border,
+              dividerColor: colors.border,
               tabs: const [Tab(text: 'Insumos'), Tab(text: 'Productos finales')],
             ),
           ],
@@ -152,10 +156,10 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.colors.bg,
+        color: AppTheme.colorsOf(context).bg,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(AppTheme.radius.xl),
           topRight: Radius.circular(AppTheme.radius.xl),
@@ -169,35 +173,66 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
         ),
         child: TabBarView(
           controller: _tabController,
-          children: [_buildLista(_insumosFiltrados), _buildLista(_productosFiltrados)],
+          children: [_buildLista(context, _insumosFiltrados), _buildLista(context, _productosFiltrados)],
         ),
       ),
     );
   }
 
-  Widget _buildLista(List<_Articulo> articulos) {
+  Widget _buildLista(BuildContext context, List<Articulo> articulos) {
     if (articulos.isEmpty) {
-      return Center(child: Text('Sin resultados', style: AppTheme.font.hint.copyWith(fontSize: 13)));
+      return Center(child: Text('Sin resultados', style: AppTheme.fontOf(context).hint.copyWith(fontSize: 13)));
     }
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(14, 20, 14, 8),
       itemCount: articulos.length,
       separatorBuilder: (_, __) => const SizedBox(height: 10),
-      itemBuilder: (context, index) => _buildTarjetaArticulo(articulos[index]),
+      itemBuilder: (context, index) => _buildTarjetaArticulo(context, articulos[index]),
     );
   }
 
-  Widget _buildTarjetaArticulo(_Articulo articulo) {
+  void _eliminarArticulo(BuildContext context, String id) async {
+    final conf = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Eliminar artículo'),
+        content: const Text('¿Estás seguro de eliminar este artículo del inventario? Esta acción no se puede deshacer.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancelar')),
+          TextButton(onPressed: () => Navigator.pop(c, true), child: Text('Eliminar', style: TextStyle(color: AppTheme.colorsOf(context).statusCritical))),
+        ],
+      ),
+    );
+
+    if (conf == true) {
+      final exito = await ref.read(catalogoViewModelProvider.notifier).eliminarArticulo(id);
+      if (mounted) {
+        if (exito) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('Artículo eliminado'), backgroundColor: AppTheme.colorsOf(context).statusCritical));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('Error al eliminar'), backgroundColor: AppTheme.colorsOf(context).statusCritical));
+        }
+      }
+    }
+  }
+
+  Widget _buildTarjetaArticulo(BuildContext context, Articulo articulo) {
     final estado = _estadoDeArticulo(articulo);
-    final config = _configPorEstado(estado);
+    final config = _configPorEstado(context, estado);
+    final font = AppTheme.fontOf(context);
+    final colors = AppTheme.colorsOf(context);
+    
+    // Icono basado en el tipo
+    final icono = articulo.tipo == 'insumo' ? Icons.inventory_2_outlined : Icons.breakfast_dining_outlined;
+
     final ratio = (articulo.stockActual / articulo.stockMinimo).clamp(0.0, 1.0);
 
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.colors.card,
+        color: colors.card,
         borderRadius: BorderRadius.circular(AppTheme.radius.lg),
-        border: Border.all(color: AppTheme.colors.border, width: 0.5),
+        border: Border.all(color: colors.border, width: 0.5),
       ),
       child: Row(
         children: [
@@ -207,7 +242,7 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
               color: config.colorFondo,
               borderRadius: AppTheme.radius.brMd,
             ),
-            child: Icon(articulo.icono, color: config.colorPrincipal, size: 22),
+            child: Icon(icono, color: config.colorPrincipal, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -217,16 +252,37 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(articulo.nombre, style: AppTheme.font.label.copyWith(fontSize: 13)),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: config.colorFondo,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(config.etiqueta,
-                          style: AppTheme.font.caption.copyWith(
-                            fontWeight: FontWeight.w500, color: config.colorPrincipal)),
+                    Text(articulo.nombre, style: font.label.copyWith(fontSize: 13)),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: config.colorFondo,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(config.etiqueta,
+                              style: font.caption.copyWith(
+                                fontWeight: FontWeight.w500, color: config.colorPrincipal)),
+                        ),
+                        const SizedBox(width: 4),
+                        // Menú popup para editar y eliminar
+                        PopupMenuButton<String>(
+                          icon: Icon(Icons.more_vert_rounded, color: colors.hint, size: 18),
+                          padding: EdgeInsets.zero,
+                          onSelected: (val) {
+                            if (val == 'editar') {
+                              context.go('/catalogo/nuevo', extra: articulo);
+                            } else if (val == 'eliminar') {
+                              _eliminarArticulo(context, articulo.id);
+                            }
+                          },
+                          itemBuilder: (context) => [
+                            PopupMenuItem(value: 'editar', child: Row(children: [Icon(Icons.edit_outlined, size: 18, color: colors.primary), const SizedBox(width: 8), Text('Editar', style: font.bodySmall)])),
+                            PopupMenuItem(value: 'eliminar', child: Row(children: [Icon(Icons.delete_outline, size: 18, color: colors.statusCritical), const SizedBox(width: 8), Text('Eliminar', style: font.bodySmall.copyWith(color: colors.statusCritical))])),
+                          ],
+                        )
+                      ],
                     ),
                   ],
                 ),
@@ -236,7 +292,7 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
                   children: [
                     RichText(
                       text: TextSpan(
-                        style: AppTheme.font.caption,
+                        style: font.caption,
                         children: [
                           const TextSpan(text: 'Stock: '),
                           TextSpan(
@@ -247,7 +303,7 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
                         ],
                       ),
                     ),
-                    Text(articulo.unidad, style: AppTheme.font.caption),
+                    Text(articulo.unidad, style: font.caption),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -255,7 +311,7 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
                   borderRadius: BorderRadius.circular(AppTheme.radius.full),
                   child: LinearProgressIndicator(
                     value: ratio, minHeight: 4,
-                    backgroundColor: AppTheme.colors.surface,
+                    backgroundColor: colors.surface,
                     valueColor: AlwaysStoppedAnimation<Color>(config.colorPrincipal),
                   ),
                 ),
@@ -267,32 +323,23 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
     );
   }
 
-  _ConfigEstado _configPorEstado(_EstadoStock estado) {
+  _ConfigEstado _configPorEstado(BuildContext context, _EstadoStock estado) {
+    final colors = AppTheme.colorsOf(context);
     switch (estado) {
       case _EstadoStock.critico:
         return _ConfigEstado(etiqueta: 'Crítico',
-            colorPrincipal: AppTheme.colors.statusCritical, colorFondo: AppTheme.colors.dangerLight);
+            colorPrincipal: colors.statusCritical, colorFondo: colors.dangerLight);
       case _EstadoStock.bajo:
         return _ConfigEstado(etiqueta: 'Bajo',
-            colorPrincipal: AppTheme.colors.primary, colorFondo: AppTheme.colors.primaryLight);
+            colorPrincipal: colors.primary, colorFondo: colors.primaryLight);
       case _EstadoStock.normal:
         return _ConfigEstado(etiqueta: 'Normal',
-            colorPrincipal: AppTheme.colors.statusNormal, colorFondo: AppTheme.colors.successLight);
+            colorPrincipal: colors.statusNormal, colorFondo: colors.successLight);
     }
   }
 }
 
 enum _EstadoStock { critico, bajo, normal }
-
-class _Articulo {
-  final String nombre;
-  final double stockActual;
-  final double stockMinimo;
-  final String unidad;
-  final IconData icono;
-  const _Articulo({required this.nombre, required this.stockActual,
-    required this.stockMinimo, required this.unidad, required this.icono});
-}
 
 class _ConfigEstado {
   final String etiqueta;

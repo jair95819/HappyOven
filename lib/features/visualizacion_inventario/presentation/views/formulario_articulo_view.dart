@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
+import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
 
-class FormularioArticuloView extends StatefulWidget {
-  const FormularioArticuloView({super.key});
+class FormularioArticuloView extends ConsumerStatefulWidget {
+  final Articulo? articulo;
+  
+  const FormularioArticuloView({super.key, this.articulo});
 
   @override
-  State<FormularioArticuloView> createState() => _FormularioArticuloViewState();
+  ConsumerState<FormularioArticuloView> createState() => _FormularioArticuloViewState();
 }
 
-class _FormularioArticuloViewState extends State<FormularioArticuloView> {
+class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView> {
   final _formKey = GlobalKey<FormState>();
   final _nombreController = TextEditingController();
   final _stockMinimoController = TextEditingController();
@@ -21,6 +26,19 @@ class _FormularioArticuloViewState extends State<FormularioArticuloView> {
   final List<String> _unidades = ['kg', 'litros', 'unidades', 'gramos', 'ml'];
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.articulo != null) {
+      final a = widget.articulo!;
+      _nombreController.text = a.nombre;
+      _stockMinimoController.text = a.stockMinimo.toString();
+      _stockInicialController.text = a.stockActual.toString();
+      _tipoSeleccionado = a.tipo == 'insumo' ? _TipoArticulo.insumo : _TipoArticulo.productoFinal;
+      _unidadSeleccionada = a.unidad;
+    }
+  }
+
+  @override
   void dispose() {
     _nombreController.dispose();
     _stockMinimoController.dispose();
@@ -28,18 +46,49 @@ class _FormularioArticuloViewState extends State<FormularioArticuloView> {
     super.dispose();
   }
 
-  void _guardar() {
+  void _guardar() async {
     if (_formKey.currentState!.validate()) {
-      // TODO: conectar con InventarioViewModel → guardarArticulo()
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Artículo guardado correctamente'),
-          backgroundColor: AppTheme.colors.primary,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: AppTheme.radius.brSm),
-        ),
+      final nuevoArticulo = Articulo(
+        id: widget.articulo?.id ?? '', // Si tiene ID, se actualiza, si no, se crea
+        nombre: _nombreController.text.trim(),
+        tipo: _tipoSeleccionado == _TipoArticulo.insumo ? 'insumo' : 'producto_final',
+        unidad: _unidadSeleccionada,
+        stockActual: double.parse(_stockInicialController.text),
+        stockMinimo: double.parse(_stockMinimoController.text),
+        precioUnitario: widget.articulo?.precioUnitario ?? 0.0,
+        activo: widget.articulo?.activo ?? true,
+        createdAt: widget.articulo?.createdAt ?? DateTime.now(),
+        updatedAt: DateTime.now(),
       );
+
+      final error = await ref.read(catalogoViewModelProvider.notifier).guardarArticulo(nuevoArticulo);
+
+      if (error == null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Artículo guardado correctamente'),
+            backgroundColor: AppTheme.colorsOf(context).primary,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: AppTheme.radius.brSm),
+          ),
+        );
+        _retroceder();
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al guardar: $error'),
+            backgroundColor: AppTheme.colorsOf(context).statusCritical,
+          ),
+        );
+      }
+    }
+  }
+
+  void _retroceder() {
+    if (context.canPop()) {
       context.pop();
+    } else {
+      context.go('/catalogo');
     }
   }
 
@@ -66,7 +115,7 @@ class _FormularioArticuloViewState extends State<FormularioArticuloView> {
           child: Row(
             children: [
               GestureDetector(
-                onTap: () => context.pop(),
+                onTap: _retroceder,
                 child: Container(
                   width: 36, height: 36,
                   decoration: BoxDecoration(
@@ -80,9 +129,9 @@ class _FormularioArticuloViewState extends State<FormularioArticuloView> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Nuevo artículo', style: AppTheme.font.h3),
+                  Text(widget.articulo == null ? 'Nuevo artículo' : 'Editar artículo', style: AppTheme.font.h3),
                   const SizedBox(height: 2),
-                  Text('Completa los datos del artículo',
+                  Text(widget.articulo == null ? 'Completa los datos del artículo' : 'Actualiza los datos del artículo',
                       style: AppTheme.font.caption.copyWith(color: AppTheme.colors.accentDark)),
                 ],
               ),

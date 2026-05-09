@@ -40,6 +40,7 @@ CREATE TABLE articulos (
 CREATE TABLE recetas (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     nombre TEXT NOT NULL,
+    producto_id UUID REFERENCES articulos(id) ON DELETE SET NULL,
     rendimiento_unidades INT NOT NULL DEFAULT 1,
     tiempo_produccion_min INT NOT NULL DEFAULT 60,
     costo_lote NUMERIC NOT NULL DEFAULT 0,

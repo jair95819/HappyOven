@@ -1,27 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:happy_oven/core/theme/theme.dart';
+import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/movimiento.dart';
+import 'package:happy_oven/core/services/ocr_service.dart';
+import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
+import 'package:happy_oven/features/registro_movimientos/presentation/viewmodels/movimientos_viewmodel.dart';
+import 'package:happy_oven/features/auth/presentation/viewmodels/auth_viewmodel.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
+import 'dart:io';
 
-class IngresoOcrView extends StatefulWidget {
+class IngresoOcrView extends ConsumerStatefulWidget {
   const IngresoOcrView({super.key});
 
   @override
-  State<IngresoOcrView> createState() => _IngresoOcrViewState();
+  ConsumerState<IngresoOcrView> createState() => _IngresoOcrViewState();
 }
 
-class _IngresoOcrViewState extends State<IngresoOcrView> {
+class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
   bool _mostrandoConfirmacion = false;
+  bool _procesando = false;
+  String _textoOcrRaw = '';
 
-  final _proveedorController = TextEditingController(text: 'Molinos del Norte S.A.');
-  final _fechaController = TextEditingController(text: '07/05/2026');
+  final _proveedorController = TextEditingController(text: '');
+  final _fechaController = TextEditingController(text: DateFormat('dd/MM/yyyy').format(DateTime.now()));
+  final _ocrService = OcrService();
+  final _imagePicker = ImagePicker();
 
-  final List<_ItemOCR> _items = [
-    _ItemOCR(nombre: 'Harina de trigo', cantidad: 50, unidad: 'kg', precioUnitario: 2.80),
-    _ItemOCR(nombre: 'Mantequilla', cantidad: 20, unidad: 'kg', precioUnitario: 8.50),
-    _ItemOCR(nombre: 'Huevos', cantidad: 180, unidad: 'unid.', precioUnitario: 0.35),
-    _ItemOCR(nombre: 'Azúcar', cantidad: 25, unidad: 'kg', precioUnitario: 3.20),
-  ];
+  List<_ItemOCR> _items = [];
+  List<Articulo> _articulosDisponibles = [];
 
   double get _totalBoleta => _items.fold(0, (sum, i) => sum + (i.cantidad * i.precioUnitario));
   final List<String> _unidades = ['kg', 'litros', 'unidades', 'gramos', 'ml'];
@@ -30,27 +40,99 @@ class _IngresoOcrViewState extends State<IngresoOcrView> {
   void dispose() {
     _proveedorController.dispose();
     _fechaController.dispose();
+    _ocrService.dispose();
     super.dispose();
   }
 
-  void _simularEscaneo() {
-    setState(() => _mostrandoConfirmacion = true);
+  Future<void> _escanear(ImageSource source) async {
+    final picked = await _imagePicker.pickImage(source: source, imageQuality: 85);
+    if (picked == null) return;
+
+    setState(() => _procesando = true);
+
+    try {
+      final file = File(picked.path);
+      final textoRaw = await _ocrService.reconocerTexto(file);
+      _textoOcrRaw = textoRaw;
+
+      final ocrItems = _ocrService.parsearBoleta(textoRaw);
+
+      final listaItems = ocrItems.map((o) {
+        final item = _ItemOCR(
+          nombreRaw: o.nombreRaw,
+          cantidad: o.cantidad,
+          unidad: o.unidad,
+          precioUnitario: o.precioUnitario,
+        );
+        // Auto-enlazar por nombre parcial
+        try {
+          item.articulo = _articulosDisponibles.firstWhere(
+            (a) => a.nombre.toLowerCase().contains(o.nombreRaw.toLowerCase().split(' ').first));
+          item.unidad = item.articulo!.unidad;
+        } catch (_) {}
+        return item;
+      }).toList();
+
+      setState(() {
+        _items = listaItems;
+        _mostrandoConfirmacion = true;
+        _procesando = false;
+      });
+
+      if (listaItems.isEmpty && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text('No se detectaron items. Agrégalos manualmente.'),
+          backgroundColor: AppTheme.colorsOf(context).primary,
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    } catch (e) {
+      setState(() => _procesando = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Error al procesar imagen: $e'),
+          backgroundColor: AppTheme.colorsOf(context).statusCritical,
+        ));
+      }
+    }
   }
 
-  void _confirmarTodo() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${_items.length} insumos registrados correctamente'),
-        backgroundColor: AppTheme.colors.statusNormal,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: AppTheme.radius.brSm),
-      ),
-    );
-    context.pop();
+  void _confirmarTodo() async {
+    final user = ref.read(authViewModelProvider).usuario;
+    if (user == null) return;
+
+    if (_items.any((i) => i.articulo == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Todos los ítems deben estar enlazados a un artículo'), backgroundColor: AppTheme.colorsOf(context).statusCritical));
+      return;
+    }
+
+    for (final item in _items) {
+      final articulo = item.articulo!;
+      final mov = Movimiento(
+        id: '', articuloId: articulo.id, usuarioId: user.id,
+        tipoMovimiento: 'entrada', cantidad: item.cantidad,
+        precioUnitario: item.precioUnitario, proveedor: _proveedorController.text.trim(),
+        porOcr: true, fecha: DateTime.now(),
+      );
+      final nuevoStock = articulo.stockActual + item.cantidad;
+      await ref.read(movimientosViewModelProvider.notifier).registrarMovimiento(mov, articulo, nuevoStock);
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${_items.length} insumos registrados correctamente'),
+          backgroundColor: AppTheme.colorsOf(context).statusNormal,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: AppTheme.radius.brSm),
+        ),
+      );
+      context.pop();
+    }
   }
 
   void _agregarItem() {
-    setState(() => _items.add(_ItemOCR(nombre: '', cantidad: 0, unidad: 'kg', precioUnitario: 0)));
+    setState(() => _items.add(_ItemOCR(nombreRaw: 'Nuevo insumo', cantidad: 0, unidad: 'kg', precioUnitario: 0)));
   }
 
   void _eliminarItem(int index) {
@@ -59,8 +141,11 @@ class _IngresoOcrViewState extends State<IngresoOcrView> {
 
   @override
   Widget build(BuildContext context) {
+    final catalogoState = ref.watch(catalogoViewModelProvider);
+    _articulosDisponibles = catalogoState.value ?? [];
+
     return Scaffold(
-      backgroundColor: _mostrandoConfirmacion ? AppTheme.colors.bg : const Color(0xFF1A1A1A),
+      backgroundColor: _mostrandoConfirmacion ? AppTheme.colorsOf(context).bg : const Color(0xFF1A1A1A),
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
         child: _mostrandoConfirmacion ? _buildConfirmacion(context) : _buildCamara(context),
@@ -147,47 +232,70 @@ class _IngresoOcrViewState extends State<IngresoOcrView> {
             ),
           ),
         ),
-        Container(
-          color: const Color(0xFF1A1A1A),
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Container(
-                width: 42, height: 42,
-                decoration: BoxDecoration(
-                  borderRadius: AppTheme.radius.brMd,
-                  border: Border.all(color: const Color(0xFF444444), width: 0.5),
-                ),
-                child: Icon(Icons.photo_library_outlined, color: Colors.white.withValues(alpha: 0.6), size: 20),
-              ),
-              GestureDetector(
-                onTap: _simularEscaneo,
-                child: Container(
-                  width: 64, height: 64,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppTheme.colors.primary, width: 3),
+        if (_procesando)
+          Container(
+            color: const Color(0xFF1A1A1A),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+            child: Column(children: [
+              const CircularProgressIndicator(color: Colors.white),
+              const SizedBox(height: 12),
+              Text('Procesando OCR...', style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 13)),
+            ]),
+          )
+        else
+          Container(
+            color: const Color(0xFF1A1A1A),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                GestureDetector(
+                  onTap: () => _escanear(ImageSource.gallery),
+                  child: Container(
+                    width: 42, height: 42,
+                    decoration: BoxDecoration(
+                      borderRadius: AppTheme.radius.brMd,
+                      border: Border.all(color: const Color(0xFF444444), width: 0.5),
+                    ),
+                    child: Icon(Icons.photo_library_outlined, color: Colors.white.withValues(alpha: 0.6), size: 20),
                   ),
-                  child: Center(
-                    child: Container(
-                      width: 50, height: 50,
-                      decoration: BoxDecoration(color: AppTheme.colors.primary, shape: BoxShape.circle),
+                ),
+                GestureDetector(
+                  onTap: () => _escanear(ImageSource.camera),
+                  child: Container(
+                    width: 64, height: 64,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppTheme.colorsOf(context).primary, width: 3),
+                    ),
+                    child: Center(
+                      child: Container(
+                        width: 50, height: 50,
+                        decoration: BoxDecoration(color: AppTheme.colorsOf(context).primary, shape: BoxShape.circle),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Container(
-                width: 42, height: 42,
-                decoration: BoxDecoration(
-                  borderRadius: AppTheme.radius.brMd,
-                  border: Border.all(color: const Color(0xFF444444), width: 0.5),
+                GestureDetector(
+                  onTap: () {
+                    // Ingreso manual sin escaneo
+                    setState(() {
+                      _items = [];
+                      _mostrandoConfirmacion = true;
+                    });
+                  },
+                  child: Container(
+                    width: 42, height: 42,
+                    decoration: BoxDecoration(
+                      borderRadius: AppTheme.radius.brMd,
+                      border: Border.all(color: const Color(0xFF444444), width: 0.5),
+                    ),
+                    child: Icon(Icons.edit_note_outlined, color: Colors.white.withValues(alpha: 0.6), size: 20),
+                  ),
                 ),
-                child: Icon(Icons.bolt_outlined, color: Colors.white.withValues(alpha: 0.6), size: 20),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
       ],
     );
   }
@@ -429,17 +537,28 @@ class _IngresoOcrViewState extends State<IngresoOcrView> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: TextFormField(
-                  initialValue: item.nombre,
-                  style: AppTheme.font.label.copyWith(fontSize: 12),
-                  decoration: InputDecoration(
-                    hintText: 'Nombre del insumo',
-                    hintStyle: AppTheme.font.hint.copyWith(fontSize: 12),
-                    border: InputBorder.none, isDense: true, contentPadding: EdgeInsets.zero,
+                child: GestureDetector(
+                  onTap: () => _mostrarSelectorArticulo(index),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.colorsOf(context).surface,
+                      borderRadius: AppTheme.radius.brSm,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(item.articulo?.nombre ?? 'Seleccionar artículo...',
+                            style: AppTheme.fontOf(context).label.copyWith(
+                                fontSize: 13,
+                                color: item.articulo == null ? AppTheme.colorsOf(context).statusCritical : AppTheme.colorsOf(context).titleText)),
+                        Icon(Icons.keyboard_arrow_down_rounded, color: AppTheme.colorsOf(context).hint, size: 16),
+                      ],
+                    ),
                   ),
-                  onChanged: (v) => item.nombre = v,
                 ),
               ),
+              const SizedBox(width: 8),
               GestureDetector(
                 onTap: () => _eliminarItem(index),
                 child: Container(
@@ -544,7 +663,7 @@ class _IngresoOcrViewState extends State<IngresoOcrView> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Seleccionar unidad', style: AppTheme.font.h3.copyWith(fontSize: 15)),
+            Text('Seleccionar unidad', style: AppTheme.fontOf(context).h3.copyWith(fontSize: 15)),
             const SizedBox(height: 16),
             Wrap(
               spacing: 8, runSpacing: 8,
@@ -558,14 +677,14 @@ class _IngresoOcrViewState extends State<IngresoOcrView> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: activo ? AppTheme.colors.titleText : AppTheme.colors.surface,
+                      color: activo ? AppTheme.colorsOf(context).titleText : AppTheme.colorsOf(context).surface,
                       borderRadius: BorderRadius.circular(AppTheme.radius.full),
                       border: Border.all(
-                        color: activo ? AppTheme.colors.titleText : AppTheme.colors.border, width: 0.5),
+                        color: activo ? AppTheme.colorsOf(context).titleText : AppTheme.colorsOf(context).border, width: 0.5),
                     ),
-                    child: Text(u, style: AppTheme.font.bodySmall.copyWith(fontSize: 13,
+                    child: Text(u, style: AppTheme.fontOf(context).bodySmall.copyWith(fontSize: 13,
                       fontWeight: activo ? FontWeight.w500 : FontWeight.normal,
-                      color: activo ? AppTheme.colors.white : AppTheme.colors.hint)),
+                      color: activo ? AppTheme.colorsOf(context).white : AppTheme.colorsOf(context).hint)),
                   ),
                 );
               }).toList(),
@@ -575,12 +694,50 @@ class _IngresoOcrViewState extends State<IngresoOcrView> {
       ),
     );
   }
+
+  void _mostrarSelectorArticulo(int index) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radius.xl))),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Enlazar con artículo', style: AppTheme.fontOf(context).h3.copyWith(fontSize: 15)),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _articulosDisponibles.length,
+                itemBuilder: (context, i) {
+                  final a = _articulosDisponibles[i];
+                  return ListTile(
+                    title: Text(a.nombre, style: AppTheme.fontOf(context).bodySmall),
+                    subtitle: Text('Stock actual: ${a.stockActual} ${a.unidad}', style: AppTheme.fontOf(context).caption),
+                    onTap: () {
+                      setState(() {
+                        _items[index].articulo = a;
+                        _items[index].unidad = a.unidad;
+                      });
+                      Navigator.pop(context);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _ItemOCR {
-  String nombre;
+  Articulo? articulo;
+  String nombreRaw;
   double cantidad;
   String unidad;
   double precioUnitario;
-  _ItemOCR({required this.nombre, required this.cantidad, required this.unidad, required this.precioUnitario});
+  _ItemOCR({this.articulo, required this.nombreRaw, required this.cantidad, required this.unidad, required this.precioUnitario});
 }

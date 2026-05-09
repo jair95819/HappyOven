@@ -49,4 +49,20 @@ class AlertasRepository {
         .update({'leida': true})
         .eq('id', id);
   }
+
+  // Marcar todas las alertas como leídas
+  Future<void> marcarTodasComoLeidas() async {
+    await _supabaseService.client
+        .from('alertas')
+        .update({'leida': true})
+        .eq('leida', false);
+  }
+
+  // Eliminar una alerta
+  Future<void> deleteAlerta(String id) async {
+    await _supabaseService.client
+        .from('alertas')
+        .delete()
+        .eq('id', id);
+  }
 }
