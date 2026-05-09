@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/core/widgets/bottom_nav_bar.dart';
 
 class CatalogoGeneralView extends StatefulWidget {
@@ -11,108 +12,35 @@ class CatalogoGeneralView extends StatefulWidget {
 
 class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
     with SingleTickerProviderStateMixin {
-  static const _olive = Color(0xFFC8CA9E);
-  static const _oliveDark = Color(0xFF4A4A38);
-  static const _orange = Color(0xFFFF8C42);
-  static const _beige = Color(0xFFF5F0E8);
-  static const _beigeDeep = Color(0xFFEDE5D6);
-  static const _textDark = Color(0xFF2C2C2A);
-  static const _textMuted = Color(0xFFBFB5A0);
-  static const _danger = Color(0xFFA32D2D);
-  static const _dangerLight = Color(0xFFFCEBEB);
-  static const _success = Color(0xFF3B6D11);
-  static const _successLight = Color(0xFFEAF3DE);
-  static const _orangeLight = Color(0xFFFFF3EB);
-
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
 
-  // Datos de ejemplo — luego vendrán del ViewModel
   final List<_Articulo> _insumos = [
-    _Articulo(
-      nombre: 'Harina',
-      stockActual: 8,
-      stockMinimo: 20,
-      unidad: 'kg',
-      icono: Icons.grain_rounded,
-    ),
-    _Articulo(
-      nombre: 'Azúcar',
-      stockActual: 15,
-      stockMinimo: 25,
-      unidad: 'kg',
-      icono: Icons.store_outlined,
-    ),
-    _Articulo(
-      nombre: 'Aceite',
-      stockActual: 12,
-      stockMinimo: 5,
-      unidad: 'litros',
-      icono: Icons.water_drop_outlined,
-    ),
-    _Articulo(
-      nombre: 'Mantequilla',
-      stockActual: 30,
-      stockMinimo: 10,
-      unidad: 'kg',
-      icono: Icons.egg_outlined,
-    ),
-    _Articulo(
-      nombre: 'Levadura',
-      stockActual: 2,
-      stockMinimo: 8,
-      unidad: 'kg',
-      icono: Icons.bubble_chart_outlined,
-    ),
+    _Articulo(nombre: 'Harina', stockActual: 8, stockMinimo: 20, unidad: 'kg', icono: Icons.grain_rounded),
+    _Articulo(nombre: 'Azúcar', stockActual: 15, stockMinimo: 25, unidad: 'kg', icono: Icons.store_outlined),
+    _Articulo(nombre: 'Aceite', stockActual: 12, stockMinimo: 5, unidad: 'litros', icono: Icons.water_drop_outlined),
+    _Articulo(nombre: 'Mantequilla', stockActual: 30, stockMinimo: 10, unidad: 'kg', icono: Icons.egg_outlined),
+    _Articulo(nombre: 'Levadura', stockActual: 2, stockMinimo: 8, unidad: 'kg', icono: Icons.bubble_chart_outlined),
   ];
 
   final List<_Articulo> _productosFinal = [
-    _Articulo(
-      nombre: 'Pan Francés',
-      stockActual: 120,
-      stockMinimo: 50,
-      unidad: 'unid.',
-      icono: Icons.breakfast_dining_outlined,
-    ),
-    _Articulo(
-      nombre: 'Torta Tres Leches',
-      stockActual: 4,
-      stockMinimo: 5,
-      unidad: 'unid.',
-      icono: Icons.cake_outlined,
-    ),
-    _Articulo(
-      nombre: 'Croissant',
-      stockActual: 35,
-      stockMinimo: 20,
-      unidad: 'unid.',
-      icono: Icons.breakfast_dining_outlined,
-    ),
-    _Articulo(
-      nombre: 'Pan de Yema',
-      stockActual: 8,
-      stockMinimo: 30,
-      unidad: 'unid.',
-      icono: Icons.breakfast_dining_outlined,
-    ),
+    _Articulo(nombre: 'Pan Francés', stockActual: 120, stockMinimo: 50, unidad: 'unid.', icono: Icons.breakfast_dining_outlined),
+    _Articulo(nombre: 'Torta Tres Leches', stockActual: 4, stockMinimo: 5, unidad: 'unid.', icono: Icons.cake_outlined),
+    _Articulo(nombre: 'Croissant', stockActual: 35, stockMinimo: 20, unidad: 'unid.', icono: Icons.breakfast_dining_outlined),
+    _Articulo(nombre: 'Pan de Yema', stockActual: 8, stockMinimo: 30, unidad: 'unid.', icono: Icons.breakfast_dining_outlined),
   ];
 
-  List<_Articulo> get _insumosFiltrados => _insumos
-      .where((a) => a.nombre.toLowerCase().contains(_query.toLowerCase()))
-      .toList();
-
-  List<_Articulo> get _productosFiltrados => _productosFinal
-      .where((a) => a.nombre.toLowerCase().contains(_query.toLowerCase()))
-      .toList();
+  List<_Articulo> get _insumosFiltrados =>
+      _insumos.where((a) => a.nombre.toLowerCase().contains(_query.toLowerCase())).toList();
+  List<_Articulo> get _productosFiltrados =>
+      _productosFinal.where((a) => a.nombre.toLowerCase().contains(_query.toLowerCase())).toList();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _searchController.addListener(
-      () => setState(() => _query = _searchController.text),
-    );
+    _searchController.addListener(() => setState(() => _query = _searchController.text));
   }
 
   @override
@@ -133,7 +61,7 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
   Widget build(BuildContext context) {
     final rutaActual = GoRouterState.of(context).uri.path;
     return Scaffold(
-      backgroundColor: _beige,
+      backgroundColor: AppTheme.colors.bg,
       body: Column(
         children: [
           _buildHeader(context),
@@ -144,10 +72,9 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
     );
   }
 
-  // ── Header oliva
   Widget _buildHeader(BuildContext context) {
     return Container(
-      color: _olive,
+      color: AppTheme.colors.accent,
       child: SafeArea(
         bottom: false,
         child: Column(
@@ -160,45 +87,26 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Catálogo',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500,
-                          color: _textDark,
-                        ),
-                      ),
+                      Text('Catálogo', style: AppTheme.font.h3),
                       const SizedBox(height: 2),
-                      Text(
-                        'Maestro de artículos',
-                        style: TextStyle(fontSize: 12, color: _oliveDark),
-                      ),
+                      Text('Maestro de artículos',
+                          style: AppTheme.font.caption.copyWith(color: AppTheme.colors.accentDark)),
                     ],
                   ),
-                  // Botón nuevo
                   GestureDetector(
                     onTap: () => context.go('/catalogo/nuevo'),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 9,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                       decoration: BoxDecoration(
-                        color: _textDark,
-                        borderRadius: BorderRadius.circular(10),
+                        color: AppTheme.colors.titleText,
+                        borderRadius: AppTheme.radius.brSm,
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.add_rounded, color: _olive, size: 16),
+                          Icon(Icons.add_rounded, color: AppTheme.colors.accent, size: 16),
                           const SizedBox(width: 6),
-                          Text(
-                            'Nuevo',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: _olive,
-                            ),
-                          ),
+                          Text('Nuevo', style: AppTheme.font.label.copyWith(
+                            color: AppTheme.colors.accent, fontSize: 13)),
                         ],
                       ),
                     ),
@@ -206,53 +114,37 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
                 ],
               ),
             ),
-
-            // Buscador
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
+                  color: AppTheme.colors.card,
+                  borderRadius: AppTheme.radius.brSm,
                 ),
                 child: TextField(
                   controller: _searchController,
-                  style: TextStyle(fontSize: 13, color: _textDark),
+                  style: AppTheme.font.bodySmall.copyWith(
+                    fontSize: 13, color: AppTheme.colors.titleText),
                   decoration: InputDecoration(
                     hintText: 'Buscar artículo...',
-                    hintStyle: TextStyle(fontSize: 13, color: _textMuted),
-                    prefixIcon: Icon(
-                      Icons.search_rounded,
-                      color: _textMuted,
-                      size: 18,
-                    ),
+                    hintStyle: AppTheme.font.hint.copyWith(fontSize: 13),
+                    prefixIcon: Icon(Icons.search_rounded, color: AppTheme.colors.hint, size: 18),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   ),
                 ),
               ),
             ),
-
-            // Tabs
             TabBar(
               controller: _tabController,
-              labelColor: _textDark,
-              unselectedLabelColor: _textMuted,
-              labelStyle: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-              unselectedLabelStyle: const TextStyle(fontSize: 13),
-              indicatorColor: _textDark,
+              labelColor: AppTheme.colors.titleText,
+              unselectedLabelColor: AppTheme.colors.hint,
+              labelStyle: AppTheme.font.label.copyWith(fontSize: 13),
+              unselectedLabelStyle: AppTheme.font.bodySmall.copyWith(fontSize: 13),
+              indicatorColor: AppTheme.colors.titleText,
               indicatorWeight: 2.5,
-              dividerColor: _textMuted.withOpacity(0.3),
-              tabs: const [
-                Tab(text: 'Insumos'),
-                Tab(text: 'Productos finales'),
-              ],
+              dividerColor: AppTheme.colors.border,
+              tabs: const [Tab(text: 'Insumos'), Tab(text: 'Productos finales')],
             ),
           ],
         ),
@@ -260,28 +152,24 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
     );
   }
 
-  // ── Cuerpo con tabs
   Widget _buildBody() {
     return Container(
-      decoration: const BoxDecoration(
-        color: _beige,
+      decoration: BoxDecoration(
+        color: AppTheme.colors.bg,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+          topLeft: Radius.circular(AppTheme.radius.xl),
+          topRight: Radius.circular(AppTheme.radius.xl),
         ),
       ),
       transform: Matrix4.translationValues(0, -16, 0),
       child: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(AppTheme.radius.xl),
+          topRight: Radius.circular(AppTheme.radius.xl),
         ),
         child: TabBarView(
           controller: _tabController,
-          children: [
-            _buildLista(_insumosFiltrados),
-            _buildLista(_productosFiltrados),
-          ],
+          children: [_buildLista(_insumosFiltrados), _buildLista(_productosFiltrados)],
         ),
       ),
     );
@@ -289,12 +177,7 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
 
   Widget _buildLista(List<_Articulo> articulos) {
     if (articulos.isEmpty) {
-      return Center(
-        child: Text(
-          'Sin resultados',
-          style: TextStyle(fontSize: 13, color: _textMuted),
-        ),
-      );
+      return Center(child: Text('Sin resultados', style: AppTheme.font.hint.copyWith(fontSize: 13)));
     }
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(14, 20, 14, 8),
@@ -312,24 +195,21 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _beigeDeep, width: 0.5),
+        color: AppTheme.colors.card,
+        borderRadius: BorderRadius.circular(AppTheme.radius.lg),
+        border: Border.all(color: AppTheme.colors.border, width: 0.5),
       ),
       child: Row(
         children: [
-          // Ícono
           Container(
-            width: 44,
-            height: 44,
+            width: 44, height: 44,
             decoration: BoxDecoration(
               color: config.colorFondo,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppTheme.radius.brMd,
             ),
             child: Icon(articulo.icono, color: config.colorPrincipal, size: 22),
           ),
           const SizedBox(width: 12),
-          // Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -337,32 +217,16 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      articulo.nombre,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: _textDark,
-                      ),
-                    ),
-                    // Badge estado
+                    Text(articulo.nombre, style: AppTheme.font.label.copyWith(fontSize: 13)),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: config.colorFondo,
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: Text(
-                        config.etiqueta,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                          color: config.colorPrincipal,
-                        ),
-                      ),
+                      child: Text(config.etiqueta,
+                          style: AppTheme.font.caption.copyWith(
+                            fontWeight: FontWeight.w500, color: config.colorPrincipal)),
                     ),
                   ],
                 ),
@@ -372,40 +236,27 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
                   children: [
                     RichText(
                       text: TextSpan(
-                        style: TextStyle(fontSize: 11, color: _textMuted),
+                        style: AppTheme.font.caption,
                         children: [
                           const TextSpan(text: 'Stock: '),
                           TextSpan(
                             text: '${articulo.stockActual} ${articulo.unidad}',
-                            style: TextStyle(
-                              color: config.colorPrincipal,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: TextStyle(color: config.colorPrincipal, fontWeight: FontWeight.w500),
                           ),
-                          TextSpan(
-                            text:
-                                ' / mín. ${articulo.stockMinimo} ${articulo.unidad}',
-                          ),
+                          TextSpan(text: ' / mín. ${articulo.stockMinimo} ${articulo.unidad}'),
                         ],
                       ),
                     ),
-                    Text(
-                      articulo.unidad,
-                      style: TextStyle(fontSize: 11, color: _textMuted),
-                    ),
+                    Text(articulo.unidad, style: AppTheme.font.caption),
                   ],
                 ),
                 const SizedBox(height: 6),
-                // Barra de progreso
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
+                  borderRadius: BorderRadius.circular(AppTheme.radius.full),
                   child: LinearProgressIndicator(
-                    value: ratio,
-                    minHeight: 4,
-                    backgroundColor: _beige,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      config.colorPrincipal,
-                    ),
+                    value: ratio, minHeight: 4,
+                    backgroundColor: AppTheme.colors.surface,
+                    valueColor: AlwaysStoppedAnimation<Color>(config.colorPrincipal),
                   ),
                 ),
               ],
@@ -419,82 +270,18 @@ class _CatalogoGeneralViewState extends State<CatalogoGeneralView>
   _ConfigEstado _configPorEstado(_EstadoStock estado) {
     switch (estado) {
       case _EstadoStock.critico:
-        return _ConfigEstado(
-          etiqueta: 'Crítico',
-          colorPrincipal: _danger,
-          colorFondo: _dangerLight,
-        );
+        return _ConfigEstado(etiqueta: 'Crítico',
+            colorPrincipal: AppTheme.colors.statusCritical, colorFondo: AppTheme.colors.dangerLight);
       case _EstadoStock.bajo:
-        return _ConfigEstado(
-          etiqueta: 'Bajo',
-          colorPrincipal: _orange,
-          colorFondo: _orangeLight,
-        );
+        return _ConfigEstado(etiqueta: 'Bajo',
+            colorPrincipal: AppTheme.colors.primary, colorFondo: AppTheme.colors.primaryLight);
       case _EstadoStock.normal:
-        return _ConfigEstado(
-          etiqueta: 'Normal',
-          colorPrincipal: _success,
-          colorFondo: _successLight,
-        );
+        return _ConfigEstado(etiqueta: 'Normal',
+            colorPrincipal: AppTheme.colors.statusNormal, colorFondo: AppTheme.colors.successLight);
     }
-  }
-
-  // ── Bottom navigation
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: _beigeDeep, width: 0.5)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(Icons.bar_chart_rounded, 'Dashboard', false),
-              _buildNavItem(Icons.inventory_2_outlined, 'Inventario', true),
-              _buildNavItem(Icons.menu_book_outlined, 'Recetas', false),
-              _buildNavItem(Icons.swap_horiz_rounded, 'Movimientos', false),
-              _buildNavItem(Icons.notifications_outlined, 'Alertas', false),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icono, String etiqueta, bool activo) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        activo
-            ? Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: _orange,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icono, color: Colors.white, size: 18),
-              )
-            : Icon(icono, color: _textMuted, size: 24),
-        const SizedBox(height: 3),
-        Text(
-          etiqueta,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: activo ? FontWeight.w500 : FontWeight.normal,
-            color: activo ? _orange : _textMuted,
-          ),
-        ),
-      ],
-    );
   }
 }
 
-// ── Modelos locales temporales
 enum _EstadoStock { critico, bajo, normal }
 
 class _Articulo {
@@ -503,24 +290,13 @@ class _Articulo {
   final double stockMinimo;
   final String unidad;
   final IconData icono;
-
-  const _Articulo({
-    required this.nombre,
-    required this.stockActual,
-    required this.stockMinimo,
-    required this.unidad,
-    required this.icono,
-  });
+  const _Articulo({required this.nombre, required this.stockActual,
+    required this.stockMinimo, required this.unidad, required this.icono});
 }
 
 class _ConfigEstado {
   final String etiqueta;
   final Color colorPrincipal;
   final Color colorFondo;
-
-  const _ConfigEstado({
-    required this.etiqueta,
-    required this.colorPrincipal,
-    required this.colorFondo,
-  });
+  const _ConfigEstado({required this.etiqueta, required this.colorPrincipal, required this.colorFondo});
 }
