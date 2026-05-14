@@ -26,6 +26,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
   /// Lista local de ingredientes en edición
   final List<_IngredienteLocal> _ingredientes = [];
   bool _modoEdicion = false;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -185,11 +186,15 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
   }
 
   Future<void> _guardarReceta() async {
+    if (_isSaving) return;
+    _isSaving = true;
+
     final nombre = _nombreController.text.trim();
     final rendimiento = double.tryParse(_rendimientoController.text) ?? 1;
     final instrucciones = _instruccionesController.text.trim();
 
     if (nombre.isEmpty) {
+      _isSaving = false;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: const Text('Ingresa un nombre para la receta'),
         backgroundColor: AppTheme.colorsOf(context).statusCritical,
@@ -198,6 +203,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
     }
 
     if (_ingredientes.isEmpty || _ingredientes.any((i) => i.articulo == null)) {
+      _isSaving = false;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: const Text('Todos los ingredientes deben estar vinculados a un insumo'),
         backgroundColor: AppTheme.colorsOf(context).statusCritical,
@@ -244,6 +250,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
       ));
       context.pop();
     } else if (mounted) {
+      _isSaving = false;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Error al guardar: $error'),
         backgroundColor: AppTheme.colorsOf(context).statusCritical,
@@ -709,23 +716,30 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
 
   Widget _buildBotonGuardar(AppColors colors, AppFont font) {
     return GestureDetector(
-      onTap: _guardarReceta,
+      onTap: _isSaving ? null : _guardarReceta,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: colors.accent,
+          color: _isSaving ? colors.hint : colors.accent,
           borderRadius: AppTheme.radius.brSm,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.save_outlined, color: colors.titleText, size: 16),
-            const SizedBox(width: 8),
-            Text(_modoEdicion ? 'Actualizar Receta' : 'Guardar Receta',
-                style: font.label.copyWith(fontSize: 14, fontWeight: FontWeight.w600)),
-          ],
-        ),
+        child: _isSaving
+            ? SizedBox(
+                height: 18, width: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2, color: colors.titleText,
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.save_outlined, color: colors.titleText, size: 16),
+                  const SizedBox(width: 8),
+                  Text(_modoEdicion ? 'Actualizar Receta' : 'Guardar Receta',
+                      style: font.label.copyWith(fontSize: 14, fontWeight: FontWeight.w600)),
+                ],
+              ),
       ),
     );
   }

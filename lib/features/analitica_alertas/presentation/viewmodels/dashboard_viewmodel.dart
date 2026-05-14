@@ -1,27 +1,32 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:happy_oven/core/models/articulo.dart';
-import 'package:happy_oven/core/models/movimiento.dart';
 import 'package:happy_oven/core/repositories/articulos_repository.dart';
 import 'package:happy_oven/core/repositories/movimientos_repository.dart';
 import 'package:happy_oven/core/services/supabase_service.dart';
 
 // --- PROVEEDORES BASE ---
-final _supabaseServiceProvider = Provider<SupabaseService>((ref) => SupabaseService());
+final _supabaseServiceProvider = Provider<SupabaseService>(
+  (ref) => SupabaseService(),
+);
 
 final _articulosRepositoryProvider = Provider<ArticulosRepository>((ref) {
-  return ArticulosRepository(supabaseService: ref.watch(_supabaseServiceProvider));
+  return ArticulosRepository(
+    supabaseService: ref.watch(_supabaseServiceProvider),
+  );
 });
 
 final _movimientosRepositoryProvider = Provider<MovimientosRepository>((ref) {
-  return MovimientosRepository(supabaseService: ref.watch(_supabaseServiceProvider));
-});
-
-final dashboardViewModelProvider = StateNotifierProvider<DashboardViewModel, DashboardState>((ref) {
-  return DashboardViewModel(
-    articulosRepository: ref.watch(_articulosRepositoryProvider),
-    movimientosRepository: ref.watch(_movimientosRepositoryProvider),
+  return MovimientosRepository(
+    supabaseService: ref.watch(_supabaseServiceProvider),
   );
 });
+
+final dashboardViewModelProvider =
+    StateNotifierProvider<DashboardViewModel, DashboardState>((ref) {
+      return DashboardViewModel(
+        articulosRepository: ref.watch(_articulosRepositoryProvider),
+        movimientosRepository: ref.watch(_movimientosRepositoryProvider),
+      );
+    });
 
 // --- ESTADO ---
 class InsumoProyeccionData {
@@ -76,9 +81,9 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
   DashboardViewModel({
     required ArticulosRepository articulosRepository,
     required MovimientosRepository movimientosRepository,
-  })  : _articulosRepository = articulosRepository,
-        _movimientosRepository = movimientosRepository,
-        super(DashboardState()) {
+  }) : _articulosRepository = articulosRepository,
+       _movimientosRepository = movimientosRepository,
+       super(DashboardState()) {
     cargarDatos();
   }
 
@@ -87,7 +92,8 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
 
     try {
       final insumos = await _articulosRepository.getInsumos();
-      final movimientos = await _movimientosRepository.getHistorialMovimientos();
+      final movimientos = await _movimientosRepository
+          .getHistorialMovimientos();
 
       double valorTotal = 0.0;
       int stockBajo = 0;
@@ -103,12 +109,16 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
         // 2. Calcular Proyección IA (Días restantes)
         // Filtramos salidas de este insumo en los últimos 30 días
         final hace30Dias = DateTime.now().subtract(const Duration(days: 30));
-        
-        final salidasRecientes = movimientos.where((m) => 
-          m.articuloId == insumo.id && 
-          (m.tipoMovimiento == 'salida_produccion' || m.tipoMovimiento == 'merma') &&
-          m.fecha.isAfter(hace30Dias)
-        ).toList();
+
+        final salidasRecientes = movimientos
+            .where(
+              (m) =>
+                  m.articuloId == insumo.id &&
+                  (m.tipoMovimiento == 'salida_produccion' ||
+                      m.tipoMovimiento == 'merma') &&
+                  m.fecha.isAfter(hace30Dias),
+            )
+            .toList();
 
         double cantidadConsumida = 0;
         for (var m in salidasRecientes) {
@@ -116,7 +126,7 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
         }
 
         double consumoDiario = cantidadConsumida / 30.0;
-        
+
         int diasRestantes = 999; // Infinito por defecto si no hay consumo
         if (consumoDiario > 0) {
           diasRestantes = (insumo.stockActual / consumoDiario).floor();
@@ -127,17 +137,19 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
 
         // Solo mostrar los que se agotarán en menos de 30 días, y priorizar los más urgentes
         if (diasRestantes < 30) {
-          proyecciones.add(InsumoProyeccionData(
-            nombre: insumo.nombre,
-            diasRestantes: diasRestantes,
-            stockPorcentaje: porcentaje,
-          ));
+          proyecciones.add(
+            InsumoProyeccionData(
+              nombre: insumo.nombre,
+              diasRestantes: diasRestantes,
+              stockPorcentaje: porcentaje,
+            ),
+          );
         }
       }
 
       // Ordenar proyecciones: los que se agotan primero arriba
       proyecciones.sort((a, b) => a.diasRestantes.compareTo(b.diasRestantes));
-      
+
       // Tomar solo el top 5 para no llenar la pantalla
       if (proyecciones.length > 5) {
         proyecciones = proyecciones.sublist(0, 5);
@@ -149,7 +161,6 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
         insumosConStockBajo: stockBajo,
         proyecciones: proyecciones,
       );
-
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }

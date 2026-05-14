@@ -24,6 +24,7 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
   _TipoArticulo _tipoSeleccionado = _TipoArticulo.insumo;
   String _unidadSeleccionada = 'kg';
   final List<String> _unidades = ['kg', 'litros', 'unidades', 'gramos', 'ml'];
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -47,7 +48,9 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
   }
 
   void _guardar() async {
+    if (_isSaving) return;
     if (_formKey.currentState!.validate()) {
+      setState(() => _isSaving = true);
       final nuevoArticulo = Articulo(
         id: widget.articulo?.id ?? '', // Si tiene ID, se actualiza, si no, se crea
         nombre: _nombreController.text.trim(),
@@ -74,6 +77,7 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
         );
         _retroceder();
       } else if (mounted) {
+        setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al guardar: $error'),
@@ -205,15 +209,22 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
                 ),
                 const SizedBox(height: 32),
                 GestureDetector(
-                  onTap: _guardar,
+                  onTap: _isSaving ? null : _guardar,
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     decoration: BoxDecoration(
-                      color: AppTheme.colors.primary,
+                      color: _isSaving ? AppTheme.colors.hint : AppTheme.colors.primary,
                       borderRadius: AppTheme.radius.brMd,
                     ),
-                    child: Text('Guardar artículo',
-                        textAlign: TextAlign.center, style: AppTheme.font.button),
+                    child: _isSaving
+                        ? SizedBox(
+                            height: 18, width: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2, color: AppTheme.colors.white,
+                            ),
+                          )
+                        : Text('Guardar artículo',
+                            textAlign: TextAlign.center, style: AppTheme.font.button),
                   ),
                 ),
               ],

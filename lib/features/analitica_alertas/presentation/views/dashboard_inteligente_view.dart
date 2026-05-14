@@ -86,7 +86,12 @@ class DashboardInteligenteView extends ConsumerWidget {
     }
 
     if (state.error != null) {
-      return Center(child: Text('Error: ${state.error}', style: AppTheme.fontOf(context).body));
+      return Center(
+        child: Text(
+          'Error: ${state.error}',
+          style: AppTheme.fontOf(context).body,
+        ),
+      );
     }
 
     return Container(
@@ -128,7 +133,7 @@ class DashboardInteligenteView extends ConsumerWidget {
 
   Widget _buildKpiRow(BuildContext context, DashboardState state) {
     final colors = AppTheme.colorsOf(context);
-    
+
     // Formatear el valor monetario
     final formatter = NumberFormat.currency(symbol: 'S/ ', decimalDigits: 2);
     final valorFormateado = formatter.format(state.valorTotalInventario);
@@ -232,10 +237,7 @@ class DashboardInteligenteView extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Consumo semanal',
-                style: font.label.copyWith(fontSize: 13),
-              ),
+              Text('Consumo semanal', style: font.label.copyWith(fontSize: 13)),
               Text('Esta semana', style: font.caption),
             ],
           ),
@@ -272,9 +274,7 @@ class DashboardInteligenteView extends ConsumerWidget {
                               fontWeight: esHoy
                                   ? FontWeight.w500
                                   : FontWeight.normal,
-                              color: esHoy
-                                  ? colors.titleText
-                                  : colors.hint,
+                              color: esHoy ? colors.titleText : colors.hint,
                             ),
                           ),
                         );
@@ -301,9 +301,7 @@ class DashboardInteligenteView extends ConsumerWidget {
       barRods: [
         BarChartRodData(
           toY: y,
-          color: esHoy
-              ? colors.primary
-              : colors.primaryBorder,
+          color: esHoy ? colors.primary : colors.primaryBorder,
           width: 18,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(4),
@@ -331,10 +329,7 @@ class DashboardInteligenteView extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Proyección IA',
-                style: font.label.copyWith(fontSize: 13),
-              ),
+              Text('Proyección IA', style: font.label.copyWith(fontSize: 13)),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
@@ -364,16 +359,21 @@ class DashboardInteligenteView extends ConsumerWidget {
               ),
             )
           else
-            ...state.proyecciones.map((i) => _buildInsumoProyeccion(context, i)),
+            ...state.proyecciones.map(
+              (i) => _buildInsumoProyeccion(context, i),
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildInsumoProyeccion(BuildContext context, InsumoProyeccionData insumo) {
+  Widget _buildInsumoProyeccion(
+    BuildContext context,
+    InsumoProyeccionData insumo,
+  ) {
     final colors = AppTheme.colorsOf(context);
     final font = AppTheme.fontOf(context);
-    
+
     Color colorBarra;
     String etiqueta = 'Se agota en ${insumo.diasRestantes} días';
 
@@ -392,16 +392,10 @@ class DashboardInteligenteView extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                insumo.nombre,
-                style: font.bodySmall.copyWith(fontSize: 12),
-              ),
+              Text(insumo.nombre, style: font.bodySmall.copyWith(fontSize: 12)),
               Text(
                 etiqueta,
-                style: font.label.copyWith(
-                  fontSize: 12,
-                  color: colorBarra,
-                ),
+                style: font.label.copyWith(fontSize: 12, color: colorBarra),
               ),
             ],
           ),

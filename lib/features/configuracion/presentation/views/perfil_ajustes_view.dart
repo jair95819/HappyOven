@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/core/theme/theme_notifier.dart';
 import 'package:happy_oven/core/widgets/bottom_nav_bar.dart';
+import 'package:happy_oven/features/auth/presentation/viewmodels/auth_viewmodel.dart';
 
 class PerfilAjustesView extends ConsumerWidget {
   const PerfilAjustesView({super.key});
@@ -99,7 +100,7 @@ class PerfilAjustesView extends ConsumerWidget {
                             ),
                           ]),
                           const SizedBox(height: 32),
-                          _buildLogoutButton(context),
+                          _buildLogoutButton(context, ref),
                           const SizedBox(height: 20),
                           Center(
                             child: Text(
@@ -368,13 +369,13 @@ class PerfilAjustesView extends ConsumerWidget {
   }
 
   // ── Logout
-  Widget _buildLogoutButton(BuildContext context) {
+  Widget _buildLogoutButton(BuildContext context, WidgetRef ref) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {
-          // TODO: conectar con AuthViewModel.logout()
-          context.go('/login');
+        onTap: () async {
+          await ref.read(authViewModelProvider.notifier).logout();
+          if (context.mounted) context.go('/login');
         },
         borderRadius: BorderRadius.circular(AppTheme.radius.md),
         child: Container(
