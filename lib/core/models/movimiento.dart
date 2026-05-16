@@ -35,10 +35,8 @@ class Movimiento {
       recetaId: json['receta_id'] as String?,
       tipoMovimiento: json['tipo_movimiento'] as String,
       motivoSalida: json['motivo_salida'] as String?,
-      cantidad: (json['cantidad'] as num).toDouble(),
-      precioUnitario: json['precio_unitario'] != null 
-          ? (json['precio_unitario'] as num).toDouble() 
-          : null,
+      cantidad: (json['cantidad'] as num?)?.toDouble() ?? 0.0,
+      precioUnitario: (json['precio_unitario'] as num?)?.toDouble(),
       proveedor: json['proveedor'] as String?,
       observacion: json['observacion'] as String?,
       porOcr: json['por_ocr'] as bool,
@@ -59,7 +57,7 @@ class Movimiento {
       'proveedor': proveedor,
       'observacion': observacion,
       'por_ocr': porOcr,
-      // la base de datos normalmente genera la fecha por defecto si no se manda, 
+      // la base de datos normalmente genera la fecha por defecto si no se manda,
       // pero si es un registro manual con fecha específica, se envía
       'fecha': fecha.toIso8601String(),
     };

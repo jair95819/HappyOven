@@ -6,7 +6,7 @@ class RecetasRepository {
   final SupabaseService _supabaseService;
 
   RecetasRepository({required SupabaseService supabaseService})
-      : _supabaseService = supabaseService;
+    : _supabaseService = supabaseService;
 
   // ── RECETAS ────────────────────────────────────────────
 
@@ -24,6 +24,17 @@ class RecetasRepository {
         .from('recetas')
         .select()
         .eq('id', id)
+        .maybeSingle();
+
+    if (response == null) return null;
+    return Receta.fromJson(response);
+  }
+
+  Future<Receta?> getRecetaByProductoId(String productoId) async {
+    final response = await _supabaseService.client
+        .from('recetas')
+        .select()
+        .eq('producto_id', productoId)
         .maybeSingle();
 
     if (response == null) return null;
@@ -59,15 +70,14 @@ class RecetasRepository {
 
   Future<void> deleteReceta(String id) async {
     // Los ingredientes se eliminan en cascada por la FK
-    await _supabaseService.client
-        .from('recetas')
-        .delete()
-        .eq('id', id);
+    await _supabaseService.client.from('recetas').delete().eq('id', id);
   }
 
   // ── INGREDIENTES DE RECETA ─────────────────────────────
 
-  Future<List<RecetaIngrediente>> getIngredientesPorReceta(String recetaId) async {
+  Future<List<RecetaIngrediente>> getIngredientesPorReceta(
+    String recetaId,
+  ) async {
     final response = await _supabaseService.client
         .from('receta_ingredientes')
         .select()
@@ -78,7 +88,9 @@ class RecetasRepository {
         .toList();
   }
 
-  Future<RecetaIngrediente> addIngrediente(RecetaIngrediente ingrediente) async {
+  Future<RecetaIngrediente> addIngrediente(
+    RecetaIngrediente ingrediente,
+  ) async {
     final data = ingrediente.toJson();
     data.remove('id');
 
@@ -101,7 +113,9 @@ class RecetasRepository {
   /// Reemplaza todos los ingredientes de una receta de golpe.
   /// Útil al editar una receta completa.
   Future<List<RecetaIngrediente>> reemplazarIngredientes(
-      String recetaId, List<RecetaIngrediente> ingredientes) async {
+    String recetaId,
+    List<RecetaIngrediente> ingredientes,
+  ) async {
     // 1. Borrar los existentes
     await _supabaseService.client
         .from('receta_ingredientes')

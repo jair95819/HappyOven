@@ -6,6 +6,7 @@ import 'package:happy_oven/features/auth/presentation/views/recuperar_password_v
 import 'package:happy_oven/features/analitica_alertas/presentation/views/dashboard_inteligente_view.dart';
 import 'package:happy_oven/features/analitica_alertas/presentation/views/centro_alertas_view.dart';
 import 'package:happy_oven/features/analitica_alertas/presentation/views/reportes_view.dart';
+import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/views/catalogo_general_view.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/views/formulario_articulo_view.dart';
 import 'package:happy_oven/features/registro_movimientos/presentation/views/historial_kardex_view.dart';
@@ -80,7 +81,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/recetas', builder: (c, s) => const RecetarioView()),
       GoRoute(
         path: '/recetas/nueva',
-        builder: (c, s) => const CosteoDinamicoView(),
+        builder: (c, s) =>
+            CosteoDinamicoView(productoFinal: s.extra as Articulo?),
       ),
       GoRoute(
         path: '/recetas/editar',

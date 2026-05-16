@@ -10,8 +10,9 @@ import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmo
 
 class CosteoDinamicoView extends ConsumerStatefulWidget {
   final Receta? receta; // null = crear nueva, no-null = editar
+  final Articulo? productoFinal; // pre-seleccionar producto final al crear
 
-  const CosteoDinamicoView({super.key, this.receta});
+  const CosteoDinamicoView({super.key, this.receta, this.productoFinal});
 
   @override
   ConsumerState<CosteoDinamicoView> createState() => _CosteoDinamicoViewState();
@@ -20,7 +21,8 @@ class CosteoDinamicoView extends ConsumerStatefulWidget {
 class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
   final TextEditingController _nombreController = TextEditingController();
   final TextEditingController _rendimientoController = TextEditingController();
-  final TextEditingController _instruccionesController = TextEditingController();
+  final TextEditingController _instruccionesController =
+      TextEditingController();
   final TextEditingController _precioVentaController = TextEditingController();
 
   /// Lista local de ingredientes en edición
@@ -28,16 +30,38 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
   bool _modoEdicion = false;
   bool _isSaving = false;
 
+  Articulo? _productoSeleccionado;
+
   @override
   void initState() {
     super.initState();
     if (widget.receta != null) {
       _modoEdicion = true;
       _nombreController.text = widget.receta!.nombre;
-      _rendimientoController.text = widget.receta!.rendimiento.toInt().toString();
+      _rendimientoController.text = widget.receta!.rendimiento
+          .toInt()
+          .toString();
       _instruccionesController.text = widget.receta!.instrucciones ?? '';
+      _productoSeleccionado = _buscarProductoFinalPorId(
+        widget.receta!.productoId,
+      );
       // Cargar ingredientes existentes desde Supabase
       _cargarIngredientesExistentes();
+    } else if (widget.productoFinal != null) {
+      _productoSeleccionado = widget.productoFinal;
+      _nombreController.text = widget.productoFinal!.nombre;
+    }
+  }
+
+  Articulo? _buscarProductoFinalPorId(String? id) {
+    if (id == null) return null;
+    final articulos = ref.read(catalogoViewModelProvider).value ?? [];
+    try {
+      return articulos.firstWhere(
+        (a) => a.id == id && a.tipo == 'producto_final',
+      );
+    } catch (_) {
+      return null;
     }
   }
 
@@ -52,10 +76,12 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
         try {
           articulo = articulos.firstWhere((a) => a.id == ing.insumoId);
         } catch (_) {}
-        _ingredientes.add(_IngredienteLocal(
-          articulo: articulo,
-          cantidad: ing.cantidadRequerida,
-        ));
+        _ingredientes.add(
+          _IngredienteLocal(
+            articulo: articulo,
+            cantidad: ing.cantidadRequerida,
+          ),
+        );
       }
     });
   }
@@ -129,7 +155,9 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
       context: context,
       isScrollControlled: true,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radius.xl)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppTheme.radius.xl),
+        ),
       ),
       builder: (_) => DraggableScrollableSheet(
         initialChildSize: 0.5,
@@ -149,17 +177,31 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                   itemCount: insumos.length,
                   itemBuilder: (context, i) {
                     final a = insumos[i];
-                    final yaUsado = _ingredientes.any((ing) => ing.articulo?.id == a.id);
+                    final yaUsado = _ingredientes.any(
+                      (ing) => ing.articulo?.id == a.id,
+                    );
                     return ListTile(
-                      leading: Icon(Icons.inventory_2_outlined,
-                          color: yaUsado ? colors.hint : colors.primary, size: 18),
-                      title: Text(a.nombre,
-                          style: font.bodySmall.copyWith(
-                              color: yaUsado ? colors.hint : colors.titleText)),
-                      subtitle: Text('S/ ${a.precioUnitario.toStringAsFixed(2)} / ${a.unidad}',
-                          style: font.caption),
+                      leading: Icon(
+                        Icons.inventory_2_outlined,
+                        color: yaUsado ? colors.hint : colors.primary,
+                        size: 18,
+                      ),
+                      title: Text(
+                        a.nombre,
+                        style: font.bodySmall.copyWith(
+                          color: yaUsado ? colors.hint : colors.titleText,
+                        ),
+                      ),
+                      subtitle: Text(
+                        'S/ ${a.precioUnitario.toStringAsFixed(2)} / ${a.unidad}',
+                        style: font.caption,
+                      ),
                       trailing: yaUsado
-                          ? Icon(Icons.check_rounded, color: colors.statusNormal, size: 16)
+                          ? Icon(
+                              Icons.check_rounded,
+                              color: colors.statusNormal,
+                              size: 16,
+                            )
                           : null,
                       onTap: yaUsado
                           ? null
@@ -185,6 +227,84 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
     );
   }
 
+  void _seleccionarProductoFinal() {
+    final articulos = ref.read(catalogoViewModelProvider).value ?? [];
+    final productos = articulos
+        .where((a) => a.tipo == 'producto_final')
+        .toList();
+    final colors = AppTheme.colorsOf(context);
+    final font = AppTheme.fontOf(context);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppTheme.radius.xl),
+        ),
+      ),
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.5,
+        maxChildSize: 0.8,
+        minChildSize: 0.3,
+        expand: false,
+        builder: (context, scrollController) => Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Seleccionar producto final',
+                style: font.h3.copyWith(fontSize: 15),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: productos.length,
+                  itemBuilder: (context, i) {
+                    final a = productos[i];
+                    final seleccionado = _productoSeleccionado?.id == a.id;
+                    return ListTile(
+                      leading: Icon(
+                        Icons.breakfast_dining_outlined,
+                        color: seleccionado ? colors.primary : colors.hint,
+                        size: 18,
+                      ),
+                      title: Text(
+                        a.nombre,
+                        style: font.bodySmall.copyWith(
+                          color: seleccionado
+                              ? colors.titleText
+                              : colors.titleText,
+                        ),
+                      ),
+                      subtitle: Text(
+                        'Stock: ${a.stockActual} ${a.unidad}',
+                        style: font.caption,
+                      ),
+                      trailing: seleccionado
+                          ? Icon(
+                              Icons.check_circle_rounded,
+                              color: colors.statusNormal,
+                              size: 20,
+                            )
+                          : null,
+                      onTap: () {
+                        setState(() => _productoSeleccionado = a);
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _guardarReceta() async {
     if (_isSaving) return;
     _isSaving = true;
@@ -195,66 +315,86 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
 
     if (nombre.isEmpty) {
       _isSaving = false;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text('Ingresa un nombre para la receta'),
-        backgroundColor: AppTheme.colorsOf(context).statusCritical,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Ingresa un nombre para la receta'),
+          backgroundColor: AppTheme.colorsOf(context).statusCritical,
+        ),
+      );
       return;
     }
 
     if (_ingredientes.isEmpty || _ingredientes.any((i) => i.articulo == null)) {
       _isSaving = false;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text('Todos los ingredientes deben estar vinculados a un insumo'),
-        backgroundColor: AppTheme.colorsOf(context).statusCritical,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Todos los ingredientes deben estar vinculados a un insumo',
+          ),
+          backgroundColor: AppTheme.colorsOf(context).statusCritical,
+        ),
+      );
       return;
     }
 
-    final ingredientesModelo = _ingredientes.map((i) => RecetaIngrediente(
-      id: '',
-      recetaId: _modoEdicion ? widget.receta!.id : '',
-      insumoId: i.articulo!.id,
-      cantidadRequerida: i.cantidad,
-    )).toList();
+    final ingredientesModelo = _ingredientes
+        .map(
+          (i) => RecetaIngrediente(
+            id: '',
+            recetaId: _modoEdicion ? widget.receta!.id : '',
+            insumoId: i.articulo!.id,
+            cantidadRequerida: i.cantidad,
+          ),
+        )
+        .toList();
 
     String? error;
     if (_modoEdicion) {
       final recetaActualizada = Receta(
         id: widget.receta!.id,
         nombre: nombre,
+        productoId: _productoSeleccionado?.id,
         instrucciones: instrucciones.isNotEmpty ? instrucciones : null,
         rendimiento: rendimiento,
         createdAt: widget.receta!.createdAt,
       );
-      error = await ref.read(recetasViewModelProvider.notifier)
+      error = await ref
+          .read(recetasViewModelProvider.notifier)
           .actualizarReceta(recetaActualizada, ingredientesModelo);
     } else {
       final nuevaReceta = Receta(
         id: '',
         nombre: nombre,
+        productoId: _productoSeleccionado?.id,
         instrucciones: instrucciones.isNotEmpty ? instrucciones : null,
         rendimiento: rendimiento,
         createdAt: DateTime.now(),
       );
-      error = await ref.read(recetasViewModelProvider.notifier)
+      error = await ref
+          .read(recetasViewModelProvider.notifier)
           .crearReceta(nuevaReceta, ingredientesModelo);
     }
 
     if (error == null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(_modoEdicion ? 'Receta actualizada' : 'Receta creada exitosamente'),
-        backgroundColor: AppTheme.colorsOf(context).statusNormal,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: AppTheme.radius.brSm),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _modoEdicion ? 'Receta actualizada' : 'Receta creada exitosamente',
+          ),
+          backgroundColor: AppTheme.colorsOf(context).statusNormal,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: AppTheme.radius.brSm),
+        ),
+      );
       context.pop();
     } else if (mounted) {
       _isSaving = false;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Error al guardar: $error'),
-        backgroundColor: AppTheme.colorsOf(context).statusCritical,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al guardar: $error'),
+          backgroundColor: AppTheme.colorsOf(context).statusCritical,
+        ),
+      );
     }
   }
 
@@ -287,11 +427,15 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(_modoEdicion ? 'Editar Receta' : 'Nueva Receta',
-                      style: font.h3),
+                  Text(
+                    _modoEdicion ? 'Editar Receta' : 'Nueva Receta',
+                    style: font.h3,
+                  ),
                   const SizedBox(height: 2),
-                  Text('Costeo dinámico en tiempo real',
-                      style: font.caption.copyWith(color: colors.accentDark)),
+                  Text(
+                    'Costeo dinámico en tiempo real',
+                    style: font.caption.copyWith(color: colors.accentDark),
+                  ),
                 ],
               ),
               GestureDetector(
@@ -302,7 +446,11 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                     color: colors.titleText,
                     borderRadius: AppTheme.radius.brSm,
                   ),
-                  child: Icon(Icons.close_rounded, color: colors.accent, size: 18),
+                  child: Icon(
+                    Icons.close_rounded,
+                    color: colors.accent,
+                    size: 18,
+                  ),
                 ),
               ),
             ],
@@ -338,14 +486,16 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                 controller: _nombreController,
                 label: 'Nombre de la Receta',
                 icon: Icons.edit_outlined,
-                colors: colors, font: font,
+                colors: colors,
+                font: font,
               ),
               const SizedBox(height: 10),
               _buildTextField(
                 controller: _rendimientoController,
                 label: 'Rendimiento (unidades por lote)',
                 icon: Icons.production_quantity_limits_outlined,
-                colors: colors, font: font,
+                colors: colors,
+                font: font,
                 onChanged: () => setState(() {}),
               ),
               const SizedBox(height: 10),
@@ -353,9 +503,15 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                 controller: _instruccionesController,
                 label: 'Instrucciones (opcional)',
                 icon: Icons.description_outlined,
-                colors: colors, font: font,
+                colors: colors,
+                font: font,
                 maxLines: 3,
               ),
+              const SizedBox(height: 20),
+
+              _buildSectionTitle('Producto final', font),
+              const SizedBox(height: 12),
+              _buildSelectorProductoFinal(colors, font),
               const SizedBox(height: 20),
 
               _buildSectionTitle('Ingredientes', font),
@@ -376,7 +532,8 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                 controller: _precioVentaController,
                 label: 'Precio de Venta por unidad (S/)',
                 icon: Icons.attach_money_rounded,
-                colors: colors, font: font,
+                colors: colors,
+                font: font,
                 onChanged: () => setState(() {}),
               ),
               const SizedBox(height: 12),
@@ -393,7 +550,10 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
   }
 
   Widget _buildSectionTitle(String titulo, AppFont font) {
-    return Text(titulo, style: font.label.copyWith(fontSize: 14, fontWeight: FontWeight.w600));
+    return Text(
+      titulo,
+      style: font.label.copyWith(fontSize: 14, fontWeight: FontWeight.w600),
+    );
   }
 
   Widget _buildTextField({
@@ -421,7 +581,62 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
           hintStyle: font.hint.copyWith(fontSize: 13),
           prefixIcon: Icon(icon, color: colors.primary, size: 16),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 12,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSelectorProductoFinal(AppColors colors, AppFont font) {
+    return GestureDetector(
+      onTap: _seleccionarProductoFinal,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: colors.card,
+          borderRadius: AppTheme.radius.brSm,
+          border: Border.all(color: colors.border, width: 1),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              _productoSeleccionado != null
+                  ? Icons.breakfast_dining_outlined
+                  : Icons.add_circle_outline,
+              color: _productoSeleccionado != null
+                  ? colors.primary
+                  : colors.hint,
+              size: 16,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                _productoSeleccionado?.nombre ??
+                    'Seleccionar producto final...',
+                style: font.bodySmall.copyWith(
+                  fontSize: 12,
+                  color: _productoSeleccionado != null
+                      ? colors.titleText
+                      : colors.hint,
+                ),
+              ),
+            ),
+            if (_productoSeleccionado != null)
+              GestureDetector(
+                onTap: () => setState(() => _productoSeleccionado = null),
+                child: Icon(Icons.close_rounded, color: colors.hint, size: 16),
+              )
+            else
+              Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: colors.hint,
+                size: 16,
+              ),
+          ],
         ),
       ),
     );
@@ -436,8 +651,10 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
           borderRadius: AppTheme.radius.brMd,
         ),
         child: Center(
-          child: Text('Sin ingredientes. Toca "+" para agregar.',
-              style: font.caption.copyWith(fontSize: 12)),
+          child: Text(
+            'Sin ingredientes. Toca "+" para agregar.',
+            style: font.caption.copyWith(fontSize: 12),
+          ),
         ),
       );
     }
@@ -446,7 +663,9 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
       children: _ingredientes.asMap().entries.map((entry) {
         int idx = entry.key;
         _IngredienteLocal ing = entry.value;
-        final costo = ing.articulo != null ? ing.articulo!.precioUnitario * ing.cantidad : 0.0;
+        final costo = ing.articulo != null
+            ? ing.articulo!.precioUnitario * ing.cantidad
+            : 0.0;
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
@@ -467,7 +686,10 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                         child: GestureDetector(
                           onTap: () => _seleccionarArticulo(idx),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: colors.surface,
                               borderRadius: AppTheme.radius.brSm,
@@ -478,22 +700,31 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                                   ing.articulo != null
                                       ? Icons.inventory_2_outlined
                                       : Icons.add_circle_outline,
-                                  color: ing.articulo != null ? colors.primary : colors.statusCritical,
+                                  color: ing.articulo != null
+                                      ? colors.primary
+                                      : colors.statusCritical,
                                   size: 14,
                                 ),
                                 const SizedBox(width: 6),
                                 Expanded(
                                   child: Text(
-                                    ing.articulo?.nombre ?? 'Seleccionar insumo...',
+                                    ing.articulo?.nombre ??
+                                        'Seleccionar insumo...',
                                     style: font.label.copyWith(
                                       fontSize: 12,
-                                      color: ing.articulo != null ? colors.titleText : colors.statusCritical,
+                                      color: ing.articulo != null
+                                          ? colors.titleText
+                                          : colors.statusCritical,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                Icon(Icons.keyboard_arrow_down_rounded, color: colors.hint, size: 14),
+                                Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  color: colors.hint,
+                                  size: 14,
+                                ),
                               ],
                             ),
                           ),
@@ -503,12 +734,17 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                       GestureDetector(
                         onTap: () => _eliminarIngrediente(idx),
                         child: Container(
-                          width: 24, height: 24,
+                          width: 24,
+                          height: 24,
                           decoration: BoxDecoration(
                             color: colors.dangerLight,
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: Icon(Icons.delete_outline_rounded, color: colors.statusCritical, size: 14),
+                          child: Icon(
+                            Icons.delete_outline_rounded,
+                            color: colors.statusCritical,
+                            size: 14,
+                          ),
                         ),
                       ),
                     ],
@@ -519,21 +755,38 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                       Expanded(
                         flex: 2,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: colors.primaryLight,
                             borderRadius: AppTheme.radius.brSm,
-                            border: Border.all(color: colors.border, width: 0.5),
+                            border: Border.all(
+                              color: colors.border,
+                              width: 0.5,
+                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('CANTIDAD', style: font.caption.copyWith(
-                                  fontSize: 8, color: colors.brownMid, fontWeight: FontWeight.w500)),
+                              Text(
+                                'CANTIDAD',
+                                style: font.caption.copyWith(
+                                  fontSize: 8,
+                                  color: colors.brownMid,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                               const SizedBox(height: 2),
                               TextFormField(
-                                initialValue: ing.cantidad > 0 ? ing.cantidad.toString() : '',
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                initialValue: ing.cantidad > 0
+                                    ? ing.cantidad.toString()
+                                    : '',
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
                                 style: font.label.copyWith(fontSize: 13),
                                 decoration: const InputDecoration(
                                   border: InputBorder.none,
@@ -556,19 +809,34 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                       const SizedBox(width: 6),
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: colors.primaryLight,
                             borderRadius: AppTheme.radius.brSm,
-                            border: Border.all(color: colors.border, width: 0.5),
+                            border: Border.all(
+                              color: colors.border,
+                              width: 0.5,
+                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('UNIDAD', style: font.caption.copyWith(
-                                  fontSize: 8, color: colors.brownMid, fontWeight: FontWeight.w500)),
+                              Text(
+                                'UNIDAD',
+                                style: font.caption.copyWith(
+                                  fontSize: 8,
+                                  color: colors.brownMid,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                               const SizedBox(height: 4),
-                              Text(ing.articulo?.unidad ?? '-', style: font.label.copyWith(fontSize: 13)),
+                              Text(
+                                ing.articulo?.unidad ?? '-',
+                                style: font.label.copyWith(fontSize: 13),
+                              ),
                             ],
                           ),
                         ),
@@ -576,20 +844,37 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                       const SizedBox(width: 6),
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: colors.primaryLight,
                             borderRadius: AppTheme.radius.brSm,
-                            border: Border.all(color: colors.border, width: 0.5),
+                            border: Border.all(
+                              color: colors.border,
+                              width: 0.5,
+                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('COSTO', style: font.caption.copyWith(
-                                  fontSize: 8, color: colors.brownMid, fontWeight: FontWeight.w500)),
+                              Text(
+                                'COSTO',
+                                style: font.caption.copyWith(
+                                  fontSize: 8,
+                                  color: colors.brownMid,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                               const SizedBox(height: 4),
-                              Text('S/ ${costo.toStringAsFixed(2)}',
-                                  style: font.h3.copyWith(fontSize: 13, color: colors.primary)),
+                              Text(
+                                'S/ ${costo.toStringAsFixed(2)}',
+                                style: font.h3.copyWith(
+                                  fontSize: 13,
+                                  color: colors.primary,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -621,8 +906,10 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
           children: [
             Icon(Icons.add_rounded, color: colors.primary, size: 16),
             const SizedBox(width: 6),
-            Text('Agregar Ingrediente',
-                style: font.label.copyWith(fontSize: 13, color: colors.primary)),
+            Text(
+              'Agregar Ingrediente',
+              style: font.label.copyWith(fontSize: 13, color: colors.primary),
+            ),
           ],
         ),
       ),
@@ -643,9 +930,17 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Costo Total del Lote:', style: font.caption.copyWith(fontSize: 12)),
-                Text('S/ ${_costoTotal.toStringAsFixed(2)}',
-                    style: font.label.copyWith(fontSize: 13, fontWeight: FontWeight.w600)),
+                Text(
+                  'Costo Total del Lote:',
+                  style: font.caption.copyWith(fontSize: 12),
+                ),
+                Text(
+                  'S/ ${_costoTotal.toStringAsFixed(2)}',
+                  style: font.label.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -654,10 +949,18 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Costo por Unidad:', style: font.caption.copyWith(fontSize: 12)),
-                Text('S/ ${_costoUnitario.toStringAsFixed(2)}',
-                    style: font.label.copyWith(
-                      fontSize: 13, fontWeight: FontWeight.w600, color: colors.primary)),
+                Text(
+                  'Costo por Unidad:',
+                  style: font.caption.copyWith(fontSize: 12),
+                ),
+                Text(
+                  'S/ ${_costoUnitario.toStringAsFixed(2)}',
+                  style: font.label.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: colors.primary,
+                  ),
+                ),
               ],
             ),
           ],
@@ -683,10 +986,18 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Margen por Unidad:', style: font.caption.copyWith(fontSize: 12)),
-                Text('S/ ${_margenGanancia.toStringAsFixed(2)}',
-                    style: font.label.copyWith(
-                      fontSize: 13, fontWeight: FontWeight.w600, color: colorRent)),
+                Text(
+                  'Margen por Unidad:',
+                  style: font.caption.copyWith(fontSize: 12),
+                ),
+                Text(
+                  'S/ ${_margenGanancia.toStringAsFixed(2)}',
+                  style: font.label.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: colorRent,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -695,16 +1006,27 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Rentabilidad:', style: font.caption.copyWith(fontSize: 12)),
+                Text(
+                  'Rentabilidad:',
+                  style: font.caption.copyWith(fontSize: 12),
+                ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: colorRent.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: Text('${_rentabilidad.toStringAsFixed(1)}% - $textoRent',
-                      style: font.label.copyWith(
-                        fontSize: 12, fontWeight: FontWeight.w600, color: colorRent)),
+                  child: Text(
+                    '${_rentabilidad.toStringAsFixed(1)}% - $textoRent',
+                    style: font.label.copyWith(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: colorRent,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -726,9 +1048,11 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
         ),
         child: _isSaving
             ? SizedBox(
-                height: 18, width: 18,
+                height: 18,
+                width: 18,
                 child: CircularProgressIndicator(
-                  strokeWidth: 2, color: colors.titleText,
+                  strokeWidth: 2,
+                  color: colors.titleText,
                 ),
               )
             : Row(
@@ -736,8 +1060,13 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                 children: [
                   Icon(Icons.save_outlined, color: colors.titleText, size: 16),
                   const SizedBox(width: 8),
-                  Text(_modoEdicion ? 'Actualizar Receta' : 'Guardar Receta',
-                      style: font.label.copyWith(fontSize: 14, fontWeight: FontWeight.w600)),
+                  Text(
+                    _modoEdicion ? 'Actualizar Receta' : 'Guardar Receta',
+                    style: font.label.copyWith(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
               ),
       ),

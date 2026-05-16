@@ -1,7 +1,8 @@
 class Receta {
   final String id;
   final String nombre;
-  final String? productoId; // Artículo de tipo 'producto_final' que produce esta receta
+  final String?
+  productoId; // Artículo de tipo 'producto_final' que produce esta receta
   final String? instrucciones;
   final double rendimiento; // Cantidad de unidades que produce un lote
   final DateTime createdAt;
@@ -19,10 +20,14 @@ class Receta {
     return Receta(
       id: json['id'] as String,
       nombre: json['nombre'] as String,
-      productoId: json['producto_id'] as String? ?? json['articulo_id'] as String?,
-      instrucciones: json['instrucciones'] as String? ?? json['preparacion'] as String?,
-      rendimiento: (json['rendimiento_unidades'] as num).toDouble(),
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at'] as String) : DateTime.now(),
+      productoId:
+          json['producto_id'] as String? ?? json['articulo_id'] as String?,
+      instrucciones:
+          json['instrucciones'] as String? ?? json['preparacion'] as String?,
+      rendimiento: (json['rendimiento_unidades'] as num?)?.toDouble() ?? 0.0,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
     );
   }
 

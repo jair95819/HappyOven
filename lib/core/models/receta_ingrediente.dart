@@ -16,7 +16,7 @@ class RecetaIngrediente {
       id: json['id'] as String,
       recetaId: json['receta_id'] as String,
       insumoId: json['articulo_id'] as String,
-      cantidadRequerida: (json['cantidad'] as num).toDouble(),
+      cantidadRequerida: (json['cantidad'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
