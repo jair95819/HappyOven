@@ -80,20 +80,22 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
     try {
       final picker = ImagePicker();
       final pickedFile = await picker.pickImage(source: source);
-      
+
       if (pickedFile == null) return;
 
       setState(() => _procesandoOcr = true);
 
       // Procesar OCR
       final inputImage = InputImage.fromFilePath(pickedFile.path);
-      final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
-      
+      final textRecognizer = TextRecognizer(
+        script: TextRecognitionScript.latin,
+      );
+
       final recognizedText = await textRecognizer.processImage(inputImage);
       await textRecognizer.close();
 
       _procesarTextoOcr(recognizedText.text);
-      
+
       if (mounted) {
         setState(() {
           _procesandoOcr = false;
@@ -110,67 +112,68 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
 
   void _procesarTextoOcr(String texto) {
     _items.clear();
-    
+
     final lineas = texto.split('\n');
-    
+
     for (final linea in lineas) {
       final limpia = linea.trim();
       if (limpia.isEmpty) continue;
-      
+
       // Buscar patrones: nombre + cantidad + precio
       // Ejemplo: "Harina 50 kg 2.80" o "Mantequilla 20 kg 8.50"
-      
+
       final item = _extraerItemDeLinea(limpia);
       if (item != null) {
         _items.add(item);
       }
     }
-    
+
     // Si no encontró nada, mostrar el texto completo para que el usuario lo edite
     if (_items.isEmpty) {
       _mostrarError('No se encontraron ítems. Por favor, edita manualmente.');
       // Agregar un ítem vacío para que el usuario comience a editar
-      _items.add(_ItemOCR(
-        nombre: '',
-        cantidad: 0,
-        unidad: 'kg',
-        precioUnitario: 0,
-      ));
+      _items.add(
+        _ItemOCR(nombre: '', cantidad: 0, unidad: 'kg', precioUnitario: 0),
+      );
     }
   }
 
   _ItemOCR? _extraerItemDeLinea(String linea) {
     // Intentar extraer: nombre (letras/espacios) + números (cantidad) + números (precio)
     // Patrón: palabras, seguidas de números, seguidas de más números
-    
+
     final pattern = RegExp(
       r'([a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)\s+(\d+(?:[.,]\d+)?)\s+([a-z]+)?\s*(\d+(?:[.,]\d+)?)',
       caseSensitive: false,
     );
-    
+
     final match = pattern.firstMatch(linea);
     if (match == null) return null;
-    
+
     String nombre = match.group(1)?.trim() ?? '';
     String cantidadStr = match.group(2) ?? '0';
     String? unidadStr = match.group(3)?.trim().toLowerCase();
     String precioStr = match.group(4) ?? '0';
-    
+
     if (nombre.isEmpty) return null;
-    
+
     double cantidad = double.tryParse(cantidadStr.replaceAll(',', '.')) ?? 0;
     double precio = double.tryParse(precioStr.replaceAll(',', '.')) ?? 0;
-    
+
     String unidad = 'kg'; // default
     if (unidadStr != null) {
-      if (unidadStr.startsWith('l')) unidad = 'litros';
-      else if (unidadStr.startsWith('u')) unidad = 'unidades';
-      else if (unidadStr.startsWith('g')) unidad = 'gramos';
-      else if (unidadStr.startsWith('m')) unidad = 'ml';
+      if (unidadStr.startsWith('l'))
+        unidad = 'litros';
+      else if (unidadStr.startsWith('u'))
+        unidad = 'unidades';
+      else if (unidadStr.startsWith('g'))
+        unidad = 'gramos';
+      else if (unidadStr.startsWith('m'))
+        unidad = 'ml';
     }
-    
+
     if (cantidad <= 0 || precio <= 0) return null;
-    
+
     return _ItemOCR(
       nombre: nombre,
       cantidad: cantidad,
@@ -666,10 +669,14 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                   vertical: 7,
                 ),
                 decoration: BoxDecoration(
-                  color: _items.isNotEmpty ? colors.successLight : colors.dangerLight,
+                  color: _items.isNotEmpty
+                      ? colors.successLight
+                      : colors.dangerLight,
                   borderRadius: AppTheme.radius.brSm,
                   border: Border.all(
-                    color: _items.isNotEmpty ? colors.successBorder : colors.dangerBorder,
+                    color: _items.isNotEmpty
+                        ? colors.successBorder
+                        : colors.dangerBorder,
                     width: 0.5,
                   ),
                 ),
@@ -677,8 +684,12 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      _items.isNotEmpty ? Icons.check_circle_outline : Icons.warning_amber_rounded,
-                      color: _items.isNotEmpty ? colors.statusNormal : colors.statusCritical,
+                      _items.isNotEmpty
+                          ? Icons.check_circle_outline
+                          : Icons.warning_amber_rounded,
+                      color: _items.isNotEmpty
+                          ? colors.statusNormal
+                          : colors.statusCritical,
                       size: 14,
                     ),
                     const SizedBox(width: 8),
@@ -688,7 +699,9 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                           : 'OCR detectó ${_items.length} insumo${_items.length != 1 ? 's' : ''}',
                       style: font.caption.copyWith(
                         fontWeight: FontWeight.w500,
-                        color: _items.isNotEmpty ? colors.statusNormal : colors.statusCritical,
+                        color: _items.isNotEmpty
+                            ? colors.statusNormal
+                            : colors.statusCritical,
                       ),
                     ),
                   ],
