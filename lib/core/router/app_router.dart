@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:happy_oven/features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:happy_oven/features/auth/presentation/views/login_view.dart';
 import 'package:happy_oven/features/auth/presentation/views/recuperar_password_view.dart';
 import 'package:happy_oven/features/analitica_alertas/presentation/views/dashboard_inteligente_view.dart';
@@ -14,81 +14,84 @@ import 'package:happy_oven/features/registro_movimientos/presentation/views/sali
 import 'package:happy_oven/features/recetas_costeo/presentation/views/recetario_view.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/views/costeo_dinamico_view.dart';
 import 'package:happy_oven/features/configuracion/presentation/views/perfil_ajustes_view.dart';
-import 'package:happy_oven/core/models/articulo.dart';
-import 'package:happy_oven/core/models/receta.dart';
 
-final GoRouter appRouter = GoRouter(
-  initialLocation: '/login',
-  routes: [
-    GoRoute(
-      path: '/login',
-      builder: (BuildContext context, GoRouterState state) {
-        return const LoginView();
-      },
-    ),
-    GoRoute(
-      path: '/recuperar-password',
-      builder: (context, state) => const RecuperarPasswordView(),
-    ),
-    GoRoute(
-      path: '/dashboard',
-      builder: (context, state) => const DashboardInteligenteView(),
-    ),
-    GoRoute(
-      path: '/alertas',
-      builder: (context, state) => const CentroAlertasView(),
-    ),
-    GoRoute(
-      path: '/reportes',
-      builder: (context, state) => const ReportesView(),
-    ),
-    GoRoute(
-      path: '/catalogo',
-      builder: (context, state) => const CatalogoGeneralView(),
-    ),
-    GoRoute(
-      path: '/catalogo/nuevo',
-      builder: (context, state) {
-        final articulo = state.extra as Articulo?;
-        return FormularioArticuloView(articulo: articulo);
-      },
-    ),
-    GoRoute(
-      path: '/movimientos',
-      builder: (context, state) => const HistorialKardexView(),
-    ),
-    GoRoute(
-      path: '/movimientos/ingreso-ocr',
-      builder: (context, state) => const IngresoOcrView(),
-    ),
-    GoRoute(
-      path: '/movimientos/salida',
-      builder: (context, state) => const SalidaAlmacenView(),
-    ),
-    GoRoute(
-      path: '/recetas',
-      builder: (context, state) => const RecetarioView(),
-    ),
-    GoRoute(
-      path: '/recetas/nueva',
-      builder: (context, state) => const CosteoDinamicoView(),
-    ),
-    GoRoute(
-      path: '/recetas/editar',
-      builder: (context, state) {
-        final receta = state.extra as Receta?;
-        return CosteoDinamicoView(receta: receta);
-      },
-    ),
-    GoRoute(
-      path: '/recetas/costeo-dinamico',
-      builder: (context, state) => const CosteoDinamicoView(),
-    ),
-    GoRoute(
-      path: '/perfil',
-      builder: (context, state) => const PerfilAjustesView(),
-    ),
-  ],
-);
+final appRouterProvider = Provider<GoRouter>((ref) {
+  final authState = ref.watch(authViewModelProvider);
 
-final appRouterProvider = Provider<GoRouter>((ref) => appRouter);
+  return GoRouter(
+    initialLocation: '/login',
+    redirect: (context, state) {
+      final autenticado = authState.autenticado;
+      final enLogin =
+          state.matchedLocation == '/login' ||
+          state.matchedLocation == '/recuperar-password';
+
+      // No autenticado intentando entrar a ruta protegida
+      if (!autenticado && !enLogin) return '/login';
+
+      // Autenticado intentando entrar al login
+      if (autenticado && enLogin) return '/dashboard';
+
+      return null;
+    },
+    routes: [
+      // ── Auth
+      GoRoute(path: '/login', builder: (c, s) => const LoginView()),
+      GoRoute(
+        path: '/recuperar-password',
+        builder: (c, s) => const RecuperarPasswordView(),
+      ),
+
+      // ── Dashboard
+      GoRoute(
+        path: '/dashboard',
+        builder: (c, s) => const DashboardInteligenteView(),
+      ),
+
+      // ── Analítica
+      GoRoute(path: '/alertas', builder: (c, s) => const CentroAlertasView()),
+      GoRoute(path: '/reportes', builder: (c, s) => const ReportesView()),
+
+      // ── Inventario
+      GoRoute(
+        path: '/catalogo',
+        builder: (c, s) => const CatalogoGeneralView(),
+      ),
+      GoRoute(
+        path: '/catalogo/nuevo',
+        builder: (c, s) => const FormularioArticuloView(),
+      ),
+
+      // ── Movimientos
+      GoRoute(
+        path: '/movimientos',
+        builder: (c, s) => const HistorialKardexView(),
+      ),
+      GoRoute(
+        path: '/movimientos/ingreso-ocr',
+        builder: (c, s) => const IngresoOcrView(),
+      ),
+      GoRoute(
+        path: '/movimientos/salida',
+        builder: (c, s) => const SalidaAlmacenView(),
+      ),
+
+      // ── Recetas
+      GoRoute(path: '/recetas', builder: (c, s) => const RecetarioView()),
+      GoRoute(
+        path: '/recetas/nueva',
+        builder: (c, s) => const CosteoDinamicoView(),
+      ),
+      GoRoute(
+        path: '/recetas/editar',
+        builder: (c, s) {
+          final receta = s.extra as dynamic;
+          return CosteoDinamicoView(receta: receta);
+        },
+      ),
+
+      // ── Perfil
+      GoRoute(path: '/perfil', builder: (c, s) => const PerfilAjustesView()),
+    ],
+  );
+});
