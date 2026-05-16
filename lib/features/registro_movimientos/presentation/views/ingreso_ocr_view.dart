@@ -2,16 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:happy_oven/core/theme/theme.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
-import 'package:happy_oven/core/services/ocr_service.dart';
-import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
-import 'package:happy_oven/features/registro_movimientos/presentation/viewmodels/movimientos_viewmodel.dart';
+import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/features/auth/presentation/viewmodels/auth_viewmodel.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
-import 'dart:io';
+import 'package:happy_oven/features/registro_movimientos/presentation/viewmodels/movimientos_viewmodel.dart';
+import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
 
 class IngresoOcrView extends ConsumerStatefulWidget {
   const IngresoOcrView({super.key});
@@ -22,151 +20,288 @@ class IngresoOcrView extends ConsumerStatefulWidget {
 
 class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
   bool _mostrandoConfirmacion = false;
-  bool _procesando = false;
+  bool _guardando = false;
+  bool _procesandoOcr = false;
 
-  final _proveedorController = TextEditingController(text: '');
-  final _fechaController = TextEditingController(
-    text: DateFormat('dd/MM/yyyy').format(DateTime.now()),
+  final _proveedorController = TextEditingController(
+    text: 'Molinos del Norte S.A.',
   );
-  final _ocrService = OcrService();
-  final _imagePicker = ImagePicker();
+  final _fechaController = TextEditingController(
+    text:
+        '${DateTime.now().day.toString().padLeft(2, '0')}/${DateTime.now().month.toString().padLeft(2, '0')}/${DateTime.now().year}',
+  );
 
-  List<_ItemOCR> _items = [];
-  List<Articulo> _articulosDisponibles = [];
+  final List<_ItemOCR> _items = [];
+
+  final List<String> _unidades = ['kg', 'litros', 'unidades', 'gramos', 'ml'];
 
   double get _totalBoleta =>
       _items.fold(0, (sum, i) => sum + (i.cantidad * i.precioUnitario));
-  final List<String> _unidades = ['kg', 'litros', 'unidades', 'gramos', 'ml'];
 
   @override
   void dispose() {
     _proveedorController.dispose();
     _fechaController.dispose();
-    _ocrService.dispose();
     super.dispose();
   }
 
-  Future<void> _escanear(ImageSource source) async {
-    final picked = await _imagePicker.pickImage(
-      source: source,
-      imageQuality: 85,
-    );
-    if (picked == null) return;
-
-    setState(() => _procesando = true);
-
-    try {
-      final file = File(picked.path);
-      final textoRaw = await _ocrService.reconocerTexto(file);
-
-      final ocrItems = _ocrService.parsearBoleta(textoRaw);
-
-      final listaItems = ocrItems.map((o) {
-        final item = _ItemOCR(
-          nombreRaw: o.nombreRaw,
-          cantidad: o.cantidad,
-          unidad: o.unidad,
-          precioUnitario: o.precioUnitario,
-        );
-        // Auto-enlazar por nombre parcial
-        try {
-          item.articulo = _articulosDisponibles.firstWhere(
-            (a) => a.nombre.toLowerCase().contains(
-              o.nombreRaw.toLowerCase().split(' ').first,
-            ),
-          );
-          item.unidad = item.articulo!.unidad;
-        } catch (_) {}
-        return item;
-      }).toList();
-
-      setState(() {
-        _items = listaItems;
-        _mostrandoConfirmacion = true;
-        _procesando = false;
-      });
-
-      if (listaItems.isEmpty && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text(
-              'No se detectaron items. Agrégalos manualmente.',
-            ),
-            backgroundColor: AppTheme.colorsOf(context).primary,
-            behavior: SnackBarBehavior.floating,
+  void _simularEscaneo() {
+    // Mostrar opciones: cámara o galería
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Capturar foto'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _capturarYProcesarOcr(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.image),
+                title: const Text('Seleccionar de galería'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _capturarYProcesarOcr(ImageSource.gallery);
+                },
+              ),
+            ],
           ),
         );
+      },
+    );
+  }
+
+  Future<void> _capturarYProcesarOcr(ImageSource source) async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: source);
+      
+      if (pickedFile == null) return;
+
+      setState(() => _procesandoOcr = true);
+
+      // Procesar OCR
+      final inputImage = InputImage.fromFilePath(pickedFile.path);
+      final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+      
+      final recognizedText = await textRecognizer.processImage(inputImage);
+      await textRecognizer.close();
+
+      _procesarTextoOcr(recognizedText.text);
+      
+      if (mounted) {
+        setState(() {
+          _procesandoOcr = false;
+          _mostrandoConfirmacion = true;
+        });
       }
     } catch (e) {
-      setState(() => _procesando = false);
+      setState(() => _procesandoOcr = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al procesar imagen: $e'),
-            backgroundColor: AppTheme.colorsOf(context).statusCritical,
-          ),
-        );
+        _mostrarError('Error al procesar la imagen: $e');
       }
     }
   }
 
-  void _confirmarTodo() async {
-    final user = ref.read(authViewModelProvider).usuario;
-    if (user == null) return;
+  void _procesarTextoOcr(String texto) {
+    _items.clear();
+    
+    final lineas = texto.split('\n');
+    
+    for (final linea in lineas) {
+      final limpia = linea.trim();
+      if (limpia.isEmpty) continue;
+      
+      // Buscar patrones: nombre + cantidad + precio
+      // Ejemplo: "Harina 50 kg 2.80" o "Mantequilla 20 kg 8.50"
+      
+      final item = _extraerItemDeLinea(limpia);
+      if (item != null) {
+        _items.add(item);
+      }
+    }
+    
+    // Si no encontró nada, mostrar el texto completo para que el usuario lo edite
+    if (_items.isEmpty) {
+      _mostrarError('No se encontraron ítems. Por favor, edita manualmente.');
+      // Agregar un ítem vacío para que el usuario comience a editar
+      _items.add(_ItemOCR(
+        nombre: '',
+        cantidad: 0,
+        unidad: 'kg',
+        precioUnitario: 0,
+      ));
+    }
+  }
 
-    if (_items.any((i) => i.articulo == null)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Todos los ítems deben estar enlazados a un artículo'),
-          backgroundColor: AppTheme.colorsOf(context).statusCritical,
-        ),
-      );
+  _ItemOCR? _extraerItemDeLinea(String linea) {
+    // Intentar extraer: nombre (letras/espacios) + números (cantidad) + números (precio)
+    // Patrón: palabras, seguidas de números, seguidas de más números
+    
+    final pattern = RegExp(
+      r'([a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)\s+(\d+(?:[.,]\d+)?)\s+([a-z]+)?\s*(\d+(?:[.,]\d+)?)',
+      caseSensitive: false,
+    );
+    
+    final match = pattern.firstMatch(linea);
+    if (match == null) return null;
+    
+    String nombre = match.group(1)?.trim() ?? '';
+    String cantidadStr = match.group(2) ?? '0';
+    String? unidadStr = match.group(3)?.trim().toLowerCase();
+    String precioStr = match.group(4) ?? '0';
+    
+    if (nombre.isEmpty) return null;
+    
+    double cantidad = double.tryParse(cantidadStr.replaceAll(',', '.')) ?? 0;
+    double precio = double.tryParse(precioStr.replaceAll(',', '.')) ?? 0;
+    
+    String unidad = 'kg'; // default
+    if (unidadStr != null) {
+      if (unidadStr.startsWith('l')) unidad = 'litros';
+      else if (unidadStr.startsWith('u')) unidad = 'unidades';
+      else if (unidadStr.startsWith('g')) unidad = 'gramos';
+      else if (unidadStr.startsWith('m')) unidad = 'ml';
+    }
+    
+    if (cantidad <= 0 || precio <= 0) return null;
+    
+    return _ItemOCR(
+      nombre: nombre,
+      cantidad: cantidad,
+      unidad: unidad,
+      precioUnitario: precio,
+    );
+  }
+
+  Future<void> _confirmarTodo() async {
+    if (_guardando) return;
+
+    // Validar que todos los ítems tienen nombre y cantidad
+    final itemsInvalidos = _items
+        .where((i) => i.nombre.trim().isEmpty || i.cantidad <= 0)
+        .toList();
+    if (itemsInvalidos.isNotEmpty) {
+      _mostrarError('Todos los ítems deben tener nombre y cantidad válida');
       return;
     }
 
+    setState(() => _guardando = true);
+
+    final authState = ref.read(authViewModelProvider);
+    final usuarioId = authState.usuario?.id ?? '';
+
+    // Buscar artículos en catálogo por nombre para obtener su ID
+    final catalogoState = ref.read(catalogoViewModelProvider);
+    final articulos = catalogoState.maybeWhen(
+      data: (lista) => lista,
+      orElse: () => <Articulo>[],
+    );
+
+    int exitosos = 0;
+    int fallidos = 0;
+
     for (final item in _items) {
-      final articulo = item.articulo!;
-      final mov = Movimiento(
+      // Buscar artículo por nombre (case-insensitive)
+      final articuloMatch = articulos
+          .where(
+            (a) =>
+                a.nombre.toLowerCase().trim() ==
+                item.nombre.toLowerCase().trim(),
+          )
+          .toList();
+
+      if (articuloMatch.isEmpty) {
+        fallidos++;
+        continue;
+      }
+
+      final articulo = articuloMatch.first;
+      final nuevoStock = articulo.stockActual + item.cantidad;
+
+      final movimiento = Movimiento(
         id: '',
         articuloId: articulo.id,
-        usuarioId: user.id,
+        usuarioId: usuarioId,
         tipoMovimiento: 'entrada',
         cantidad: item.cantidad,
         precioUnitario: item.precioUnitario,
-        proveedor: _proveedorController.text.trim(),
+        proveedor: _proveedorController.text.trim().isEmpty
+            ? null
+            : _proveedorController.text.trim(),
         porOcr: true,
         fecha: DateTime.now(),
       );
-      final nuevoStock = articulo.stockActual + item.cantidad;
-      await ref
+
+      final exito = await ref
           .read(movimientosViewModelProvider.notifier)
-          .registrarMovimiento(mov, articulo, nuevoStock);
+          .registrarMovimiento(movimiento, articulo, nuevoStock);
+
+      if (exito) {
+        exitosos++;
+      } else {
+        fallidos++;
+      }
     }
 
-    if (mounted) {
+    setState(() => _guardando = false);
+
+    if (!mounted) return;
+
+    if (fallidos == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${_items.length} insumos registrados correctamente'),
+          content: Text('$exitosos insumos registrados correctamente'),
           backgroundColor: AppTheme.colorsOf(context).statusNormal,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: AppTheme.radius.brSm),
         ),
       );
       context.pop();
+    } else if (exitosos > 0) {
+      // Algunos fallaron — probablemente el nombre no coincide con el catálogo
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '$exitosos registrados. $fallidos no encontrados en catálogo — '
+            'verifica que el nombre coincida exactamente.',
+          ),
+          backgroundColor: AppTheme.colorsOf(context).statusLow,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: AppTheme.radius.brSm),
+          duration: const Duration(seconds: 5),
+        ),
+      );
+    } else {
+      _mostrarError(
+        'No se encontraron los insumos en el catálogo. '
+        'Verifica que los nombres coincidan exactamente.',
+      );
     }
   }
 
-  void _agregarItem() {
-    setState(
-      () => _items.add(
-        _ItemOCR(
-          nombreRaw: 'Nuevo insumo',
-          cantidad: 0,
-          unidad: 'kg',
-          precioUnitario: 0,
-        ),
+  void _mostrarError(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: AppTheme.colorsOf(context).statusCritical,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: AppTheme.radius.brSm),
       ),
     );
+  }
+
+  void _agregarItem() {
+    setState(() {
+      _items.add(
+        _ItemOCR(nombre: '', cantidad: 0, unidad: 'kg', precioUnitario: 0),
+      );
+    });
   }
 
   void _eliminarItem(int index) {
@@ -175,12 +310,10 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
 
   @override
   Widget build(BuildContext context) {
-    final catalogoState = ref.watch(catalogoViewModelProvider);
-    _articulosDisponibles = catalogoState.value ?? [];
-
+    final colors = AppTheme.colorsOf(context);
     return Scaffold(
       backgroundColor: _mostrandoConfirmacion
-          ? AppTheme.colorsOf(context).bg
+          ? colors.bg
           : const Color(0xFF1A1A1A),
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
@@ -193,6 +326,22 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
 
   // ── ESTADO 1: Cámara
   Widget _buildCamara(BuildContext context) {
+    if (_procesandoOcr) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            const Text(
+              'Procesando imagen...',
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Column(
       children: [
         Container(
@@ -225,19 +374,20 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                   ),
                   Column(
                     children: [
-                      Text(
+                      const Text(
                         'Escanear boleta',
-                        style: AppTheme.font.label.copyWith(
-                          color: Colors.white,
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
+                          color: Colors.white,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         'Apunta la cámara a la boleta',
-                        style: AppTheme.font.caption.copyWith(
-                          color: Colors.white.withValues(alpha: 0.5),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.white.withOpacity(0.5),
                         ),
                       ),
                     ],
@@ -252,7 +402,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppTheme.radius.lg),
+              borderRadius: AppTheme.radius.brLg,
               child: Stack(
                 children: [
                   Container(color: const Color(0xFF2A2A2A)),
@@ -299,7 +449,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                       children: [
                         Icon(
                           Icons.receipt_long_outlined,
-                          color: Colors.white.withValues(alpha: 0.3),
+                          color: Colors.white.withOpacity(0.3),
                           size: 48,
                         ),
                         const SizedBox(height: 12),
@@ -307,7 +457,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                           'Encuadra la boleta completa',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.white.withValues(alpha: 0.4),
+                            color: Colors.white.withOpacity(0.4),
                           ),
                         ),
                       ],
@@ -318,102 +468,71 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
             ),
           ),
         ),
-        if (_procesando)
-          Container(
-            color: const Color(0xFF1A1A1A),
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
-            child: Column(
-              children: [
-                const CircularProgressIndicator(color: Colors.white),
-                const SizedBox(height: 12),
-                Text(
-                  'Procesando OCR...',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    fontSize: 13,
+        Container(
+          color: const Color(0xFF1A1A1A),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  borderRadius: AppTheme.radius.brSm,
+                  border: Border.all(
+                    color: const Color(0xFF444444),
+                    width: 0.5,
                   ),
                 ),
-              ],
-            ),
-          )
-        else
-          Container(
-            color: const Color(0xFF1A1A1A),
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                GestureDetector(
-                  onTap: () => _escanear(ImageSource.gallery),
-                  child: Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      borderRadius: AppTheme.radius.brMd,
-                      border: Border.all(
-                        color: const Color(0xFF444444),
-                        width: 0.5,
-                      ),
-                    ),
-                    child: Icon(
-                      Icons.photo_library_outlined,
-                      color: Colors.white.withValues(alpha: 0.6),
-                      size: 20,
+                child: Icon(
+                  Icons.photo_library_outlined,
+                  color: Colors.white.withOpacity(0.6),
+                  size: 20,
+                ),
+              ),
+              GestureDetector(
+                onTap: _simularEscaneo,
+                child: Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppTheme.colors.primary,
+                      width: 3,
                     ),
                   ),
-                ),
-                GestureDetector(
-                  onTap: () => _escanear(ImageSource.camera),
-                  child: Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppTheme.colorsOf(context).primary,
-                        width: 3,
-                      ),
-                    ),
-                    child: Center(
-                      child: Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: AppTheme.colorsOf(context).primary,
-                          shape: BoxShape.circle,
-                        ),
+                  child: Center(
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: AppTheme.colors.primary,
+                        shape: BoxShape.circle,
                       ),
                     ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    // Ingreso manual sin escaneo
-                    setState(() {
-                      _items = [];
-                      _mostrandoConfirmacion = true;
-                    });
-                  },
-                  child: Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      borderRadius: AppTheme.radius.brMd,
-                      border: Border.all(
-                        color: const Color(0xFF444444),
-                        width: 0.5,
-                      ),
-                    ),
-                    child: Icon(
-                      Icons.edit_note_outlined,
-                      color: Colors.white.withValues(alpha: 0.6),
-                      size: 20,
-                    ),
+              ),
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  borderRadius: AppTheme.radius.brSm,
+                  border: Border.all(
+                    color: const Color(0xFF444444),
+                    width: 0.5,
                   ),
                 ),
-              ],
-            ),
+                child: Icon(
+                  Icons.bolt_outlined,
+                  color: Colors.white.withOpacity(0.6),
+                  size: 20,
+                ),
+              ),
+            ],
           ),
+        ),
       ],
     );
   }
@@ -449,17 +568,23 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
 
   // ── ESTADO 2: Confirmación
   Widget _buildConfirmacion(BuildContext context) {
+    final colors = AppTheme.colorsOf(context);
+    final font = AppTheme.fontOf(context);
     return Column(
       children: [
-        _buildHeaderConfirmacion(context),
-        Expanded(child: _buildListaItems()),
+        _buildHeaderConfirmacion(context, colors, font),
+        Expanded(child: _buildListaItems(context, colors, font)),
       ],
     );
   }
 
-  Widget _buildHeaderConfirmacion(BuildContext context) {
+  Widget _buildHeaderConfirmacion(
+    BuildContext context,
+    AppColors colors,
+    AppFont font,
+  ) {
     return Container(
-      color: AppTheme.colors.accent,
+      color: colors.accent,
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -477,13 +602,13 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                       decoration: BoxDecoration(
                         borderRadius: AppTheme.radius.brSm,
                         border: Border.all(
-                          color: AppTheme.colors.accentDark,
+                          color: colors.accentDark,
                           width: 0.5,
                         ),
                       ),
                       child: Icon(
                         Icons.arrow_back_rounded,
-                        color: AppTheme.colors.titleText,
+                        color: colors.titleText,
                         size: 18,
                       ),
                     ),
@@ -492,29 +617,25 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Confirmar ingreso',
-                        style: AppTheme.font.h3.copyWith(fontSize: 18),
-                      ),
+                      Text('Confirmar ingreso', style: font.h3),
                       Text(
                         'Revisa y corrige si es necesario',
-                        style: AppTheme.font.caption.copyWith(
-                          color: AppTheme.colors.accentDark,
-                        ),
+                        style: font.caption.copyWith(color: colors.accentDark),
                       ),
                     ],
                   ),
                 ],
               ),
               const SizedBox(height: 14),
+              // Info proveedor
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: AppTheme.colors.card,
-                  borderRadius: AppTheme.radius.brMd,
+                  color: colors.card,
+                  borderRadius: AppTheme.radius.brSm,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -523,31 +644,32 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                       children: [
                         Icon(
                           Icons.store_outlined,
-                          color: AppTheme.colors.brownMid,
+                          color: colors.brownMid,
                           size: 15,
                         ),
                         const SizedBox(width: 8),
                         Text(
                           _proveedorController.text,
-                          style: AppTheme.font.label.copyWith(fontSize: 12),
+                          style: font.label.copyWith(fontSize: 12),
                         ),
                       ],
                     ),
-                    Text(_fechaController.text, style: AppTheme.font.caption),
+                    Text(_fechaController.text, style: font.caption),
                   ],
                 ),
               ),
               const SizedBox(height: 8),
+              // Badge OCR
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 7,
                 ),
                 decoration: BoxDecoration(
-                  color: AppTheme.colors.successLight,
+                  color: _items.isNotEmpty ? colors.successLight : colors.dangerLight,
                   borderRadius: AppTheme.radius.brSm,
                   border: Border.all(
-                    color: AppTheme.colors.successBorder,
+                    color: _items.isNotEmpty ? colors.successBorder : colors.dangerBorder,
                     width: 0.5,
                   ),
                 ),
@@ -555,16 +677,18 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      Icons.document_scanner_outlined,
-                      color: AppTheme.colors.statusNormal,
+                      _items.isNotEmpty ? Icons.check_circle_outline : Icons.warning_amber_rounded,
+                      color: _items.isNotEmpty ? colors.statusNormal : colors.statusCritical,
                       size: 14,
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'OCR detectó ${_items.length} insumos en la boleta',
-                      style: AppTheme.font.caption.copyWith(
+                      _items.isEmpty
+                          ? 'Edita manualmente los ítems'
+                          : 'OCR detectó ${_items.length} insumo${_items.length != 1 ? 's' : ''}',
+                      style: font.caption.copyWith(
                         fontWeight: FontWeight.w500,
-                        color: AppTheme.colors.statusNormal,
+                        color: _items.isNotEmpty ? colors.statusNormal : colors.statusCritical,
                       ),
                     ),
                   ],
@@ -577,10 +701,14 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
     );
   }
 
-  Widget _buildListaItems() {
+  Widget _buildListaItems(
+    BuildContext context,
+    AppColors colors,
+    AppFont font,
+  ) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.colors.card,
+        color: colors.card,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(AppTheme.radius.xl),
           topRight: Radius.circular(AppTheme.radius.xl),
@@ -601,7 +729,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                 children: [
                   Text(
                     'Insumos detectados',
-                    style: AppTheme.font.label.copyWith(fontSize: 13),
+                    style: font.label.copyWith(fontSize: 13),
                   ),
                   GestureDetector(
                     onTap: _agregarItem,
@@ -609,15 +737,15 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                       children: [
                         Icon(
                           Icons.add_rounded,
-                          color: AppTheme.colors.primary,
+                          color: colors.primary,
                           size: 16,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           'Agregar ítem',
-                          style: AppTheme.font.label.copyWith(
+                          style: font.label.copyWith(
                             fontSize: 12,
-                            color: AppTheme.colors.primary,
+                            color: colors.primary,
                           ),
                         ),
                       ],
@@ -631,15 +759,17 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                 padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
                 itemCount: _items.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 8),
-                itemBuilder: (context, index) => _buildItemCard(index),
+                itemBuilder: (context, index) =>
+                    _buildItemCard(index, colors, font),
               ),
             ),
+            // Total y botones
             Container(
               padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
               decoration: BoxDecoration(
-                color: AppTheme.colors.card,
+                color: colors.card,
                 border: Border(
-                  top: BorderSide(color: AppTheme.colors.border, width: 0.5),
+                  top: BorderSide(color: colors.border, width: 0.5),
                 ),
               ),
               child: Column(
@@ -650,21 +780,21 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      color: AppTheme.colors.surface,
-                      borderRadius: AppTheme.radius.brMd,
+                      color: colors.surface,
+                      borderRadius: AppTheme.radius.brSm,
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           'Total boleta',
-                          style: AppTheme.font.label.copyWith(fontSize: 13),
+                          style: font.label.copyWith(fontSize: 13),
                         ),
                         Text(
                           'S/ ${_totalBoleta.toStringAsFixed(2)}',
-                          style: AppTheme.font.h3.copyWith(
+                          style: font.h3.copyWith(
                             fontSize: 16,
-                            color: AppTheme.colors.primary,
+                            color: colors.primary,
                           ),
                         ),
                       ],
@@ -680,18 +810,18 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             decoration: BoxDecoration(
-                              borderRadius: AppTheme.radius.brMd,
+                              borderRadius: AppTheme.radius.brSm,
                               border: Border.all(
-                                color: AppTheme.colors.border,
+                                color: colors.border,
                                 width: 0.5,
                               ),
                             ),
                             child: Text(
                               'Volver a escanear',
                               textAlign: TextAlign.center,
-                              style: AppTheme.font.label.copyWith(
+                              style: font.label.copyWith(
                                 fontSize: 13,
-                                color: AppTheme.colors.bodyText,
+                                color: colors.bodyText,
                               ),
                             ),
                           ),
@@ -700,21 +830,32 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: GestureDetector(
-                          onTap: _confirmarTodo,
+                          onTap: _guardando ? null : _confirmarTodo,
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             decoration: BoxDecoration(
-                              color: AppTheme.colors.primary,
-                              borderRadius: AppTheme.radius.brMd,
+                              color: _guardando ? colors.hint : colors.primary,
+                              borderRadius: AppTheme.radius.brSm,
                             ),
-                            child: Text(
-                              'Confirmar todo',
-                              textAlign: TextAlign.center,
-                              style: AppTheme.font.label.copyWith(
-                                fontSize: 13,
-                                color: AppTheme.colors.white,
-                              ),
-                            ),
+                            child: _guardando
+                                ? Center(
+                                    child: SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: colors.white,
+                                      ),
+                                    ),
+                                  )
+                                : Text(
+                                    'Confirmar todo',
+                                    textAlign: TextAlign.center,
+                                    style: font.label.copyWith(
+                                      fontSize: 13,
+                                      color: colors.white,
+                                    ),
+                                  ),
                           ),
                         ),
                       ),
@@ -729,13 +870,13 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
     );
   }
 
-  Widget _buildItemCard(int index) {
+  Widget _buildItemCard(int index, AppColors colors, AppFont font) {
     final item = _items[index];
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        border: Border.all(color: AppTheme.colors.border, width: 0.5),
-        borderRadius: AppTheme.radius.brMd,
+        border: Border.all(color: colors.border, width: 0.5),
+        borderRadius: AppTheme.radius.brSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -744,52 +885,31 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: GestureDetector(
-                  onTap: () => _mostrarSelectorArticulo(index),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppTheme.colorsOf(context).surface,
-                      borderRadius: AppTheme.radius.brSm,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          item.articulo?.nombre ?? 'Seleccionar artículo...',
-                          style: AppTheme.fontOf(context).label.copyWith(
-                            fontSize: 13,
-                            color: item.articulo == null
-                                ? AppTheme.colorsOf(context).statusCritical
-                                : AppTheme.colorsOf(context).titleText,
-                          ),
-                        ),
-                        Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          color: AppTheme.colorsOf(context).hint,
-                          size: 16,
-                        ),
-                      ],
-                    ),
+                child: TextFormField(
+                  initialValue: item.nombre,
+                  style: font.label.copyWith(fontSize: 12),
+                  decoration: InputDecoration(
+                    hintText: 'Nombre del insumo',
+                    hintStyle: font.hint.copyWith(fontSize: 12),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
                   ),
+                  onChanged: (v) => item.nombre = v,
                 ),
               ),
-              const SizedBox(width: 8),
               GestureDetector(
                 onTap: () => _eliminarItem(index),
                 child: Container(
                   width: 24,
                   height: 24,
                   decoration: BoxDecoration(
-                    color: AppTheme.colors.dangerLight,
+                    color: colors.dangerLight,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Icon(
                     Icons.delete_outline_rounded,
-                    color: AppTheme.colors.statusCritical,
+                    color: colors.statusCritical,
                     size: 14,
                   ),
                 ),
@@ -803,12 +923,13 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                 child: _buildMiniCampo(
                   label: 'CANTIDAD',
                   valor: item.cantidad == 0 ? '' : item.cantidad.toString(),
-                  esNumero: true,
+                  colors: colors,
+                  font: font,
                   onChanged: (v) => item.cantidad = double.tryParse(v) ?? 0,
                 ),
               ),
               const SizedBox(width: 6),
-              Expanded(child: _buildSelectorUnidadMini(index)),
+              Expanded(child: _buildSelectorUnidadMini(index, colors, font)),
               const SizedBox(width: 6),
               Expanded(
                 child: _buildMiniCampo(
@@ -816,7 +937,8 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                   valor: item.precioUnitario == 0
                       ? ''
                       : item.precioUnitario.toString(),
-                  esNumero: true,
+                  colors: colors,
+                  font: font,
                   prefijo: 'S/',
                   onChanged: (v) =>
                       item.precioUnitario = double.tryParse(v) ?? 0,
@@ -832,25 +954,26 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
   Widget _buildMiniCampo({
     required String label,
     required String valor,
-    required bool esNumero,
+    required AppColors colors,
+    required AppFont font,
     String? prefijo,
     required Function(String) onChanged,
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: AppTheme.colors.primaryLight,
+        color: colors.primaryLight,
         borderRadius: AppTheme.radius.brSm,
-        border: Border.all(color: AppTheme.colors.border, width: 0.5),
+        border: Border.all(color: colors.primaryBorder, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: AppTheme.font.caption.copyWith(
+            style: font.caption.copyWith(
               fontSize: 8,
-              color: AppTheme.colors.brownMid,
+              color: colors.brownMid,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -859,13 +982,11 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
             initialValue: prefijo != null && valor.isNotEmpty
                 ? '$prefijo$valor'
                 : valor,
-            keyboardType: esNumero
-                ? const TextInputType.numberWithOptions(decimal: true)
-                : TextInputType.text,
-            inputFormatters: esNumero
-                ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))]
-                : null,
-            style: AppTheme.font.label.copyWith(fontSize: 13),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+            ],
+            style: font.label.copyWith(fontSize: 13),
             decoration: const InputDecoration(
               border: InputBorder.none,
               isDense: true,
@@ -878,24 +999,24 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
     );
   }
 
-  Widget _buildSelectorUnidadMini(int index) {
+  Widget _buildSelectorUnidadMini(int index, AppColors colors, AppFont font) {
     return GestureDetector(
-      onTap: () => _mostrarSelectorUnidad(index),
+      onTap: () => _mostrarSelectorUnidad(index, colors, font),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
-          color: AppTheme.colors.primaryLight,
+          color: colors.primaryLight,
           borderRadius: AppTheme.radius.brSm,
-          border: Border.all(color: AppTheme.colors.border, width: 0.5),
+          border: Border.all(color: colors.primaryBorder, width: 0.5),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'UNIDAD',
-              style: AppTheme.font.caption.copyWith(
+              style: font.caption.copyWith(
                 fontSize: 8,
-                color: AppTheme.colors.brownMid,
+                color: colors.brownMid,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -905,11 +1026,11 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
               children: [
                 Text(
                   _items[index].unidad,
-                  style: AppTheme.font.label.copyWith(fontSize: 13),
+                  style: font.label.copyWith(fontSize: 13),
                 ),
                 Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  color: AppTheme.colors.brownMid,
+                  color: colors.brownMid,
                   size: 14,
                 ),
               ],
@@ -920,7 +1041,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
     );
   }
 
-  void _mostrarSelectorUnidad(int index) {
+  void _mostrarSelectorUnidad(int index, AppColors colors, AppFont font) {
     showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
@@ -934,10 +1055,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Seleccionar unidad',
-              style: AppTheme.fontOf(context).h3.copyWith(fontSize: 15),
-            ),
+            Text('Seleccionar unidad', style: font.h3.copyWith(fontSize: 15)),
             const SizedBox(height: 16),
             Wrap(
               spacing: 8,
@@ -955,27 +1073,21 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: activo
-                          ? AppTheme.colorsOf(context).titleText
-                          : AppTheme.colorsOf(context).surface,
+                      color: activo ? colors.titleText : colors.surface,
                       borderRadius: BorderRadius.circular(AppTheme.radius.full),
                       border: Border.all(
-                        color: activo
-                            ? AppTheme.colorsOf(context).titleText
-                            : AppTheme.colorsOf(context).border,
+                        color: activo ? colors.titleText : colors.border,
                         width: 0.5,
                       ),
                     ),
                     child: Text(
                       u,
-                      style: AppTheme.fontOf(context).bodySmall.copyWith(
+                      style: font.label.copyWith(
                         fontSize: 13,
                         fontWeight: activo
                             ? FontWeight.w500
                             : FontWeight.normal,
-                        color: activo
-                            ? AppTheme.colorsOf(context).white
-                            : AppTheme.colorsOf(context).hint,
+                        color: activo ? colors.white : colors.hint,
                       ),
                     ),
                   ),
@@ -987,65 +1099,16 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
       ),
     );
   }
-
-  void _mostrarSelectorArticulo(int index) {
-    showModalBottomSheet(
-      context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppTheme.radius.xl),
-        ),
-      ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Enlazar con artículo',
-              style: AppTheme.fontOf(context).h3.copyWith(fontSize: 15),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _articulosDisponibles.length,
-                itemBuilder: (context, i) {
-                  final a = _articulosDisponibles[i];
-                  return ListTile(
-                    title: Text(
-                      a.nombre,
-                      style: AppTheme.fontOf(context).bodySmall,
-                    ),
-                    subtitle: Text(
-                      'Stock actual: ${a.stockActual} ${a.unidad}',
-                      style: AppTheme.fontOf(context).caption,
-                    ),
-                    onTap: () {
-                      setState(() {
-                        _items[index].articulo = a;
-                        _items[index].unidad = a.unidad;
-                      });
-                      Navigator.pop(context);
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _ItemOCR {
-  Articulo? articulo;
-  String nombreRaw;
+  String nombre;
   double cantidad;
   String unidad;
   double precioUnitario;
+
   _ItemOCR({
-    required this.nombreRaw,
+    required this.nombre,
     required this.cantidad,
     required this.unidad,
     required this.precioUnitario,
