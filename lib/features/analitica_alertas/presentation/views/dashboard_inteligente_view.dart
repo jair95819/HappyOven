@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
-import 'package:happy_oven/core/widgets/bottom_nav_bar.dart';
 import 'package:happy_oven/features/analitica_alertas/presentation/viewmodels/dashboard_viewmodel.dart';
 import 'package:intl/intl.dart';
 
@@ -12,7 +11,6 @@ class DashboardInteligenteView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final rutaActual = GoRouterState.of(context).uri.path;
     final state = ref.watch(dashboardViewModelProvider);
 
     return Scaffold(
@@ -21,7 +19,6 @@ class DashboardInteligenteView extends ConsumerWidget {
         children: [
           _buildHeader(context),
           Expanded(child: _buildBody(context, state)),
-          BottomNavBar(rutaActual: rutaActual),
         ],
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:happy_oven/core/widgets/app_shell.dart';
 import 'package:happy_oven/features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:happy_oven/features/auth/presentation/views/login_view.dart';
 import 'package:happy_oven/features/auth/presentation/views/recuperar_password_view.dart';
@@ -27,73 +28,108 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == '/login' ||
           state.matchedLocation == '/recuperar-password';
 
-      // No autenticado intentando entrar a ruta protegida
       if (!autenticado && !enLogin) return '/login';
-
-      // Autenticado intentando entrar al login
       if (autenticado && enLogin) return '/dashboard';
 
       return null;
     },
     routes: [
-      // ── Auth
+      // ── Auth routes (sin AppShell)
       GoRoute(path: '/login', builder: (c, s) => const LoginView()),
       GoRoute(
         path: '/recuperar-password',
         builder: (c, s) => const RecuperarPasswordView(),
       ),
 
-      // ── Dashboard
-      GoRoute(
-        path: '/dashboard',
-        builder: (c, s) => const DashboardInteligenteView(),
-      ),
-
-      // ── Analítica
-      GoRoute(path: '/alertas', builder: (c, s) => const CentroAlertasView()),
-      GoRoute(path: '/reportes', builder: (c, s) => const ReportesView()),
-
-      // ── Inventario
-      GoRoute(
-        path: '/catalogo',
-        builder: (c, s) => const CatalogoGeneralView(),
-      ),
-      GoRoute(
-        path: '/catalogo/nuevo',
-        builder: (c, s) => const FormularioArticuloView(),
-      ),
-
-      // ── Movimientos
-      GoRoute(
-        path: '/movimientos',
-        builder: (c, s) => const HistorialKardexView(),
-      ),
-      GoRoute(
-        path: '/movimientos/ingreso-ocr',
-        builder: (c, s) => const IngresoOcrView(),
-      ),
-      GoRoute(
-        path: '/movimientos/salida',
-        builder: (c, s) => const SalidaAlmacenView(),
-      ),
-
-      // ── Recetas
-      GoRoute(path: '/recetas', builder: (c, s) => const RecetarioView()),
-      GoRoute(
-        path: '/recetas/nueva',
-        builder: (c, s) =>
-            CosteoDinamicoView(productoFinal: s.extra as Articulo?),
-      ),
-      GoRoute(
-        path: '/recetas/editar',
-        builder: (c, s) {
-          final receta = s.extra as dynamic;
-          return CosteoDinamicoView(receta: receta);
+      // ── App principal con BottomNavBar persistente
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return AppShell(navigationShell: navigationShell);
         },
-      ),
+        branches: [
+          // Dashboard tab
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/dashboard',
+                builder: (c, s) => const DashboardInteligenteView(),
+              ),
+            ],
+          ),
 
-      // ── Perfil
-      GoRoute(path: '/perfil', builder: (c, s) => const PerfilAjustesView()),
+          // Inventario tab
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/catalogo',
+                builder: (c, s) => const CatalogoGeneralView(),
+              ),
+              GoRoute(
+                path: '/catalogo/nuevo',
+                builder: (c, s) => const FormularioArticuloView(),
+              ),
+            ],
+          ),
+
+          // Recetas tab
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/recetas',
+                builder: (c, s) => const RecetarioView(),
+              ),
+              GoRoute(
+                path: '/recetas/nueva',
+                builder: (c, s) =>
+                    CosteoDinamicoView(productoFinal: s.extra as Articulo?),
+              ),
+              GoRoute(
+                path: '/recetas/editar',
+                builder: (c, s) {
+                  final receta = s.extra as dynamic;
+                  return CosteoDinamicoView(receta: receta);
+                },
+              ),
+            ],
+          ),
+
+          // Movimientos tab
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/movimientos',
+                builder: (c, s) => const HistorialKardexView(),
+              ),
+              GoRoute(
+                path: '/movimientos/ingreso-ocr',
+                builder: (c, s) => const IngresoOcrView(),
+              ),
+              GoRoute(
+                path: '/movimientos/salida',
+                builder: (c, s) => const SalidaAlmacenView(),
+              ),
+            ],
+          ),
+
+          // Alertas tab
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/alertas',
+                builder: (c, s) => const CentroAlertasView(),
+              ),
+              GoRoute(
+                path: '/reportes',
+                builder: (c, s) => const ReportesView(),
+              ),
+              GoRoute(
+                path: '/perfil',
+                builder: (c, s) => const PerfilAjustesView(),
+              ),
+            ],
+          ),
+        ],
+      ),
     ],
   );
 });

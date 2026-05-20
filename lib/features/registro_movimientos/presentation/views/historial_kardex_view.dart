@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
 import 'package:happy_oven/core/theme/theme.dart';
-import 'package:happy_oven/core/widgets/bottom_nav_bar.dart';
+
 import 'package:happy_oven/features/registro_movimientos/presentation/viewmodels/movimientos_viewmodel.dart';
 
 class HistorialKardexView extends ConsumerWidget {
@@ -14,7 +14,6 @@ class HistorialKardexView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = AppTheme.colorsOf(context);
     final font = AppTheme.fontOf(context);
-    final rutaActual = GoRouterState.of(context).uri.path;
     final movimientosState = ref.watch(movimientosViewModelProvider);
 
     return Scaffold(
@@ -56,7 +55,6 @@ class HistorialKardexView extends ConsumerWidget {
                   : _buildLista(context, colors, font, movimientos),
             ),
           ),
-          BottomNavBar(rutaActual: rutaActual),
         ],
       ),
       // FAB con acciones rápidas

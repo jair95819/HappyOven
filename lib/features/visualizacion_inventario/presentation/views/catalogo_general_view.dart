@@ -6,7 +6,7 @@ import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/core/models/receta.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/viewmodels/recetas_viewmodel.dart';
-import 'package:happy_oven/core/widgets/bottom_nav_bar.dart';
+
 
 class CatalogoGeneralView extends ConsumerStatefulWidget {
   const CatalogoGeneralView({super.key});
@@ -65,7 +65,6 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(catalogoViewModelProvider);
-    final rutaActual = GoRouterState.of(context).uri.path;
 
     return Scaffold(
       backgroundColor: AppTheme.colorsOf(context).bg,
@@ -87,7 +86,6 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
               ),
             ),
           ),
-          BottomNavBar(rutaActual: rutaActual),
         ],
       ),
     );

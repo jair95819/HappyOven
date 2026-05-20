@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
-import 'package:happy_oven/core/widgets/bottom_nav_bar.dart';
+
 import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/core/models/receta.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/viewmodels/recetas_viewmodel.dart';
@@ -35,7 +35,6 @@ class _RecetarioViewState extends ConsumerState<RecetarioView> {
 
   @override
   Widget build(BuildContext context) {
-    final rutaActual = GoRouterState.of(context).uri.path;
     final recetasState = ref.watch(recetasViewModelProvider);
     final articulosState = ref.watch(catalogoViewModelProvider);
     final colors = AppTheme.colorsOf(context);
@@ -47,9 +46,8 @@ class _RecetarioViewState extends ConsumerState<RecetarioView> {
         children: [
           _buildHeader(colors, font, articulosState),
           Expanded(
-            child: _buildContent(recetasState, articulosState, colors, font),
+            child:           _buildContent(recetasState, articulosState, colors, font),
           ),
-          BottomNavBar(rutaActual: rutaActual),
         ],
       ),
     );

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
-import 'package:happy_oven/core/widgets/bottom_nav_bar.dart';
 import 'package:happy_oven/core/models/alerta.dart';
 import 'package:happy_oven/features/analitica_alertas/presentation/viewmodels/alertas_viewmodel.dart';
 import 'package:intl/intl.dart';
@@ -39,7 +37,6 @@ class _CentroAlertasViewState extends ConsumerState<CentroAlertasView> {
 
   @override
   Widget build(BuildContext context) {
-    final rutaActual = GoRouterState.of(context).uri.path;
     final alertasState = ref.watch(alertasViewModelProvider);
     final colors = AppTheme.colorsOf(context);
     final font = AppTheme.fontOf(context);
@@ -61,7 +58,6 @@ class _CentroAlertasViewState extends ConsumerState<CentroAlertasView> {
               error: (e, _) => Center(child: Text('Error al cargar alertas')),
             ),
           ),
-          BottomNavBar(rutaActual: rutaActual),
         ],
       ),
     );

@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 
 class BottomNavBar extends StatelessWidget {
-  final String rutaActual;
+  final StatefulNavigationShell navigationShell;
 
-  const BottomNavBar({super.key, required this.rutaActual});
+  const BottomNavBar({super.key, required this.navigationShell});
 
   @override
   Widget build(BuildContext context) {
@@ -27,34 +27,29 @@ class BottomNavBar extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildNavItem(
-                context,
                 icono: Icons.bar_chart_rounded,
                 etiqueta: 'Dashboard',
-                ruta: '/dashboard',
+                index: 0,
               ),
               _buildNavItem(
-                context,
                 icono: Icons.inventory_2_outlined,
                 etiqueta: 'Inventario',
-                ruta: '/catalogo',
+                index: 1,
               ),
               _buildNavItem(
-                context,
                 icono: Icons.menu_book_outlined,
                 etiqueta: 'Recetas',
-                ruta: '/recetas',
+                index: 2,
               ),
               _buildNavItem(
-                context,
                 icono: Icons.swap_horiz_rounded,
                 etiqueta: 'Movimientos',
-                ruta: '/movimientos',
+                index: 3,
               ),
               _buildNavItem(
-                context,
                 icono: Icons.notifications_outlined,
                 etiqueta: 'Alertas',
-                ruta: '/alertas',
+                index: 4,
               ),
             ],
           ),
@@ -63,51 +58,47 @@ class BottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(
-    BuildContext context, {
+  Widget _buildNavItem({
     required IconData icono,
     required String etiqueta,
-    required String ruta,
+    required int index,
   }) {
-    final activo = _esRutaActiva(ruta);
-    return GestureDetector(
-      onTap: () {
-        if (!activo) context.go(ruta);
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          activo
-              ? Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: AppTheme.colors.primary,
-                    borderRadius: BorderRadius.circular(AppTheme.radius.sm),
-                  ),
-                  child: Icon(icono, color: AppTheme.colors.white, size: 18),
-                )
-              : Icon(icono, color: AppTheme.colors.hint, size: 24),
-          const SizedBox(height: 4),
-          Text(
-            etiqueta,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: activo ? FontWeight.w600 : FontWeight.normal,
-              color: activo ? AppTheme.colors.primary : AppTheme.colors.hint,
-            ),
+    final activo = navigationShell.currentIndex == index;
+    return RepaintBoundary(
+      child: InkWell(
+        onTap: () {
+          if (!activo) navigationShell.goBranch(index);
+        },
+        borderRadius: BorderRadius.circular(AppTheme.radius.sm),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              activo
+                  ? Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppTheme.colors.primary,
+                        borderRadius: BorderRadius.circular(AppTheme.radius.sm),
+                      ),
+                      child: Icon(icono, color: AppTheme.colors.white, size: 18),
+                    )
+                  : Icon(icono, color: AppTheme.colors.hint, size: 24),
+              const SizedBox(height: 4),
+              Text(
+                etiqueta,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: activo ? FontWeight.w600 : FontWeight.normal,
+                  color: activo ? AppTheme.colors.primary : AppTheme.colors.hint,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
-  }
-
-  bool _esRutaActiva(String ruta) {
-    if (ruta == '/dashboard') return rutaActual == '/dashboard';
-    if (ruta == '/catalogo') return rutaActual.startsWith('/catalogo');
-    if (ruta == '/recetas') return rutaActual.startsWith('/recetas');
-    if (ruta == '/movimientos') return rutaActual.startsWith('/movimientos');
-    if (ruta == '/alertas') return rutaActual.startsWith('/alertas');
-    return false;
   }
 }

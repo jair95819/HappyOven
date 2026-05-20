@@ -3,9 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:go_router/go_router.dart';
 import 'package:happy_oven/core/theme/theme.dart';
-import 'package:happy_oven/core/widgets/bottom_nav_bar.dart';
 
 class ReportesView extends StatefulWidget {
   const ReportesView({super.key});
@@ -112,14 +110,12 @@ class _ReportesViewState extends State<ReportesView> {
 
   @override
   Widget build(BuildContext context) {
-    final rutaActual = GoRouterState.of(context).uri.path;
     return Scaffold(
       backgroundColor: AppTheme.colors.bg,
       body: Column(
         children: [
           _buildHeader(),
           Expanded(child: _buildBody()),
-          BottomNavBar(rutaActual: rutaActual),
         ],
       ),
     );
