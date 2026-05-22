@@ -15,6 +15,7 @@ import 'package:happy_oven/features/registro_movimientos/presentation/views/ingr
 import 'package:happy_oven/features/registro_movimientos/presentation/views/salida_almacen_view.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/views/recetario_view.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/views/costeo_dinamico_view.dart';
+import 'package:happy_oven/features/recetas_costeo/presentation/views/create_recipe_screen.dart';
 import 'package:happy_oven/features/configuracion/presentation/views/perfil_ajustes_view.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -80,8 +81,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
               GoRoute(
                 path: '/recetas/nueva',
-                builder: (c, s) =>
-                    CosteoDinamicoView(productoFinal: s.extra as Articulo?),
+                builder: (c, s) => CreateRecipeScreen(productoFinal: s.extra as Articulo?),
               ),
               GoRoute(
                 path: '/recetas/editar',

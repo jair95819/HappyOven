@@ -7,6 +7,7 @@ import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/core/models/receta.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/viewmodels/recetas_viewmodel.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
+import 'package:happy_oven/features/recetas_costeo/presentation/views/cost_breakdown_sheet.dart';
 
 class RecetarioView extends ConsumerStatefulWidget {
   const RecetarioView({super.key});
@@ -462,25 +463,48 @@ class _TarjetaProductoConRecetaState
                   Text('Error', style: font.caption.copyWith(fontSize: 10)),
             ),
             const Spacer(),
-            GestureDetector(
-              onTap: () => setState(() => _expandido = !_expandido),
-              child: Row(
-                children: [
-                  Text(
-                    _expandido ? 'Ocultar' : 'Ver detalle',
-                    style: font.caption.copyWith(
-                      fontSize: 10,
-                      color: colors.primary,
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () => setState(() => _expandido = !_expandido),
+                  child: Row(
+                    children: [
+                      Text(
+                        _expandido ? 'Ocultar' : 'Ver detalle',
+                        style: font.caption.copyWith(
+                          fontSize: 10,
+                          color: colors.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Icon(
+                        _expandido ? Icons.expand_less : Icons.expand_more,
+                        size: 14,
+                        color: colors.primary,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: () => showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radius.xl))),
+                    builder: (_) => Padding(
+                      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                      child: CostBreakdownSheet(recetaId: receta.id),
                     ),
                   ),
-                  const SizedBox(width: 2),
-                  Icon(
-                    _expandido ? Icons.expand_less : Icons.expand_more,
-                    size: 14,
-                    color: colors.primary,
+                  child: Row(
+                    children: [
+                      Text('Desglose', style: font.caption.copyWith(fontSize: 10, color: colors.primary)),
+                      const SizedBox(width: 4),
+                      Icon(Icons.receipt_long, size: 14, color: colors.primary),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),
