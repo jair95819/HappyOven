@@ -19,7 +19,9 @@ class Categoria {
       nombre: json['nombre'] as String,
       tipo: json['tipo'] as String,
       orden: json['orden'] as int,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
     );
   }
 

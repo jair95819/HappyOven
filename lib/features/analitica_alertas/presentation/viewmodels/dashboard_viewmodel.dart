@@ -1,30 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/repositories/articulos_repository.dart';
 import 'package:happy_oven/core/repositories/movimientos_repository.dart';
-import 'package:happy_oven/core/services/supabase_service.dart';
-
-// --- PROVEEDORES BASE ---
-final _supabaseServiceProvider = Provider<SupabaseService>(
-  (ref) => SupabaseService(),
-);
-
-final _articulosRepositoryProvider = Provider<ArticulosRepository>((ref) {
-  return ArticulosRepository(
-    supabaseService: ref.watch(_supabaseServiceProvider),
-  );
-});
-
-final _movimientosRepositoryProvider = Provider<MovimientosRepository>((ref) {
-  return MovimientosRepository(
-    supabaseService: ref.watch(_supabaseServiceProvider),
-  );
-});
+import 'package:happy_oven/core/providers.dart';
 
 final dashboardViewModelProvider =
     StateNotifierProvider<DashboardViewModel, DashboardState>((ref) {
       return DashboardViewModel(
-        articulosRepository: ref.watch(_articulosRepositoryProvider),
-        movimientosRepository: ref.watch(_movimientosRepositoryProvider),
+        articulosRepository: ref.watch(articulosRepositoryProvider),
+        movimientosRepository: ref.watch(movimientosRepositoryProvider),
       );
     });
 

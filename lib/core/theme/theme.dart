@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:happy_oven/core/theme/theme_notifier.dart';
-
 class AppTheme {
   // --- INSTANCIAS CONSTANTES ---
   static const _lightColors = AppColors(
@@ -74,9 +72,8 @@ class AppTheme {
     return AppFont(colors: colorsOf(context));
   }
 
-  // --- RETROCOMPATIBILIDAD MAGICA ---
-  static AppColors get colors =>
-      ThemeNotifier.currentMode == ThemeMode.dark ? _darkColors : _lightColors;
+  // Proporciona colores sin contexto (útil en builders sin BuildContext)
+  static AppColors get colors => _lightColors;
   static AppFont get font => AppFont(colors: colors);
 
   // Helpers para el estado de stock

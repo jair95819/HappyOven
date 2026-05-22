@@ -39,7 +39,7 @@ class Movimiento {
       precioUnitario: (json['precio_unitario'] as num?)?.toDouble(),
       proveedor: json['proveedor'] as String?,
       observacion: json['observacion'] as String?,
-      porOcr: json['por_ocr'] as bool,
+      porOcr: json['por_ocr'] as bool? ?? false,
       fecha: DateTime.parse(json['fecha'] as String),
     );
   }

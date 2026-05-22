@@ -1,12 +1,16 @@
 import 'package:happy_oven/core/services/supabase_service.dart';
 import 'package:happy_oven/core/models/categoria.dart';
+import 'package:happy_oven/core/repositories/i_categorias_repository.dart';
 
-class CategoriasRepository {
+/// Implementación de [ICategoriasRepository] utilizando la tabla `categorias` de Supabase.
+class CategoriasRepository implements ICategoriasRepository {
   final SupabaseService _supabaseService;
 
   CategoriasRepository({required SupabaseService supabaseService})
       : _supabaseService = supabaseService;
 
+  /// Realiza un select a Supabase para obtener todas las categorías, ordenadas por el campo `orden`.
+  @override
   Future<List<Categoria>> getCategorias() async {
     final response = await _supabaseService.client
         .from('categorias')
@@ -16,6 +20,8 @@ class CategoriasRepository {
     return (response as List).map((json) => Categoria.fromJson(json)).toList();
   }
 
+  /// Realiza un select a Supabase filtrando por la columna `tipo`.
+  @override
   Future<List<Categoria>> getCategoriasPorTipo(String tipo) async {
     final response = await _supabaseService.client
         .from('categorias')
@@ -26,6 +32,8 @@ class CategoriasRepository {
     return (response as List).map((json) => Categoria.fromJson(json)).toList();
   }
 
+  /// Inserta una nueva categoría en Supabase y omite el ID para usar el generado por la base de datos.
+  @override
   Future<Categoria> createCategoria(Categoria categoria) async {
     final data = categoria.toJson();
     data.remove('id');
@@ -39,6 +47,8 @@ class CategoriasRepository {
     return Categoria.fromJson(response);
   }
 
+  /// Actualiza un registro existente en la tabla `categorias` basándose en su ID.
+  @override
   Future<Categoria> updateCategoria(Categoria categoria) async {
     final data = categoria.toJson();
 
@@ -52,6 +62,8 @@ class CategoriasRepository {
     return Categoria.fromJson(response);
   }
 
+  /// Elimina definitivamente el registro de categoría desde Supabase.
+  @override
   Future<void> deleteCategoria(String id) async {
     await _supabaseService.client
         .from('categorias')

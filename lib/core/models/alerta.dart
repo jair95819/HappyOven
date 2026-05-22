@@ -25,7 +25,9 @@ class Alerta {
       titulo: json['titulo'] as String,
       mensaje: json['mensaje'] as String,
       leida: json['leida'] as bool,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
     );
   }
 

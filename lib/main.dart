@@ -5,24 +5,33 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'core/router/app_router.dart';
 import 'package:happy_oven/core/services/supabase_service.dart';
 import 'package:happy_oven/core/services/local_storage_service.dart';
+import 'package:happy_oven/core/services/notification_service.dart';
 import 'package:happy_oven/core/theme/theme_notifier.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ── Inicializar LocalStorage
-  await LocalStorageService().initialize();
+  try {
+    // ── Inicializar LocalStorage
+    await LocalStorageService().initialize();
 
-  // ── Inicializar Supabase
-  await SupabaseService().initialize(
-    url: 'https://rfzsqcgiuroncdnnhpmp.supabase.co',
-    anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmenNxY2dpdXJvbmNkbm5ocG1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMTcyMzUsImV4cCI6MjA5MzY5MzIzNX0._cAZIkuGVFb0EryM1rTvTUSkZpb0SfoLA72xl7Y6kUM',
-  );
+    // ── Inicializar Supabase
+    await SupabaseService().initialize(
+      url: 'https://rfzsqcgiuroncdnnhpmp.supabase.co',
+      anonKey:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmenNxY2dpdXJvbmNkbm5ocG1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMTcyMzUsImV4cCI6MjA5MzY5MzIzNX0._cAZIkuGVFb0EryM1rTvTUSkZpb0SfoLA72xl7Y6kUM',
+    );
 
-  // ── Inicializar localizaciones
-  await initializeDateFormatting('es', null);
+    // ── Inicializar localizaciones
+    await initializeDateFormatting('es', null);
+
+    // ── Inicializar notificaciones locales
+    await NotificationService().initialize();
+  } catch (e) {
+    // Si falla la inicialización, la app mostrará una pantalla de error
+    print('Error en inicialización: $e');
+  }
 
   runApp(const ProviderScope(child: HappyOvenApp()));
 }

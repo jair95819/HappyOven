@@ -2,12 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/models/receta.dart';
 import 'package:happy_oven/core/models/receta_ingrediente.dart';
 import 'package:happy_oven/core/repositories/recetas_repository.dart';
-import 'package:happy_oven/features/auth/presentation/viewmodels/auth_viewmodel.dart';
-
-// ── Provider del repositorio
-final recetasRepositoryProvider = Provider<RecetasRepository>((ref) {
-  return RecetasRepository(supabaseService: ref.watch(supabaseServiceProvider));
-});
+import 'package:happy_oven/core/providers.dart';
 
 // ── Provider del ViewModel (lista de recetas)
 final recetasViewModelProvider =

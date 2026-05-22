@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+/// Servicio singleton que centraliza la configuración y acceso al cliente 
+/// de base de datos y autenticación de Supabase.
 class SupabaseService {
   static final SupabaseService _instance = SupabaseService._internal();
 
@@ -11,8 +13,11 @@ class SupabaseService {
     return _instance;
   }
 
+  /// Retorna la instancia activa del cliente de Supabase.
   SupabaseClient get client => _client;
 
+  /// Inicializa la conexión con el proyecto de Supabase utilizando la [url]
+  /// y la clave pública [anonKey]. Debe llamarse antes de cualquier otra operación.
   Future<void> initialize({
     required String url,
     required String anonKey,
@@ -22,6 +27,9 @@ class SupabaseService {
   }
 
   // ── Auth: Sign In con email y password
+  
+  /// Inicia sesión de un usuario existente usando [email] y [password].
+  /// Lanza una excepción si las credenciales son incorrectas.
   Future<AuthResponse> signInWithEmail(String email, String password) async {
     try {
       final response = await _client.auth.signInWithPassword(
@@ -35,6 +43,9 @@ class SupabaseService {
   }
 
   // ── Auth: Sign Up
+  
+  /// Registra una nueva cuenta de usuario en la plataforma con el [email] 
+  /// y [password] especificados.
   Future<AuthResponse> signUpWithEmail(String email, String password) async {
     try {
       final response = await _client.auth.signUp(
@@ -48,6 +59,8 @@ class SupabaseService {
   }
 
   // ── Auth: Sign Out
+  
+  /// Cierra la sesión activa del usuario actual y limpia los tokens guardados.
   Future<void> signOut() async {
     try {
       await _client.auth.signOut();
@@ -57,16 +70,22 @@ class SupabaseService {
   }
 
   // ── Auth: Current user
+  
+  /// Devuelve la entidad [User] del usuario actualmente logueado, o null si no hay sesión.
   User? getCurrentUser() {
     return _client.auth.currentUser;
   }
 
   // ── Auth: Current session
+  
+  /// Devuelve el objeto [Session] activo (incluyendo tokens), o null si no existe.
   Session? getCurrentSession() {
     return _client.auth.currentSession;
   }
 
   // ── Auth: Reset password
+  
+  /// Envía un correo electrónico de recuperación de contraseña a la dirección especificada.
   Future<void> resetPasswordForEmail(String email) async {
     try {
       await _client.auth.resetPasswordForEmail(email);
@@ -76,6 +95,9 @@ class SupabaseService {
   }
 
   // ── DB: Obtener perfil de usuario
+  
+  /// Consulta la tabla `users` para obtener los datos extendidos del perfil
+  /// usando el [userId]. Devuelve un mapa con la información o null si falla.
   Future<Map<String, dynamic>?> getUserProfile(String userId) async {
     try {
       final response = await _client
@@ -90,6 +112,9 @@ class SupabaseService {
   }
 
   // ── DB: Actualizar perfil
+  
+  /// Actualiza los campos del perfil en la tabla `users` para un [userId] dado,
+  /// utilizando la información estructurada en el mapa [data].
   Future<void> updateUserProfile(
     String userId,
     Map<String, dynamic> data,
