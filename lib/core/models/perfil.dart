@@ -19,7 +19,9 @@ class Perfil {
       nombreCompleto: json['nombre_completo'] as String,
       rol: json['rol'] as String,
       avatarUrl: json['avatar_url'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
     );
   }
 

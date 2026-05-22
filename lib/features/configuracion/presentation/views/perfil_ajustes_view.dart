@@ -12,7 +12,7 @@ class PerfilAjustesView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDarkMode = ref.watch(themeProvider) == ThemeMode.dark;
-    return Scaffold(
+    return Scaffold( 
       backgroundColor: AppTheme.colors.bg,
       body: SafeArea(
         child: Column(
@@ -21,7 +21,7 @@ class PerfilAjustesView extends ConsumerWidget {
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 child: Column(
-                  children: [
+                  children: [ 
                     _buildProfileHeader(),
                     Padding(
                       padding: EdgeInsets.symmetric(
@@ -49,7 +49,7 @@ class PerfilAjustesView extends ConsumerWidget {
                               onTap: () {},
                             ),
                           ]),
-                          const SizedBox(height: 22),
+                          const SizedBox(height: 22 ),
                           _buildSectionLabel('ATAJOS'),
                           const SizedBox(height: 10),
                           _buildSettingsGroup([
@@ -82,7 +82,13 @@ class PerfilAjustesView extends ConsumerWidget {
                                 onChanged: (val) {
                                   ref.read(themeProvider.notifier).toggleTheme(val);
                                 },
-                                activeThumbColor: AppTheme.colors.primary,
+                                thumbColor: WidgetStateProperty.resolveWith((states) {
+                                  if (states.contains(WidgetState.selected)) {
+                                    return AppTheme.colors.primary;
+                                  }
+                                  return null;
+                                }),
+                                activeColor: AppTheme.colors.primary,
                                 activeTrackColor: AppTheme.colors.primary.withValues(alpha: 0.3),
                               ),
                             ),
@@ -93,7 +99,13 @@ class PerfilAjustesView extends ConsumerWidget {
                               trailing: Switch.adaptive(
                                 value: true,
                                 onChanged: (val) {},
-                                activeThumbColor: AppTheme.colors.primary,
+                                thumbColor: WidgetStateProperty.resolveWith((states) {
+                                  if (states.contains(WidgetState.selected)) {
+                                    return AppTheme.colors.primary;
+                                  }
+                                  return null;
+                                }),
+                                activeColor: AppTheme.colors.primary,
                                 activeTrackColor: AppTheme.colors.primary.withValues(alpha: 0.3),
                               ),
                             ),

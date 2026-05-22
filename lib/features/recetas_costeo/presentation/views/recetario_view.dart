@@ -599,7 +599,123 @@ class _TarjetaProductoConRecetaState
                 )
               : const SizedBox.shrink(),
         ),
+        const SizedBox(height: 10),
+        // ── Botones Editar / Eliminar ──
+        Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () => context.push('/recetas/editar', extra: receta),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  decoration: BoxDecoration(
+                    color: colors.primaryLight,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: colors.primaryBorder, width: 0.5),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.edit_outlined, color: colors.primary, size: 13),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Editar receta',
+                        style: font.label.copyWith(
+                          fontSize: 11,
+                          color: colors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () => _confirmarEliminar(context, receta, colors, font),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
+                decoration: BoxDecoration(
+                  color: colors.dangerLight,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: colors.statusCritical.withValues(alpha: 0.2), width: 0.5),
+                ),
+                child: Icon(
+                  Icons.delete_outline_rounded,
+                  color: colors.statusCritical,
+                  size: 14,
+                ),
+              ),
+            ),
+          ],
+        ),
       ],
+    );
+  }
+
+  void _confirmarEliminar(
+    BuildContext context,
+    Receta receta,
+    AppColors colors,
+    AppFont font,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: colors.card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Text(
+          '¿Eliminar receta?',
+          style: font.label.copyWith(fontSize: 15),
+        ),
+        content: Text(
+          'Se eliminará "${receta.nombre}" y todos sus ingredientes. Esta acción no se puede deshacer.',
+          style: font.bodySmall.copyWith(fontSize: 12, color: colors.hint),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Cancelar',
+              style: font.label.copyWith(fontSize: 12, color: colors.hint),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final ok = await ref
+                  .read(recetasViewModelProvider.notifier)
+                  .eliminarReceta(receta.id);
+              if (ok && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Receta eliminada'),
+                    backgroundColor: colors.statusNormal,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                );
+              } else if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Error al eliminar la receta'),
+                    backgroundColor: colors.statusCritical,
+                  ),
+                );
+              }
+            },
+            child: Text(
+              'Eliminar',
+              style: font.label.copyWith(
+                fontSize: 12,
+                color: colors.statusCritical,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

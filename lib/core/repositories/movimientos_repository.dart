@@ -1,13 +1,16 @@
 import 'package:happy_oven/core/services/supabase_service.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
+import 'package:happy_oven/core/repositories/i_movimientos_repository.dart';
 
-class MovimientosRepository {
+/// Implementación de [IMovimientosRepository] utilizando la tabla `movimientos` de Supabase.
+class MovimientosRepository implements IMovimientosRepository {
   final SupabaseService _supabaseService;
 
   MovimientosRepository({required SupabaseService supabaseService})
       : _supabaseService = supabaseService;
 
-  // Obtener historial de todos los movimientos ordenados por fecha
+  /// Consulta a Supabase todos los movimientos, ordenados de forma descendente por fecha (más recientes primero).
+  @override
   Future<List<Movimiento>> getHistorialMovimientos() async {
     final response = await _supabaseService.client
         .from('movimientos')
@@ -17,7 +20,8 @@ class MovimientosRepository {
     return (response as List).map((json) => Movimiento.fromJson(json)).toList();
   }
 
-  // Obtener movimientos de un artículo específico
+  /// Filtra en Supabase los movimientos donde la columna `articulo_id` coincide con el [articuloId].
+  @override
   Future<List<Movimiento>> getMovimientosPorArticulo(String articuloId) async {
     final response = await _supabaseService.client
         .from('movimientos')
@@ -28,13 +32,11 @@ class MovimientosRepository {
     return (response as List).map((json) => Movimiento.fromJson(json)).toList();
   }
 
-  // Registrar un nuevo movimiento
+  /// Inserta un nuevo movimiento en la tabla de Supabase (las triggers de base de datos o lógica superior deben ajustar el stock).
+  @override
   Future<Movimiento> registrarMovimiento(Movimiento movimiento) async {
     final data = movimiento.toJson();
     data.remove('id');
-    
-    // Si la fecha enviada es exactamente DateTime.now, podemos dejar que DB ponga el default
-    // pero es mejor enviar lo que dictó el modelo.
 
     final response = await _supabaseService.client
         .from('movimientos')
@@ -45,7 +47,8 @@ class MovimientosRepository {
     return Movimiento.fromJson(response);
   }
 
-  // Elminar movimiento (No recomendado en contabilidad/kardex a menos que sea un error crítico)
+  /// Elimina de forma forzada un movimiento específico de la base de datos por su ID.
+  @override
   Future<void> deleteMovimiento(String id) async {
     await _supabaseService.client
         .from('movimientos')

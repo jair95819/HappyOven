@@ -42,10 +42,10 @@ class RecuperarPasswordUseCase {
   }
 }
 
-class ObtenerUsuarioActualUseCase {
+class VerificarSesionActivaUseCase {
   final IAuthRepository repository;
 
-  ObtenerUsuarioActualUseCase(this.repository);
+  VerificarSesionActivaUseCase(this.repository);
 
   Future<bool> call() {
     return repository.tieneSesionActiva();

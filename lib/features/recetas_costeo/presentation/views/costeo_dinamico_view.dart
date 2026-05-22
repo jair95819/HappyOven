@@ -7,6 +7,7 @@ import 'package:happy_oven/core/models/receta_ingrediente.dart';
 import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/viewmodels/recetas_viewmodel.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
+import 'package:happy_oven/core/providers.dart';
 
 class CosteoDinamicoView extends ConsumerStatefulWidget {
   final Receta? receta; // null = crear nueva, no-null = editar
@@ -137,7 +138,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
 
   void _agregarIngrediente() {
     setState(() {
-      _ingredientes.add(_IngredienteLocal(articulo: null, cantidad: 0));
+      _ingredientes.add(_IngredienteLocal(cantidad: 0));
     });
   }
 
@@ -160,7 +161,6 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
         ),
       ),
       builder: (_) => DraggableScrollableSheet(
-        initialChildSize: 0.5,
         maxChildSize: 0.8,
         minChildSize: 0.3,
         expand: false,
@@ -244,7 +244,6 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
         ),
       ),
       builder: (_) => DraggableScrollableSheet(
-        initialChildSize: 0.5,
         maxChildSize: 0.8,
         minChildSize: 0.3,
         expand: false,
@@ -569,7 +568,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
       decoration: BoxDecoration(
         color: colors.card,
         borderRadius: AppTheme.radius.brSm,
-        border: Border.all(color: colors.border, width: 1),
+        border: Border.all(color: colors.border),
       ),
       child: TextField(
         controller: controller,
@@ -599,7 +598,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
         decoration: BoxDecoration(
           color: colors.card,
           borderRadius: AppTheme.radius.brSm,
-          border: Border.all(color: colors.border, width: 1),
+          border: Border.all(color: colors.border),
         ),
         child: Row(
           children: [
@@ -673,7 +672,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
             decoration: BoxDecoration(
               color: colors.card,
               borderRadius: AppTheme.radius.brSm,
-              border: Border.all(color: colors.border, width: 1),
+              border: Border.all(color: colors.border),
             ),
             child: Padding(
               padding: const EdgeInsets.all(10),
@@ -899,7 +898,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
         decoration: BoxDecoration(
           color: colors.primaryLight,
           borderRadius: AppTheme.radius.brSm,
-          border: Border.all(color: colors.primaryBorder, width: 1),
+          border: Border.all(color: colors.primaryBorder),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -921,7 +920,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
       decoration: BoxDecoration(
         color: colors.card,
         borderRadius: AppTheme.radius.brSm,
-        border: Border.all(color: colors.border, width: 1),
+        border: Border.all(color: colors.border),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -977,7 +976,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
       decoration: BoxDecoration(
         color: colors.card,
         borderRadius: AppTheme.radius.brSm,
-        border: Border.all(color: colors.border, width: 1),
+        border: Border.all(color: colors.border),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),

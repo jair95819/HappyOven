@@ -1,12 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/models/alerta.dart';
 import 'package:happy_oven/core/repositories/alertas_repository.dart';
-import 'package:happy_oven/features/auth/presentation/viewmodels/auth_viewmodel.dart';
-
-// ── Provider del repositorio
-final alertasRepositoryProvider = Provider<AlertasRepository>((ref) {
-  return AlertasRepository(supabaseService: ref.watch(supabaseServiceProvider));
-});
+import 'package:happy_oven/core/providers.dart';
 
 // ── Provider del ViewModel
 final alertasViewModelProvider =

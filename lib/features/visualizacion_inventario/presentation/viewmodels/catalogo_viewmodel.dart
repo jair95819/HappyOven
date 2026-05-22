@@ -1,11 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/core/repositories/articulos_repository.dart';
-import 'package:happy_oven/features/auth/presentation/viewmodels/auth_viewmodel.dart';
-
-final articulosRepositoryProvider = Provider<ArticulosRepository>((ref) {
-  return ArticulosRepository(supabaseService: ref.watch(supabaseServiceProvider));
-});
+import 'package:happy_oven/core/providers.dart';
 
 final catalogoViewModelProvider = StateNotifierProvider<CatalogoViewModel, AsyncValue<List<Articulo>>>((ref) {
   return CatalogoViewModel(ref.watch(articulosRepositoryProvider));

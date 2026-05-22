@@ -8,6 +8,7 @@ import 'package:happy_oven/features/analitica_alertas/presentation/views/dashboa
 import 'package:happy_oven/features/analitica_alertas/presentation/views/centro_alertas_view.dart';
 import 'package:happy_oven/features/analitica_alertas/presentation/views/reportes_view.dart';
 import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/receta.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/views/catalogo_general_view.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/views/formulario_articulo_view.dart';
 import 'package:happy_oven/features/registro_movimientos/presentation/views/historial_kardex_view.dart';
@@ -18,11 +19,10 @@ import 'package:happy_oven/features/recetas_costeo/presentation/views/costeo_din
 import 'package:happy_oven/features/configuracion/presentation/views/perfil_ajustes_view.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authViewModelProvider);
-
   return GoRouter(
     initialLocation: '/login',
     redirect: (context, state) {
+      final authState = ref.read(authViewModelProvider);
       final autenticado = authState.autenticado;
       final enLogin =
           state.matchedLocation == '/login' ||
@@ -66,7 +66,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
               GoRoute(
                 path: '/catalogo/nuevo',
-                builder: (c, s) => const FormularioArticuloView(),
+                builder: (c, s) => FormularioArticuloView(
+                  articulo: s.extra is Articulo ? s.extra as Articulo? : null,
+                ),
               ),
             ],
           ),
@@ -80,15 +82,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
               GoRoute(
                 path: '/recetas/nueva',
-                builder: (c, s) =>
-                    CosteoDinamicoView(productoFinal: s.extra as Articulo?),
+                builder: (c, s) => CosteoDinamicoView(
+                  productoFinal: s.extra is Articulo ? s.extra as Articulo? : null,
+                ),
               ),
               GoRoute(
                 path: '/recetas/editar',
-                builder: (c, s) {
-                  final receta = s.extra as dynamic;
-                  return CosteoDinamicoView(receta: receta);
-                },
+                builder: (c, s) => CosteoDinamicoView(
+                  receta: s.extra is Receta ? s.extra as Receta? : null,
+                ),
               ),
             ],
           ),

@@ -2,25 +2,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
 import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/core/repositories/movimientos_repository.dart';
-import 'package:happy_oven/features/auth/presentation/viewmodels/auth_viewmodel.dart';
-import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
-
-final movimientosRepositoryProvider = Provider<MovimientosRepository>((ref) {
-  return MovimientosRepository(supabaseService: ref.watch(supabaseServiceProvider));
-});
+import 'package:happy_oven/core/repositories/articulos_repository.dart';
+import 'package:happy_oven/core/providers.dart';
 
 final movimientosViewModelProvider = StateNotifierProvider<MovimientosViewModel, AsyncValue<List<Movimiento>>>((ref) {
   return MovimientosViewModel(
     ref.watch(movimientosRepositoryProvider),
-    ref.read(catalogoViewModelProvider.notifier),
+    ref.watch(articulosRepositoryProvider),
   );
 });
 
 class MovimientosViewModel extends StateNotifier<AsyncValue<List<Movimiento>>> {
   final MovimientosRepository _repository;
-  final CatalogoViewModel _catalogoViewModel;
+  final ArticulosRepository _articulosRepository;
 
-  MovimientosViewModel(this._repository, this._catalogoViewModel) : super(const AsyncLoading()) {
+  MovimientosViewModel(this._repository, this._articulosRepository) : super(const AsyncLoading()) {
     cargarMovimientos();
   }
 
@@ -53,7 +49,7 @@ class MovimientosViewModel extends StateNotifier<AsyncValue<List<Movimiento>>> {
         createdAt: articulo.createdAt,
         updatedAt: DateTime.now(),
       );
-      await _catalogoViewModel.guardarArticulo(articuloActualizado);
+      await _articulosRepository.updateArticulo(articuloActualizado);
       
       // 3. Recargar lista
       await cargarMovimientos();

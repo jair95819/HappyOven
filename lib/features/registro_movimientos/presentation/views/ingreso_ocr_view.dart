@@ -1,15 +1,16 @@
+import 'dart:io' as io;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
 import 'package:happy_oven/core/theme/theme.dart';
-import 'package:happy_oven/features/auth/presentation/viewmodels/auth_viewmodel.dart';
-import 'package:happy_oven/features/registro_movimientos/presentation/viewmodels/movimientos_viewmodel.dart';
+import 'package:happy_oven/core/services/ocr_service.dart';
+import 'package:happy_oven/core/providers.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
+import 'package:happy_oven/features/registro_movimientos/presentation/viewmodels/movimientos_viewmodel.dart';
 
 class IngresoOcrView extends ConsumerStatefulWidget {
   const IngresoOcrView({super.key});
@@ -85,16 +86,12 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
 
       setState(() => _procesandoOcr = true);
 
-      // Procesar OCR
-      final inputImage = InputImage.fromFilePath(pickedFile.path);
-      final textRecognizer = TextRecognizer(
-        script: TextRecognitionScript.latin,
+      final ocrService = OcrService();
+      final recognizedText = await ocrService.reconocerTexto(
+        io.File(pickedFile.path),
       );
 
-      final recognizedText = await textRecognizer.processImage(inputImage);
-      await textRecognizer.close();
-
-      _procesarTextoOcr(recognizedText.text);
+      _procesarTextoOcr(recognizedText);
 
       if (mounted) {
         setState(() {
@@ -162,14 +159,15 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
 
     String unidad = 'kg'; // default
     if (unidadStr != null) {
-      if (unidadStr.startsWith('l'))
+      if (unidadStr.startsWith('l')) {
         unidad = 'litros';
-      else if (unidadStr.startsWith('u'))
+      } else if (unidadStr.startsWith('u')) {
         unidad = 'unidades';
-      else if (unidadStr.startsWith('g'))
+      } else if (unidadStr.startsWith('g')) {
         unidad = 'gramos';
-      else if (unidadStr.startsWith('m'))
+      } else if (unidadStr.startsWith('m')) {
         unidad = 'ml';
+      }
     }
 
     if (cantidad <= 0 || precio <= 0) return null;
@@ -196,8 +194,8 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
 
     setState(() => _guardando = true);
 
-    final authState = ref.read(authViewModelProvider);
-    final usuarioId = authState.usuario?.id ?? '';
+    final supabaseService = ref.read(supabaseServiceProvider);
+    final usuarioId = supabaseService.getCurrentUser()?.id ?? '';
 
     // Buscar artículos en catálogo por nombre para obtener su ID
     final catalogoState = ref.read(catalogoViewModelProvider);
@@ -390,7 +388,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                         'Apunta la cámara a la boleta',
                         style: TextStyle(
                           fontSize: 11,
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.white.withValues(alpha: 0.5),
                         ),
                       ),
                     ],
@@ -452,7 +450,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                       children: [
                         Icon(
                           Icons.receipt_long_outlined,
-                          color: Colors.white.withOpacity(0.3),
+                          color: Colors.white.withValues(alpha: 0.3),
                           size: 48,
                         ),
                         const SizedBox(height: 12),
@@ -460,7 +458,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                           'Encuadra la boleta completa',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.white.withOpacity(0.4),
+                            color: Colors.white.withValues(alpha: 0.4),
                           ),
                         ),
                       ],
@@ -489,7 +487,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                 ),
                 child: Icon(
                   Icons.photo_library_outlined,
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   size: 20,
                 ),
               ),
@@ -529,7 +527,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                 ),
                 child: Icon(
                   Icons.bolt_outlined,
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   size: 20,
                 ),
               ),

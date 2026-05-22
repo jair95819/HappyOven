@@ -4,17 +4,7 @@ import '../../domain/entities/auth_request.dart';
 import '../../domain/entities/user.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../domain/repositories/i_auth_repository.dart';
-import 'package:happy_oven/core/services/supabase_service.dart';
-import 'package:happy_oven/core/services/local_storage_service.dart';
-
-// ── Proveedores de servicios
-final supabaseServiceProvider = Provider<SupabaseService>((ref) {
-  return SupabaseService();
-});
-
-final localStorageServiceProvider = Provider<LocalStorageService>((ref) {
-  return LocalStorageService();
-});
+import 'package:happy_oven/core/providers.dart';
 
 // ── Proveedores de dependencias
 final authRepositoryProvider = Provider<IAuthRepository>((ref) {

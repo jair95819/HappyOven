@@ -1,13 +1,16 @@
 import 'package:happy_oven/core/services/supabase_service.dart';
 import 'package:happy_oven/core/models/alerta.dart';
+import 'package:happy_oven/core/repositories/i_alertas_repository.dart';
 
-class AlertasRepository {
+/// Implementación de la interfaz [IAlertasRepository] utilizando Supabase como backend.
+class AlertasRepository implements IAlertasRepository {
   final SupabaseService _supabaseService;
 
   AlertasRepository({required SupabaseService supabaseService})
       : _supabaseService = supabaseService;
 
-  // Obtener alertas no leídas
+  /// Consulta a Supabase las alertas donde la columna `leida` sea falsa.
+  @override
   Future<List<Alerta>> getAlertasPendientes() async {
     final response = await _supabaseService.client
         .from('alertas')
@@ -18,7 +21,8 @@ class AlertasRepository {
     return (response as List).map((json) => Alerta.fromJson(json)).toList();
   }
 
-  // Obtener todas las alertas
+  /// Consulta a Supabase todas las alertas sin aplicar filtros, ordenadas por la más reciente.
+  @override
   Future<List<Alerta>> getHistorialAlertas() async {
     final response = await _supabaseService.client
         .from('alertas')
@@ -28,7 +32,8 @@ class AlertasRepository {
     return (response as List).map((json) => Alerta.fromJson(json)).toList();
   }
 
-  // Crear una alerta
+  /// Inserta un nuevo registro en la tabla `alertas`. Se omite el ID para que Supabase lo autogenere.
+  @override
   Future<Alerta> createAlerta(Alerta alerta) async {
     final data = alerta.toJson();
     data.remove('id');
@@ -42,7 +47,8 @@ class AlertasRepository {
     return Alerta.fromJson(response);
   }
 
-  // Marcar alerta como leída
+  /// Actualiza en Supabase el estado del campo `leida` a true para la alerta con el [id] provisto.
+  @override
   Future<void> marcarComoLeida(String id) async {
     await _supabaseService.client
         .from('alertas')
@@ -50,7 +56,8 @@ class AlertasRepository {
         .eq('id', id);
   }
 
-  // Marcar todas las alertas como leídas
+  /// Actualiza masivamente en Supabase el estado `leida` a true de todas las alertas pendientes.
+  @override
   Future<void> marcarTodasComoLeidas() async {
     await _supabaseService.client
         .from('alertas')
@@ -58,7 +65,8 @@ class AlertasRepository {
         .eq('leida', false);
   }
 
-  // Eliminar una alerta
+  /// Elimina definitivamente el registro de la tabla `alertas` en Supabase usando su [id].
+  @override
   Future<void> deleteAlerta(String id) async {
     await _supabaseService.client
         .from('alertas')

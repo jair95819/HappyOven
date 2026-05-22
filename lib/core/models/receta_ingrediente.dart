@@ -15,8 +15,8 @@ class RecetaIngrediente {
     return RecetaIngrediente(
       id: json['id'] as String,
       recetaId: json['receta_id'] as String,
-      insumoId: json['articulo_id'] as String,
-      cantidadRequerida: (json['cantidad'] as num?)?.toDouble() ?? 0.0,
+      insumoId: json['insumo_id'] as String,
+      cantidadRequerida: (json['cantidad_requerida'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
@@ -24,8 +24,8 @@ class RecetaIngrediente {
     return {
       if (id.isNotEmpty) 'id': id,
       'receta_id': recetaId,
-      'articulo_id': insumoId,
-      'cantidad': cantidadRequerida,
+      'insumo_id': insumoId,
+      'cantidad_requerida': cantidadRequerida,
     };
   }
 }
