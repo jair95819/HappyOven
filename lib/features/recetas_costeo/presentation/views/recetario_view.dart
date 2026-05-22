@@ -573,10 +573,14 @@ class _TarjetaProductoConRecetaState
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'S/ ${costo.toStringAsFixed(2)}',
+                                    insumo != null && (insumo.precioUnitario > 0)
+                                        ? 'S/ ${costo.toStringAsFixed(2)}'
+                                        : 'Sin precio',
                                     style: font.caption.copyWith(
                                       fontSize: 10,
-                                      color: colors.hint,
+                                      color: insumo != null && (insumo.precioUnitario > 0)
+                                          ? colors.hint
+                                          : colors.statusCritical,
                                     ),
                                   ),
                                 ],

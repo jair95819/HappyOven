@@ -193,7 +193,9 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                         ),
                       ),
                       subtitle: Text(
-                        'S/ ${a.precioUnitario.toStringAsFixed(2)} / ${a.unidad}',
+                        a.precioUnitario > 0
+                            ? 'S/ ${a.precioUnitario.toStringAsFixed(2)} / ${a.unidad}'
+                            : 'Sin precio / ${a.unidad}',
                         style: font.caption,
                       ),
                       trailing: yaUsado
@@ -522,6 +524,36 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
 
               _buildSectionTitle('Análisis de Costos', font),
               const SizedBox(height: 12),
+              if (_tieneInsumosSinPrecio)
+                GestureDetector(
+                  onTap: () {
+                    // Navegar al catálogo para que el usuario edite insumos sin precio
+                    context.push('/catalogo');
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: colors.dangerLight,
+                      borderRadius: AppTheme.radius.brSm,
+                      border: Border.all(color: colors.statusCritical.withValues(alpha: 0.15)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.warning_amber_rounded, color: colors.statusCritical, size: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Algunos insumos no tienen precio. Edita el insumo en el catálogo para un análisis completo.',
+                            style: font.caption.copyWith(fontSize: 12, color: colors.statusCritical),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text('Ir al catálogo', style: font.caption.copyWith(fontSize: 12, color: colors.primary)),
+                      ],
+                    ),
+                  ),
+                ),
               _buildCostoResumen(colors, font),
               const SizedBox(height: 16),
 
@@ -868,10 +900,14 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'S/ ${costo.toStringAsFixed(2)}',
+                                ing.articulo != null && (ing.articulo!.precioUnitario > 0)
+                                    ? 'S/ ${costo.toStringAsFixed(2)}'
+                                    : 'Sin precio',
                                 style: font.h3.copyWith(
                                   fontSize: 13,
-                                  color: colors.primary,
+                                  color: ing.articulo != null && (ing.articulo!.precioUnitario > 0)
+                                      ? colors.primary
+                                      : colors.statusCritical,
                                 ),
                               ),
                             ],
@@ -966,6 +1002,10 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
         ),
       ),
     );
+  }
+
+  bool get _tieneInsumosSinPrecio {
+    return _ingredientes.any((ing) => (ing.articulo?.precioUnitario ?? 0) <= 0);
   }
 
   Widget _buildRentabilidadCard(AppColors colors, AppFont font) {

@@ -83,7 +83,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
               GoRoute(
                 path: '/recetas/nueva',
-                builder: (c, s) => CreateRecipeScreen(
+                builder: (c, s) => CosteoDinamicoView(
                   productoFinal: s.extra is Articulo ? s.extra as Articulo? : null,
                 ),
               ),
