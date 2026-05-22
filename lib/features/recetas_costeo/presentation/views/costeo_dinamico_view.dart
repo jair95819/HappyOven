@@ -198,13 +198,27 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                             : 'Sin precio / ${a.unidad}',
                         style: font.caption,
                       ),
-                      trailing: yaUsado
-                          ? Icon(
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (yaUsado)
+                            Icon(
                               Icons.check_rounded,
                               color: colors.statusNormal,
                               size: 16,
-                            )
-                          : null,
+                            ),
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            icon: Icon(Icons.edit, size: 16, color: colors.primary),
+                            onPressed: () {
+                              // Abrir formulario de artículo para editar precio
+                              Navigator.pop(context);
+                              context.push('/catalogo/nuevo', extra: a);
+                            },
+                          ),
+                        ],
+                      ),
                       onTap: yaUsado
                           ? null
                           : () {
