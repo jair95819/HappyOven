@@ -132,6 +132,12 @@ class RecetasRepository {
       return d;
     }).toList();
 
+    // DEBUG: imprimir payload para diagnosticar discrepancias con el esquema
+    try {
+      // ignore: avoid_print
+      print('REEMPLAZAR_INGREDIENTES_PAYLOAD: ' + datos.toString());
+    } catch (_) {}
+
     final response = await _supabaseService.client
         .from('receta_ingredientes')
         .insert(datos)
