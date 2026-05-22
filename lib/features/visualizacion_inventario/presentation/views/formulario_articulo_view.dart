@@ -20,6 +20,7 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
   final _nombreController = TextEditingController();
   final _stockMinimoController = TextEditingController();
   final _stockInicialController = TextEditingController();
+  final _precioController = TextEditingController();
 
   _TipoArticulo _tipoSeleccionado = _TipoArticulo.insumo;
   String _unidadSeleccionada = 'kg';
@@ -34,6 +35,7 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
       _nombreController.text = a.nombre;
       _stockMinimoController.text = a.stockMinimo.toString();
       _stockInicialController.text = a.stockActual.toString();
+      _precioController.text = a.precioUnitario.toString();
       _tipoSeleccionado = a.tipo == 'insumo' ? _TipoArticulo.insumo : _TipoArticulo.productoFinal;
       _unidadSeleccionada = a.unidad;
     }
@@ -44,6 +46,7 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
     _nombreController.dispose();
     _stockMinimoController.dispose();
     _stockInicialController.dispose();
+    _precioController.dispose();
     super.dispose();
   }
 
@@ -58,7 +61,7 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
         unidad: _unidadSeleccionada,
         stockActual: double.parse(_stockInicialController.text),
         stockMinimo: double.parse(_stockMinimoController.text),
-        precioUnitario: widget.articulo?.precioUnitario ?? 0.0,
+        precioUnitario: double.tryParse(_precioController.text) ?? widget.articulo?.precioUnitario ?? 0.0,
         activo: widget.articulo?.activo ?? true,
         createdAt: widget.articulo?.createdAt ?? DateTime.now(),
         updatedAt: DateTime.now(),
@@ -75,7 +78,12 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
             shape: RoundedRectangleBorder(borderRadius: AppTheme.radius.brSm),
           ),
         );
-        _retroceder();
+        // Si la vista fue abierta con Navigator.push, devolver el artículo editado como resultado
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop(nuevoArticulo);
+        } else {
+          _retroceder();
+        }
       } else if (mounted) {
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -203,6 +211,18 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
                   icono: Icons.inventory_2_outlined,
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return 'Ingresa el stock inicial';
+                    if (double.tryParse(v) == null) return 'Ingresa un número válido';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+                _buildLabel('Precio unitario (S/)'),
+                const SizedBox(height: 6),
+                _buildCampoNumerico(
+                  controller: _precioController, hint: 'Ej. 12.50',
+                  icono: Icons.attach_money_rounded,
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) return null; // precio opcional
                     if (double.tryParse(v) == null) return 'Ingresa un número válido';
                     return null;
                   },

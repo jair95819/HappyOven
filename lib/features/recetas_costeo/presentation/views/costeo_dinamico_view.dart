@@ -7,6 +7,7 @@ import 'package:happy_oven/core/models/receta_ingrediente.dart';
 import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/viewmodels/recetas_viewmodel.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
+import 'package:happy_oven/features/visualizacion_inventario/presentation/views/formulario_articulo_view.dart';
 import 'package:happy_oven/core/providers.dart';
 
 class CosteoDinamicoView extends ConsumerStatefulWidget {
@@ -211,10 +212,20 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                             icon: Icon(Icons.edit, size: 16, color: colors.primary),
-                            onPressed: () {
-                              // Abrir formulario de artículo para editar precio
+                            onPressed: () async {
+                              // Cerrar bottom sheet y abrir el formulario como ruta que retorna el Artículo editado
                               Navigator.pop(context);
-                              context.push('/catalogo/nuevo', extra: a);
+                              final Articulo? actualizado = await Navigator.of(context).push<Articulo?>(
+                                MaterialPageRoute(builder: (_) => FormularioArticuloView(articulo: a)),
+                              );
+                              if (actualizado != null) {
+                                setState(() {
+                                  _ingredientes[index] = _IngredienteLocal(
+                                    articulo: actualizado,
+                                    cantidad: _ingredientes[index].cantidad > 0 ? _ingredientes[index].cantidad : 1,
+                                  );
+                                });
+                              }
                             },
                           ),
                         ],
