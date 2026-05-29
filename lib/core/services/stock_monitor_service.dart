@@ -1,15 +1,15 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:happy_oven/core/models/alerta.dart';
-import 'package:happy_oven/core/repositories/articulos_repository.dart';
-import 'package:happy_oven/core/repositories/alertas_repository.dart';
+import 'package:happy_oven/core/repositories/i_articulos_repository.dart';
+import 'package:happy_oven/core/repositories/i_alertas_repository.dart';
 import 'package:happy_oven/core/services/notification_service.dart';
 
 /// Servicio que monitorea el stock de artículos periódicamente y genera
 /// alertas + notificaciones push cuando hay artículos con stock bajo o crítico.
 class StockMonitorService {
-  final ArticulosRepository _articulosRepo;
-  final AlertasRepository _alertasRepo;
+  final IArticulosRepository _articulosRepo;
+  final IAlertasRepository _alertasRepo;
   final NotificationService _notificationService;
 
   Timer? _timer;
@@ -19,8 +19,8 @@ class StockMonitorService {
   static const Duration checkInterval = Duration(minutes: 20);
 
   StockMonitorService({
-    required ArticulosRepository articulosRepo,
-    required AlertasRepository alertasRepo,
+    required IArticulosRepository articulosRepo,
+    required IAlertasRepository alertasRepo,
     required NotificationService notificationService,
   })  : _articulosRepo = articulosRepo,
         _alertasRepo = alertasRepo,
