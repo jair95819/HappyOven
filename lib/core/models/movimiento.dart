@@ -3,6 +3,7 @@ class Movimiento {
   final String articuloId;
   final String usuarioId;
   final String? recetaId;
+  final String? ordenProduccionId;
   final String tipoMovimiento;
   final String? motivoSalida;
   final double cantidad;
@@ -17,6 +18,7 @@ class Movimiento {
     required this.articuloId,
     required this.usuarioId,
     this.recetaId,
+    this.ordenProduccionId,
     required this.tipoMovimiento,
     this.motivoSalida,
     required this.cantidad,
@@ -33,6 +35,7 @@ class Movimiento {
       articuloId: json['articulo_id'] as String,
       usuarioId: json['usuario_id'] as String,
       recetaId: json['receta_id'] as String?,
+      ordenProduccionId: json['orden_produccion_id'] as String?,
       tipoMovimiento: json['tipo_movimiento'] as String,
       motivoSalida: json['motivo_salida'] as String?,
       cantidad: (json['cantidad'] as num?)?.toDouble() ?? 0.0,
@@ -50,6 +53,7 @@ class Movimiento {
       'articulo_id': articuloId,
       'usuario_id': usuarioId,
       'receta_id': recetaId,
+      'orden_produccion_id': ordenProduccionId,
       'tipo_movimiento': tipoMovimiento,
       'motivo_salida': motivoSalida,
       'cantidad': cantidad,
