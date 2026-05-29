@@ -382,6 +382,8 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
                           onSelected: (val) {
                             if (val == 'editar') {
                               context.go('/catalogo/nuevo', extra: articulo);
+                            } else if (val == 'historial') {
+                              context.push('/catalogo/historial/${articulo.id}');
                             } else if (val == 'eliminar') {
                               _eliminarArticulo(context, articulo.id);
                             }
@@ -398,6 +400,20 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
                                   ),
                                   const SizedBox(width: 8),
                                   Text('Editar', style: font.bodySmall),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: 'historial',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.history_rounded,
+                                    size: 18,
+                                    color: colors.primaryBorder,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text('Historial', style: font.bodySmall),
                                 ],
                               ),
                             ),
@@ -606,6 +622,8 @@ class _ProductoFinalCardState extends ConsumerState<_ProductoFinalCard> {
                               onSelected: (val) {
                                 if (val == 'editar') {
                                   widget.onEdit();
+                                } else if (val == 'historial') {
+                                  context.push('/catalogo/historial/${art.id}');
                                 } else if (val == 'eliminar') {
                                   widget.onDelete();
                                 }
@@ -622,6 +640,20 @@ class _ProductoFinalCardState extends ConsumerState<_ProductoFinalCard> {
                                       ),
                                       const SizedBox(width: 8),
                                       Text('Editar', style: font.bodySmall),
+                                    ],
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: 'historial',
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.history_rounded,
+                                        size: 18,
+                                        color: colors.primaryBorder,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text('Historial', style: font.bodySmall),
                                     ],
                                   ),
                                 ),

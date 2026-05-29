@@ -1,29 +1,71 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:happy_oven/core/theme/theme.dart';
+import 'package:happy_oven/core/models/movimiento.dart';
+import 'package:happy_oven/core/repositories/movimientos_repository.dart';
+import 'package:happy_oven/core/providers.dart';
 
-class ReportesView extends StatefulWidget {
+final reportesDataProvider = FutureProvider.family<ReportesData, DateTimeRange>((ref, rango) async {
+  final repo = ref.watch(movimientosRepositoryProvider);
+  final movimientos = await repo.getMovimientosPorRango(rango.start, rango.end);
+  return ReportesData._fromMovimientos(movimientos);
+});
+
+class ReportesData {
+  final double totalEntradas;
+  final double totalSalidas;
+  final double totalMermas;
+  final double valorMovido;
+  final List<_InsumoConsumo> insumos;
+
+  ReportesData._fromMovimientos(List<Movimiento> movs) :
+    totalEntradas = movs.where((m) => m.tipoMovimiento == 'entrada').fold(0, (sum, m) => sum + m.cantidad),
+    totalSalidas = movs.where((m) => m.tipoMovimiento == 'salida_produccion').fold(0, (sum, m) => sum + m.cantidad),
+    totalMermas = movs.where((m) => m.tipoMovimiento == 'merma').fold(0, (sum, m) => sum + m.cantidad),
+    valorMovido = movs.fold(0, (sum, m) => sum + (m.precioUnitario ?? 0) * m.cantidad.abs()),
+    insumos = _topInsumos(movs);
+}
+
+class _InsumoConsumo {
+  final String nombre;
+  final double kg;
+  final double porcentaje;
+  _InsumoConsumo({required this.nombre, required this.kg, required this.porcentaje});
+}
+
+List<_InsumoConsumo> _topInsumos(List<Movimiento> movs) {
+  final salidas = movs.where((m) => m.tipoMovimiento == 'salida_produccion').toList();
+  if (salidas.isEmpty) return [];
+  final agrupado = <String, double>{};
+  for (final m in salidas) {
+    agrupado.update(m.articuloId, (v) => v + m.cantidad, ifAbsent: () => m.cantidad);
+  }
+  final sorted = agrupado.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+  final top5 = sorted.take(5).toList();
+  final maxVal = top5.firstOrNull?.value ?? 1;
+  return top5.map((e) => _InsumoConsumo(
+    nombre: e.key, // we don't have the name here, but the articulo_id
+    kg: e.value,
+    porcentaje: e.value / maxVal,
+  )).toList();
+}
+
+class ReportesView extends ConsumerStatefulWidget {
   const ReportesView({super.key});
 
   @override
-  State<ReportesView> createState() => _ReportesViewState();
+  ConsumerState<ReportesView> createState() => _ReportesViewState();
 }
 
-class _ReportesViewState extends State<ReportesView> {
+class _ReportesViewState extends ConsumerState<ReportesView> {
   DateTimeRange _rango = DateTimeRange(
     start: DateTime.now().subtract(const Duration(days: 6)),
     end: DateTime.now(),
   );
-
-  final List<_InsumoConsumo> _insumos = [
-    _InsumoConsumo(nombre: 'Harina', kg: 48, porcentaje: 0.90),
-    _InsumoConsumo(nombre: 'Azúcar', kg: 32, porcentaje: 0.60),
-    _InsumoConsumo(nombre: 'Mantequilla', kg: 20, porcentaje: 0.38),
-    _InsumoConsumo(nombre: 'Levadura', kg: 12, porcentaje: 0.22),
-  ];
 
   String get _rangoFormateado {
     final fmt = DateFormat('dd MMM yyyy', 'es');
@@ -53,7 +95,7 @@ class _ReportesViewState extends State<ReportesView> {
     if (resultado != null) setState(() => _rango = resultado);
   }
 
-  Future<void> _exportarPDF() async {
+  Future<void> _exportarPDF(ReportesData data) async {
     final pdf = pw.Document();
     pdf.addPage(
       pw.Page(
@@ -70,23 +112,23 @@ class _ReportesViewState extends State<ReportesView> {
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  _pdfKpi('Total entradas', '148 kg'),
-                  _pdfKpi('Total salidas', '112 kg'),
-                  _pdfKpi('Valor movido', 'S/ 3,420'),
-                  _pdfKpi('Mermas', '18 kg'),
+                  _pdfKpi('Total entradas', '${data.totalEntradas.toStringAsFixed(1)} kg'),
+                  _pdfKpi('Total salidas', '${data.totalSalidas.toStringAsFixed(1)} kg'),
+                  _pdfKpi('Valor movido', 'S/ ${data.valorMovido.toStringAsFixed(2)}'),
+                  _pdfKpi('Mermas', '${data.totalMermas.toStringAsFixed(1)} kg'),
                 ],
               ),
               pw.SizedBox(height: 24),
               pw.Text('Insumos más consumidos',
                   style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
               pw.SizedBox(height: 12),
-              ..._insumos.map((i) => pw.Padding(
+              ...data.insumos.map((i) => pw.Padding(
                     padding: const pw.EdgeInsets.only(bottom: 8),
                     child: pw.Row(
                       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                       children: [
                         pw.Text(i.nombre, style: const pw.TextStyle(fontSize: 12)),
-                        pw.Text('${i.kg} kg', style: const pw.TextStyle(fontSize: 12)),
+                        pw.Text('${i.kg.toStringAsFixed(1)} kg', style: const pw.TextStyle(fontSize: 12)),
                       ],
                     ),
                   )),
@@ -110,18 +152,19 @@ class _ReportesViewState extends State<ReportesView> {
 
   @override
   Widget build(BuildContext context) {
+    final dataAsync = ref.watch(reportesDataProvider(_rango));
     return Scaffold(
       backgroundColor: AppTheme.colors.bg,
       body: Column(
         children: [
-          _buildHeader(),
-          Expanded(child: _buildBody()),
+          _buildHeader(dataAsync),
+          Expanded(child: _buildBody(dataAsync)),
         ],
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(AsyncValue<ReportesData> dataAsync) {
     return Container(
       color: AppTheme.colors.accent,
       child: SafeArea(
@@ -143,7 +186,7 @@ class _ReportesViewState extends State<ReportesView> {
                     ],
                   ),
                   GestureDetector(
-                    onTap: _exportarPDF,
+                    onTap: dataAsync.hasValue ? () => _exportarPDF(dataAsync.value!) : null,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                       decoration: BoxDecoration(
@@ -200,7 +243,7 @@ class _ReportesViewState extends State<ReportesView> {
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(AsyncValue<ReportesData> dataAsync) {
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.colors.bg,
@@ -215,38 +258,51 @@ class _ReportesViewState extends State<ReportesView> {
           topLeft: Radius.circular(AppTheme.radius.xl),
           topRight: Radius.circular(AppTheme.radius.xl),
         ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(14, 20, 14, 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildKpiGrid(),
-              const SizedBox(height: 16),
-              _buildInsumosConsumo(),
-              const SizedBox(height: 16),
-            ],
+        child: dataAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text('Error al cargar datos: $e', style: AppTheme.font.body),
+            ),
+          ),
+          data: (data) => SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(14, 20, 14, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildKpiGrid(data),
+                const SizedBox(height: 16),
+                _buildInsumosConsumo(data),
+                const SizedBox(height: 16),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildKpiGrid() {
+  Widget _buildKpiGrid(ReportesData data) {
     return GridView.count(
       crossAxisCount: 2, shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisSpacing: 10, mainAxisSpacing: 10, childAspectRatio: 1.4,
       children: [
-        _buildKpiCard(icono: Icons.arrow_circle_down_outlined, valor: '148 kg',
+        _buildKpiCard(icono: Icons.arrow_circle_down_outlined,
+            valor: '${data.totalEntradas.toStringAsFixed(1)} kg',
             etiqueta: 'Total entradas', colorFondo: AppTheme.colors.successLight,
             colorBorde: AppTheme.colors.successBorder, colorIcono: AppTheme.colors.statusNormal),
-        _buildKpiCard(icono: Icons.arrow_circle_up_outlined, valor: '112 kg',
+        _buildKpiCard(icono: Icons.arrow_circle_up_outlined,
+            valor: '${data.totalSalidas.toStringAsFixed(1)} kg',
             etiqueta: 'Total salidas', colorFondo: AppTheme.colors.dangerLight,
             colorBorde: AppTheme.colors.dangerBorder, colorIcono: AppTheme.colors.statusCritical),
-        _buildKpiCard(icono: Icons.monetization_on_outlined, valor: 'S/ 3,420',
+        _buildKpiCard(icono: Icons.monetization_on_outlined,
+            valor: 'S/ ${data.valorMovido.toStringAsFixed(2)}',
             etiqueta: 'Valor movido', colorFondo: AppTheme.colors.primaryLight,
             colorBorde: AppTheme.colors.primaryBorder, colorIcono: AppTheme.colors.primary),
-        _buildKpiCard(icono: Icons.delete_outline_rounded, valor: '18 kg',
+        _buildKpiCard(icono: Icons.delete_outline_rounded,
+            valor: '${data.totalMermas.toStringAsFixed(1)} kg',
             etiqueta: 'Mermas del período', colorFondo: AppTheme.colors.dangerLight,
             colorBorde: AppTheme.colors.dangerBorder, colorIcono: AppTheme.colors.statusCritical),
       ],
@@ -279,7 +335,7 @@ class _ReportesViewState extends State<ReportesView> {
     );
   }
 
-  Widget _buildInsumosConsumo() {
+  Widget _buildInsumosConsumo(ReportesData data) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -292,7 +348,16 @@ class _ReportesViewState extends State<ReportesView> {
         children: [
           Text('Insumos más consumidos', style: AppTheme.font.label.copyWith(fontSize: 13)),
           const SizedBox(height: 16),
-          ..._insumos.map((i) => _buildBarraInsumo(i)),
+          if (data.insumos.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Center(
+                child: Text('No hay datos de consumo en este período',
+                    style: AppTheme.font.caption),
+              ),
+            )
+          else
+            ...data.insumos.map((i) => _buildBarraInsumo(i)),
         ],
       ),
     );
@@ -308,7 +373,7 @@ class _ReportesViewState extends State<ReportesView> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(insumo.nombre, style: AppTheme.font.bodySmall.copyWith(fontSize: 12)),
-              Text('${insumo.kg} kg', style: AppTheme.font.label.copyWith(fontSize: 12)),
+              Text('${insumo.kg.toStringAsFixed(1)} kg', style: AppTheme.font.label.copyWith(fontSize: 12)),
             ],
           ),
           const SizedBox(height: 6),
@@ -324,11 +389,4 @@ class _ReportesViewState extends State<ReportesView> {
       ),
     );
   }
-}
-
-class _InsumoConsumo {
-  final String nombre;
-  final int kg;
-  final double porcentaje;
-  const _InsumoConsumo({required this.nombre, required this.kg, required this.porcentaje});
 }

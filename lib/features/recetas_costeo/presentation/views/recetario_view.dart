@@ -628,9 +628,38 @@ class _TarjetaProductoConRecetaState
               : const SizedBox.shrink(),
         ),
         const SizedBox(height: 10),
-        // ── Botones Editar / Eliminar ──
+        // ── Botones Producir / Editar / Eliminar ──
         Row(
           children: [
+            Expanded(
+              flex: 2,
+              child: GestureDetector(
+                onTap: () => context.push('/produccion/nueva', extra: receta),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  decoration: BoxDecoration(
+                    color: colors.successLight,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: colors.successBorder, width: 0.5),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.play_arrow_rounded, color: colors.statusNormal, size: 13),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Producir',
+                        style: font.label.copyWith(
+                          fontSize: 11,
+                          color: colors.statusNormal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
             Expanded(
               child: GestureDetector(
                 onTap: () => context.push('/recetas/editar', extra: receta),
@@ -647,7 +676,7 @@ class _TarjetaProductoConRecetaState
                       Icon(Icons.edit_outlined, color: colors.primary, size: 13),
                       const SizedBox(width: 6),
                       Text(
-                        'Editar receta',
+                        'Editar',
                         style: font.label.copyWith(
                           fontSize: 11,
                           color: colors.primary,
@@ -658,7 +687,7 @@ class _TarjetaProductoConRecetaState
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             GestureDetector(
               onTap: () => _confirmarEliminar(context, receta, colors, font),
               child: Container(

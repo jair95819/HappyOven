@@ -26,6 +26,9 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
   final TextEditingController _instruccionesController =
       TextEditingController();
   final TextEditingController _precioVentaController = TextEditingController();
+  final TextEditingController _manoObraController = TextEditingController();
+  final TextEditingController _empaqueController = TextEditingController();
+  final TextEditingController _gastosGeneralesController = TextEditingController();
 
   /// Lista local de ingredientes en edición
   final List<_IngredienteLocal> _ingredientes = [];
@@ -94,10 +97,13 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
     _rendimientoController.dispose();
     _instruccionesController.dispose();
     _precioVentaController.dispose();
+    _manoObraController.dispose();
+    _empaqueController.dispose();
+    _gastosGeneralesController.dispose();
     super.dispose();
   }
 
-  double get _costoTotal {
+  double get _costoInsumos {
     double total = 0;
     for (final ing in _ingredientes) {
       if (ing.articulo != null) {
@@ -107,9 +113,15 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
     return total;
   }
 
+  double get _costoManoObra => double.tryParse(_manoObraController.text) ?? 0;
+  double get _costoEmpaque => double.tryParse(_empaqueController.text) ?? 0;
+  double get _costoGastosGenerales => double.tryParse(_gastosGeneralesController.text) ?? 0;
+
+  double get _costoTotal => _costoInsumos + _costoManoObra + _costoGastosGenerales;
+
   double get _costoUnitario {
     final rend = double.tryParse(_rendimientoController.text) ?? 1;
-    return rend > 0 ? _costoTotal / rend : 0;
+    return rend > 0 ? (_costoTotal / rend) + _costoEmpaque : 0;
   }
 
   double get _margenGanancia {
@@ -547,12 +559,41 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
               _buildAgregarIngredienteBtn(colors, font),
               const SizedBox(height: 20),
 
+              _buildSectionTitle('Costos Adicionales (por lote)', font),
+              const SizedBox(height: 12),
+              _buildTextField(
+                controller: _manoObraController,
+                label: 'Mano de obra (S/)',
+                icon: Icons.engineering_outlined,
+                colors: colors,
+                font: font,
+                onChanged: () => setState(() {}),
+              ),
+              const SizedBox(height: 10),
+              _buildTextField(
+                controller: _empaqueController,
+                label: 'Empaque por unidad (S/)',
+                icon: Icons.inventory_outlined,
+                colors: colors,
+                font: font,
+                onChanged: () => setState(() {}),
+              ),
+              const SizedBox(height: 10),
+              _buildTextField(
+                controller: _gastosGeneralesController,
+                label: 'Gastos generales (S/)',
+                icon: Icons.miscellaneous_services_outlined,
+                colors: colors,
+                font: font,
+                onChanged: () => setState(() {}),
+              ),
+              const SizedBox(height: 20),
+
               _buildSectionTitle('Análisis de Costos', font),
               const SizedBox(height: 12),
               if (_tieneInsumosSinPrecio)
                 GestureDetector(
                   onTap: () {
-                    // Navegar al catálogo para que el usuario edite insumos sin precio
                     context.push('/catalogo');
                   },
                   child: Container(
@@ -987,25 +1028,24 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
         padding: const EdgeInsets.all(14),
         child: Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Costo Total del Lote:',
-                  style: font.caption.copyWith(fontSize: 12),
-                ),
-                Text(
-                  'S/ ${_costoTotal.toStringAsFixed(2)}',
-                  style: font.label.copyWith(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
+            _costoRow('Insumos', _costoInsumos, colors, font),
+            if (_costoManoObra > 0) ...[
+              const SizedBox(height: 4),
+              _costoRow('Mano de obra', _costoManoObra, colors, font),
+            ],
+            if (_costoGastosGenerales > 0) ...[
+              const SizedBox(height: 4),
+              _costoRow('Gastos generales', _costoGastosGenerales, colors, font),
+            ],
+            if (_costoEmpaque > 0) ...[
+              const SizedBox(height: 4),
+              _costoRow('Empaque (por unidad)', _costoEmpaque, colors, font),
+            ],
             const SizedBox(height: 8),
             Divider(color: colors.border, height: 1),
             const SizedBox(height: 8),
+            _costoRow('Costo Total del Lote', _costoTotal, colors, font, bold: true),
+            const SizedBox(height: 4),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -1026,6 +1066,19 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _costoRow(String label, double valor, AppColors colors, AppFont font, {bool bold = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: font.caption.copyWith(fontSize: 12, fontWeight: bold ? FontWeight.w600 : null)),
+        Text(
+          'S/ ${valor.toStringAsFixed(2)}',
+          style: font.label.copyWith(fontSize: 13, fontWeight: bold ? FontWeight.w600 : null),
+        ),
+      ],
     );
   }
 
