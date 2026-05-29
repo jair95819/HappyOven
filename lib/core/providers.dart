@@ -8,6 +8,7 @@ import 'package:happy_oven/core/repositories/categorias_repository.dart';
 import 'package:happy_oven/core/repositories/movimientos_repository.dart';
 import 'package:happy_oven/core/repositories/recetas_repository.dart';
 import 'package:happy_oven/core/repositories/alertas_repository.dart';
+import 'package:happy_oven/core/repositories/ordenes_produccion_repository.dart';
 
 final supabaseServiceProvider = Provider<SupabaseService>((ref) {
   return SupabaseService();
@@ -35,6 +36,10 @@ final recetasRepositoryProvider = Provider<RecetasRepository>((ref) {
 
 final alertasRepositoryProvider = Provider<AlertasRepository>((ref) {
   return AlertasRepository(supabaseService: ref.watch(supabaseServiceProvider));
+});
+
+final ordenesProduccionRepositoryProvider = Provider<OrdenesProduccionRepository>((ref) {
+  return OrdenesProduccionRepository(supabaseService: ref.watch(supabaseServiceProvider));
 });
 
 final notificationServiceProvider = Provider<NotificationService>((ref) {

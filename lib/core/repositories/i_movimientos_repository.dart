@@ -14,4 +14,7 @@ abstract class IMovimientosRepository {
 
   /// Elimina o anula un movimiento previamente registrado usando su [id].
   Future<void> deleteMovimiento(String id);
+
+  /// Obtiene movimientos en un rango de fechas [inicio] a [fin].
+  Future<List<Movimiento>> getMovimientosPorRango(DateTime inicio, DateTime fin);
 }

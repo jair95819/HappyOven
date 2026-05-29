@@ -55,4 +55,16 @@ class MovimientosRepository implements IMovimientosRepository {
         .delete()
         .eq('id', id);
   }
+
+  @override
+  Future<List<Movimiento>> getMovimientosPorRango(DateTime inicio, DateTime fin) async {
+    final response = await _supabaseService.client
+        .from('movimientos')
+        .select()
+        .gte('fecha', inicio.toIso8601String())
+        .lte('fecha', fin.toIso8601String())
+        .order('fecha', ascending: true);
+
+    return (response as List).map((json) => Movimiento.fromJson(json)).toList();
+  }
 }
