@@ -1,6 +1,6 @@
 -- ============================================
 -- Happy Oven — Schema de Base de Datos
--- Sistema de Gestión de Inventario
+-- Sistema de Gestión de Inventario y Producción
 -- ============================================
 
 -- 1. PERFILES (extiende auth.users de Supabase)
@@ -44,25 +44,43 @@ CREATE TABLE recetas (
     rendimiento_unidades INT NOT NULL DEFAULT 1,
     tiempo_produccion_min INT NOT NULL DEFAULT 60,
     costo_lote NUMERIC NOT NULL DEFAULT 0,
+    instrucciones TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 5. RECETA_INGREDIENTES (pivote recetas <-> articulos)
+-- 5. RECETA_INGREDIENTES (pivote recetas <-> articulos/insumos)
 CREATE TABLE receta_ingredientes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     receta_id UUID NOT NULL REFERENCES recetas(id) ON DELETE CASCADE,
-    articulo_id UUID NOT NULL REFERENCES articulos(id) ON DELETE CASCADE,
-    cantidad NUMERIC NOT NULL DEFAULT 0,
+    insumo_id UUID NOT NULL REFERENCES articulos(id) ON DELETE CASCADE,
+    cantidad_requerida NUMERIC NOT NULL DEFAULT 0,
     unidad TEXT NOT NULL DEFAULT 'gr'
 );
 
--- 6. MOVIMIENTOS (historial Kardex)
+-- 6. ÓRDENES DE PRODUCCIÓN
+CREATE TABLE ordenes_produccion (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    receta_id UUID NOT NULL REFERENCES recetas(id) ON DELETE RESTRICT,
+    usuario_id UUID NOT NULL REFERENCES perfiles(id) ON DELETE SET NULL,
+    cantidad_lotes INT NOT NULL DEFAULT 1,
+    cantidad_producida INT DEFAULT 0,
+    estado TEXT NOT NULL DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'en_proceso', 'completada', 'cancelada')),
+    fecha_programada TIMESTAMPTZ,
+    fecha_inicio TIMESTAMPTZ,
+    fecha_fin TIMESTAMPTZ,
+    notas TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 7. MOVIMIENTOS (historial Kardex)
 CREATE TABLE movimientos (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     articulo_id UUID NOT NULL REFERENCES articulos(id) ON DELETE CASCADE,
     usuario_id UUID NOT NULL REFERENCES perfiles(id) ON DELETE SET NULL,
     receta_id UUID REFERENCES recetas(id) ON DELETE SET NULL,
+    orden_produccion_id UUID REFERENCES ordenes_produccion(id) ON DELETE SET NULL,
     tipo_movimiento TEXT NOT NULL CHECK (tipo_movimiento IN ('entrada', 'salida_produccion', 'merma', 'ajuste')),
     motivo_salida TEXT CHECK (motivo_salida IN ('venta', 'merma', 'degustacion', 'ajuste')),
     cantidad NUMERIC NOT NULL,
@@ -73,7 +91,7 @@ CREATE TABLE movimientos (
     fecha TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 7. ALERTAS
+-- 8. ALERTAS
 CREATE TABLE alertas (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     articulo_id UUID REFERENCES articulos(id) ON DELETE CASCADE,
@@ -90,6 +108,9 @@ CREATE INDEX idx_articulos_categoria ON articulos(categoria_id);
 CREATE INDEX idx_movimientos_articulo ON movimientos(articulo_id);
 CREATE INDEX idx_movimientos_fecha ON movimientos(fecha DESC);
 CREATE INDEX idx_movimientos_tipo ON movimientos(tipo_movimiento);
+CREATE INDEX idx_movimientos_orden ON movimientos(orden_produccion_id);
 CREATE INDEX idx_alertas_tipo ON alertas(tipo);
 CREATE INDEX idx_alertas_leida ON alertas(leida);
 CREATE INDEX idx_receta_ingredientes_receta ON receta_ingredientes(receta_id);
+CREATE INDEX idx_ordenes_produccion_estado ON ordenes_produccion(estado);
+CREATE INDEX idx_ordenes_produccion_fecha ON ordenes_produccion(fecha_programada);
