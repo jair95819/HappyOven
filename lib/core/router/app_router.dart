@@ -14,10 +14,15 @@ import 'package:happy_oven/features/visualizacion_inventario/presentation/views/
 import 'package:happy_oven/features/registro_movimientos/presentation/views/historial_kardex_view.dart';
 import 'package:happy_oven/features/registro_movimientos/presentation/views/ingreso_ocr_view.dart';
 import 'package:happy_oven/features/registro_movimientos/presentation/views/salida_almacen_view.dart';
+import 'package:happy_oven/features/registro_movimientos/presentation/views/ingreso_almacen_view.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/views/recetario_view.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/views/costeo_dinamico_view.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/views/create_recipe_screen.dart';
+import 'package:happy_oven/features/produccion/presentation/views/ordenes_produccion_list_view.dart';
+import 'package:happy_oven/features/produccion/presentation/views/nueva_orden_produccion_view.dart';
 import 'package:happy_oven/features/configuracion/presentation/views/perfil_ajustes_view.dart';
+import 'package:happy_oven/features/configuracion/presentation/views/gestion_categorias_view.dart';
+import 'package:happy_oven/features/visualizacion_inventario/presentation/views/historial_articulo_view.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -35,14 +40,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      // ── Auth routes (sin AppShell)
       GoRoute(path: '/login', builder: (c, s) => const LoginView()),
       GoRoute(
         path: '/recuperar-password',
         builder: (c, s) => const RecuperarPasswordView(),
       ),
 
-      // ── App principal con BottomNavBar persistente
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return AppShell(navigationShell: navigationShell);
@@ -71,6 +74,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   articulo: s.extra is Articulo ? s.extra as Articulo? : null,
                 ),
               ),
+              GoRoute(
+                path: '/catalogo/historial/:id',
+                builder: (c, s) => HistorialArticuloView(
+                  articuloId: s.pathParameters['id']!,
+                ),
+              ),
             ],
           ),
 
@@ -96,6 +105,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
+          // Producción tab
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/produccion',
+                builder: (c, s) => const OrdenesProduccionListView(),
+              ),
+              GoRoute(
+                path: '/produccion/nueva',
+                builder: (c, s) => NuevaOrdenProduccionView(
+                  receta: s.extra is Receta ? s.extra as Receta? : null,
+                ),
+              ),
+            ],
+          ),
+
           // Movimientos tab
           StatefulShellBranch(
             routes: [
@@ -110,6 +135,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/movimientos/salida',
                 builder: (c, s) => const SalidaAlmacenView(),
+              ),
+              GoRoute(
+                path: '/movimientos/entrada',
+                builder: (c, s) => const IngresoAlmacenView(),
               ),
             ],
           ),
@@ -128,6 +157,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/perfil',
                 builder: (c, s) => const PerfilAjustesView(),
+              ),
+              GoRoute(
+                path: '/categorias',
+                builder: (c, s) => const GestionCategoriasView(),
               ),
             ],
           ),

@@ -19,10 +19,7 @@ class BottomNavBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppTheme.spacing.md,
-            vertical: 10,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -42,14 +39,19 @@ class BottomNavBar extends StatelessWidget {
                 index: 2,
               ),
               _buildNavItem(
-                icono: Icons.swap_horiz_rounded,
-                etiqueta: 'Movimientos',
+                icono: Icons.factory_outlined,
+                etiqueta: 'Produc.',
                 index: 3,
+              ),
+              _buildNavItem(
+                icono: Icons.swap_horiz_rounded,
+                etiqueta: 'Mov.',
+                index: 4,
               ),
               _buildNavItem(
                 icono: Icons.notifications_outlined,
                 etiqueta: 'Alertas',
-                index: 4,
+                index: 5,
               ),
             ],
           ),
@@ -71,22 +73,22 @@ class BottomNavBar extends StatelessWidget {
         },
         borderRadius: BorderRadius.circular(AppTheme.radius.sm),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               activo
                   ? Container(
-                      width: 36,
-                      height: 36,
+                      width: 32,
+                      height: 32,
                       decoration: BoxDecoration(
                         color: AppTheme.colors.primary,
                         borderRadius: BorderRadius.circular(AppTheme.radius.sm),
                       ),
-                      child: Icon(icono, color: AppTheme.colors.white, size: 18),
+                      child: Icon(icono, color: AppTheme.colors.white, size: 16),
                     )
-                  : Icon(icono, color: AppTheme.colors.hint, size: 24),
-              const SizedBox(height: 4),
+                  : Icon(icono, color: AppTheme.colors.hint, size: 22),
+              const SizedBox(height: 3),
               Text(
                 etiqueta,
                 style: TextStyle(
