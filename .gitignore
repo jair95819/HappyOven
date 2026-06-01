@@ -48,3 +48,8 @@ app.*.map.json
 android/build/
 .VSCodeCounter/
 install.cmd
+
+# Flutter generated plugin registration files
+**/generated_plugin_registrant.* 
+**/generated_plugins.cmake
+**/GeneratedPluginRegistrant.swift
