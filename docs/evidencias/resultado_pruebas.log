@@ -1,0 +1,123 @@
+Happy Oven - Ejecución de pruebas funcionales
+Fecha: 2026-06-13 | Versión del software: 1.0.0+1
+Comando: flutter test
+============================================================
+00:00 +0: loading /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/repositories/movimientos_repository_test.dart
+00:00 +0: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/repositories/movimientos_repository_test.dart: CA016 - registrarMovimiento() registra entrada de stock y retorna con ID
+00:00 +1: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/repositories/movimientos_repository_test.dart: CA016 - registrarMovimiento() registra entrada de stock y retorna con ID
+00:00 +2: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/repositories/articulos_repository_test.dart: CA001 - getArticulos() retorna lista de artículos ordenada alfabéticamente
+00:00 +3: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/repositories/articulos_repository_test.dart: CA001 - getArticulos() retorna lista de artículos ordenada alfabéticamente
+00:00 +4: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/repositories/articulos_repository_test.dart: CA001 - getArticulos() retorna lista de artículos ordenada alfabéticamente
+00:00 +5: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/repositories/articulos_repository_test.dart: CA001 - getArticulos() retorna lista de artículos ordenada alfabéticamente
+00:00 +6: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/repositories/articulos_repository_test.dart: CA001 - getArticulos() retorna lista de artículos ordenada alfabéticamente
+00:00 +7: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/repositories/articulos_repository_test.dart: CA001 - getArticulos() retorna lista de artículos ordenada alfabéticamente
+00:00 +8: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/repositories/articulos_repository_test.dart: CA001 - getArticulos() retorna lista de artículos ordenada alfabéticamente
+00:00 +9: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/repositories/articulos_repository_test.dart: CA001 - getArticulos() retorna lista de artículos ordenada alfabéticamente
+00:00 +10: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/repositories/articulos_repository_test.dart: CA001 - getArticulos() retorna lista de artículos ordenada alfabéticamente
+00:00 +11: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/repositories/articulos_repository_test.dart: CA001 - getArticulos() retorna lista de artículos ordenada alfabéticamente
+00:00 +12: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/repositories/movimientos_repository_test.dart: CA018 - getMovimientosPorArticulo() retorna vacío si el artículo no tiene movimientos
+00:00 +13: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/repositories/articulos_repository_test.dart: CA001 - getArticulos() retorna lista vacía cuando no hay artículos
+00:00 +14: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/repositories/articulos_repository_test.dart: CA001 - getArticulos() retorna lista vacía cuando no hay artículos
+00:00 +15: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/repositories/recetas_repository_test.dart: CA011 - createReceta() crea receta y retorna con ID generado por BD
+00:00 +16: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/repositories/articulos_repository_test.dart: CA002 - getInsumos() retorna solo artículos de tipo insumo
+00:00 +17: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/repositories/recetas_repository_test.dart: CA012 - updateReceta() actualiza receta y retorna con datos nuevos
+00:00 +18: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/articulo_test.dart: CA022 - Articulo.fromJson() crea Articulo desde JSON completo
+00:00 +19: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/articulo_test.dart: CA022 - Articulo.fromJson() crea Articulo desde JSON completo
+00:00 +20: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/articulo_test.dart: CA022 - Articulo.fromJson() crea Articulo desde JSON completo
+00:00 +21: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/articulo_test.dart: CA022 - Articulo.fromJson() crea Articulo desde JSON completo
+00:00 +22: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/articulo_test.dart: CA022 - Articulo.fromJson() crea Articulo desde JSON completo
+00:00 +23: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/articulo_test.dart: CA022 - Articulo.fromJson() crea Articulo desde JSON completo
+00:00 +24: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/articulo_test.dart: CA022 - Articulo.fromJson() crea Articulo desde JSON completo
+00:00 +25: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/articulo_test.dart: CA022 - Articulo.fromJson() crea Articulo desde JSON completo
+00:00 +26: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/articulo_test.dart: CA022 - Articulo.fromJson() crea Articulo desde JSON completo
+00:00 +27: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/articulo_test.dart: CA022 - Articulo.fromJson() crea Articulo desde JSON completo
+00:00 +28: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/articulo_test.dart: CA022 - Articulo.fromJson() crea Articulo desde JSON completo
+00:00 +29: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/articulo_test.dart: CA022 - Articulo.fromJson() crea Articulo desde JSON completo
+00:00 +30: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/articulo_test.dart: CA022 - Articulo.fromJson() crea Articulo desde JSON completo
+00:00 +31: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/articulo_test.dart: CA022 - Articulo.fromJson() usa defaults cuando campos opcionales son null
+00:00 +32: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/articulo_test.dart: CA022 - Articulo.fromJson() parsea created_at y updated_at correctamente
+00:00 +33: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/articulo_test.dart: CA022 - Articulo.fromJson() usa DateTime.now() cuando created_at es null
+00:00 +34: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/articulo_test.dart: CA023 - Articulo.toJson() incluye todos los campos esperados
+00:00 +35: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/articulo_test.dart: CA023 - Articulo.toJson() omite id cuando está vacío
+00:00 +36: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/articulo_test.dart: CA023 - Articulo.toJson() incluye id cuando no está vacío
+00:00 +37: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/receta_test.dart: CA024 - Receta.fromJson() crea Receta desde JSON con campos estándar
+00:00 +38: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/receta_test.dart: CA024 - Receta.fromJson() usa articulo_id como fallback de producto_id
+00:00 +39: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/receta_test.dart: CA024 - Receta.fromJson() usa preparacion como fallback de instrucciones
+00:00 +40: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/receta_test.dart: CA024 - Receta.fromJson() rendimiento es 0.0 cuando rendimiento_unidades es null
+00:00 +41: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/receta_test.dart: CA025 - Receta.toJson() serializa con rendimiento como entero
+00:00 +42: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/receta_test.dart: CA025 - Receta.toJson() omite id cuando está vacío
+00:00 +43: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/receta_test.dart: CA025 - Receta.toJson() incluye producto_id
+00:00 +44: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/services/ocr_service_test.dart: OcrService.parsearLinea() línea completa: nombre + cantidad + unidad + precio + importe
+00:00 +45: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/movimiento_test.dart: CA026 - Movimiento.fromJson() crea Movimiento desde JSON completo
+00:00 +46: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/movimiento_test.dart: CA026 - Movimiento.fromJson() crea Movimiento desde JSON completo
+00:00 +47: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/movimiento_test.dart: CA026 - Movimiento.fromJson() crea Movimiento desde JSON completo
+00:00 +48: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/movimiento_test.dart: CA026 - Movimiento.fromJson() crea Movimiento desde JSON completo
+00:00 +49: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/services/ocr_service_test.dart: OcrService.parsearLinea() acepta decimales con coma
+00:00 +50: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/services/ocr_service_test.dart: OcrService.parsearLinea() maneja separador de miles en el importe
+00:00 +51: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/services/ocr_service_test.dart: OcrService.parsearLinea() maneja separador de miles en el importe
+00:00 +52: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/movimiento_test.dart: CA027 - Movimiento.toJson() incluye todos los campos
+00:00 +53: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/movimiento_test.dart: CA027 - Movimiento.toJson() incluye todos los campos
+00:00 +54: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/services/ocr_service_test.dart: OcrService.parsearLinea() descarta líneas sin suficientes números
+00:00 +55: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/movimiento_test.dart: CA027 - Movimiento.toJson() omite id cuando está vacío
+00:00 +56: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/services/ocr_service_test.dart: OcrService.parsearLinea() normaliza variantes de unidades
+00:00 +57: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/models/movimiento_test.dart: CA027 - Movimiento.toJson() fecha se serializa en formato ISO 8601
+00:00 +58: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/services/ocr_service_test.dart: OcrService.parsearBoleta() extrae solo las líneas de ítems válidas
+00:00 +59: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/core/services/ocr_service_test.dart: OcrService.parsearBoleta() devuelve lista vacía cuando no hay ítems
+00:01 +60: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/auth/role_authorization_test.dart: CP-01 / RF-002 - Autorización por rol CA030 - User identifica correctamente el rol Administrador
+00:01 +61: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/auth/role_authorization_test.dart: CP-01 / RF-002 - Autorización por rol CA031 - User identifica correctamente el rol Operario
+00:01 +62: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/auth/role_authorization_test.dart: CP-01 / RF-002 - Autorización por rol CA032 - El rol por defecto es operador (mínimo privilegio)
+00:01 +63: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/auth/role_authorization_test.dart: CP-01 / RF-002 - Autorización por rol CA033 - Las rutas de módulos exclusivos de Admin se marcan como restringidas
+00:01 +64: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/auth/role_authorization_test.dart: CP-01 / RF-002 - Autorización por rol CA034 - Las rutas comunes NO se restringen al Operario
+00:01 +65: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/registro_movimientos/justificacion_obligatoria_test.dart: CP-04 / RF-012 - Justificación obligatoria CA035 - SALIDA: bloquea el registro y exige justificación cuando está vacía
+00:01 +66: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/registro_movimientos/justificacion_obligatoria_test.dart: CP-04 / RF-012 - Justificación obligatoria CA035 - SALIDA: bloquea el registro y exige justificación cuando está vacía
+00:01 +67: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/registro_movimientos/justificacion_obligatoria_test.dart: CP-04 / RF-012 - Justificación obligatoria CA035 - SALIDA: bloquea el registro y exige justificación cuando está vacía
+00:01 +68: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/registro_movimientos/justificacion_obligatoria_test.dart: CP-04 / RF-012 - Justificación obligatoria CA035 - SALIDA: bloquea el registro y exige justificación cuando está vacía
+00:01 +69: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/registro_movimientos/justificacion_obligatoria_test.dart: CP-04 / RF-012 - Justificación obligatoria CA035 - SALIDA: bloquea el registro y exige justificación cuando está vacía
+00:01 +70: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/registro_movimientos/justificacion_obligatoria_test.dart: CP-04 / RF-012 - Justificación obligatoria CA035 - SALIDA: bloquea el registro y exige justificación cuando está vacía
+00:01 +71: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/registro_movimientos/justificacion_obligatoria_test.dart: CP-04 / RF-012 - Justificación obligatoria CA035 - SALIDA: bloquea el registro y exige justificación cuando está vacía
+00:01 +72: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/registro_movimientos/justificacion_obligatoria_test.dart: CP-04 / RF-012 - Justificación obligatoria CA035 - SALIDA: bloquea el registro y exige justificación cuando está vacía
+00:01 +73: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/registro_movimientos/justificacion_obligatoria_test.dart: CP-04 / RF-012 - Justificación obligatoria CA035 - SALIDA: bloquea el registro y exige justificación cuando está vacía
+00:01 +74: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/registro_movimientos/justificacion_obligatoria_test.dart: CP-04 / RF-012 - Justificación obligatoria CA035 - SALIDA: bloquea el registro y exige justificación cuando está vacía
+00:01 +75: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/registro_movimientos/justificacion_obligatoria_test.dart: CP-04 / RF-012 - Justificación obligatoria CA035 - SALIDA: bloquea el registro y exige justificación cuando está vacía
+00:01 +76: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/registro_movimientos/justificacion_obligatoria_test.dart: CP-04 / RF-012 - Justificación obligatoria CA035 - SALIDA: bloquea el registro y exige justificación cuando está vacía
+00:01 +77: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/registro_movimientos/justificacion_obligatoria_test.dart: CP-04 / RF-012 - Justificación obligatoria CA035 - SALIDA: bloquea el registro y exige justificación cuando está vacía
+00:01 +78: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/registro_movimientos/justificacion_obligatoria_test.dart: CP-04 / RF-012 - Justificación obligatoria CA035 - SALIDA: bloquea el registro y exige justificación cuando está vacía
+00:02 +79: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/registro_movimientos/justificacion_obligatoria_test.dart: CP-04 / RF-012 - Justificación obligatoria CA036 - INGRESO: bloquea el registro y exige justificación cuando está vacía
+00:02 +80: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/registro_movimientos/justificacion_obligatoria_test.dart: CP-04 / RF-012 - Justificación obligatoria CA036 - INGRESO: bloquea el registro y exige justificación cuando está vacía
+00:02 +81: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/features/registro_movimientos/justificacion_obligatoria_test.dart: CP-04 / RF-012 - Justificación obligatoria CA036 - INGRESO: bloquea el registro y exige justificación cuando está vacía
+00:03 +82: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/services/stock_monitor_service_test.dart: CA020 - startMonitoring() inicia monitoreo y ejecuta chequeo inmediato
+[StockMonitor] Iniciando monitoreo cada 20 min
+[StockMonitor] Ejecutando chequeo de stock...
+[StockMonitor] Todo el stock está normal ✅
+[StockMonitor] Monitoreo detenido
+00:03 +83: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/widget_test.dart: App loads correctly
+00:03 +83: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/services/stock_monitor_service_test.dart: CA020 - startMonitoring() no inicia doble monitoreo si ya está corriendo
+[StockMonitor] Iniciando monitoreo cada 20 min
+[StockMonitor] Ejecutando chequeo de stock...
+[StockMonitor] Todo el stock está normal ✅
+[StockMonitor] Monitoreo detenido
+00:03 +84: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/widget_test.dart: App loads correctly
+00:03 +84: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/services/stock_monitor_service_test.dart: CA021 - checkNow() no crea alertas cuando todo el stock es normal
+[StockMonitor] Ejecutando chequeo de stock...
+[StockMonitor] Todo el stock está normal ✅
+00:03 +85: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/widget_test.dart: App loads correctly
+00:03 +85: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/services/stock_monitor_service_test.dart: CA021 - checkNow() crea alerta de stock BAJO cuando stock <= stockMinimo
+[StockMonitor] Ejecutando chequeo de stock...
+[StockMonitor] Alerta creada para: Harina (bajo)
+[StockMonitor] Push enviado: 0 críticos, 1 bajos
+00:03 +86: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/widget_test.dart: App loads correctly
+00:03 +86: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/services/stock_monitor_service_test.dart: CA021 - checkNow() crea alerta CRÍTICA cuando stock <= stockMinimo * 0.5
+[StockMonitor] Ejecutando chequeo de stock...
+[StockMonitor] Alerta creada para: Azúcar (critico)
+[StockMonitor] Push enviado: 1 críticos, 0 bajos
+00:03 +87: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/widget_test.dart: App loads correctly
+00:03 +87: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/services/stock_monitor_service_test.dart: CA021 - checkNow() NO duplica alerta si ya existe una pendiente para el artículo
+[StockMonitor] Ejecutando chequeo de stock...
+[StockMonitor] Push enviado: 1 críticos, 0 bajos
+00:03 +88: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/widget_test.dart: App loads correctly
+00:03 +88: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/services/stock_monitor_service_test.dart: CA021 - checkNow() ignora artículos con stockMinimo = 0
+[StockMonitor] Ejecutando chequeo de stock...
+[StockMonitor] Todo el stock está normal ✅
+00:03 +89: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/widget_test.dart: App loads correctly
+00:03 +90: /Users/jair/Documents/Ciclo 9/Capstone/HappyOven/test/widget_test.dart: App loads correctly
+00:03 +91: All tests passed!
