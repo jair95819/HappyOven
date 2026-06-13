@@ -31,8 +31,8 @@ void main() {
   // ═══════════════════════════════════════════════════════
   group('CA016 - registrarMovimiento()', () {
     test('registra entrada de stock y retorna con ID', () async {
-      final nuevo = _mov(id: '', tipoMovimiento: 'entrada', cantidad: 25);
-      final creado = _mov(id: 'm-nuevo', tipoMovimiento: 'entrada', cantidad: 25);
+      final nuevo = _mov(id: '', cantidad: 25);
+      final creado = _mov(id: 'm-nuevo', cantidad: 25);
 
       when(mockRepo.registrarMovimiento(nuevo))
           .thenAnswer((_) async => creado);
@@ -64,7 +64,7 @@ void main() {
   group('CA017 - getHistorialMovimientos()', () {
     test('retorna movimientos ordenados por fecha descendente', () async {
       when(mockRepo.getHistorialMovimientos()).thenAnswer((_) async => [
-        _mov(id: 'm1', fecha: DateTime(2025, 6, 15)),
+        _mov(fecha: DateTime(2025, 6, 15)),
         _mov(id: 'm2', fecha: DateTime(2025, 6, 14)),
         _mov(id: 'm3', fecha: DateTime(2025, 6, 13)),
       ]);
@@ -92,8 +92,8 @@ void main() {
   group('CA018 - getMovimientosPorArticulo()', () {
     test('retorna solo movimientos del artículo indicado', () async {
       when(mockRepo.getMovimientosPorArticulo('a1')).thenAnswer((_) async => [
-        _mov(id: 'm1', articuloId: 'a1', tipoMovimiento: 'entrada', cantidad: 50),
-        _mov(id: 'm2', articuloId: 'a1', tipoMovimiento: 'salida', cantidad: 10),
+        _mov(articuloId: 'a1'),
+        _mov(id: 'm2', tipoMovimiento: 'salida', cantidad: 10),
       ]);
 
       final resultado = await mockRepo.getMovimientosPorArticulo('a1');

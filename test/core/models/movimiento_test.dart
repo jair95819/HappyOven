@@ -99,7 +99,7 @@ void main() {
     });
 
     test('fecha se serializa en formato ISO 8601', () {
-      final fecha = DateTime(2025, 6, 15, 14, 30, 0);
+      final fecha = DateTime(2025, 6, 15, 14, 30);
       final mov = Movimiento(
         id: 'm1', articuloId: 'a1', usuarioId: 'u1',
         tipoMovimiento: 'entrada', cantidad: 10,

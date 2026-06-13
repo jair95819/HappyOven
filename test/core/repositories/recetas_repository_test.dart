@@ -14,7 +14,7 @@ Receta _receta({
 }) {
   return Receta(
     id: id, nombre: nombre, productoId: productoId,
-    rendimiento: rendimiento, createdAt: DateTime(2025, 1, 1),
+    rendimiento: rendimiento, createdAt: DateTime(2025, 1),
   );
 }
 
@@ -43,9 +43,9 @@ void main() {
   group('CA008 - getRecetas()', () {
     test('retorna recetas ordenadas alfabéticamente', () async {
       when(mockRepo.getRecetas()).thenAnswer((_) async => [
-        _receta(id: 'r1', nombre: 'Brownie'),
+        _receta(nombre: 'Brownie'),
         _receta(id: 'r2', nombre: 'Galletas'),
-        _receta(id: 'r3', nombre: 'Pan'),
+        _receta(id: 'r3'),
       ]);
 
       final resultado = await mockRepo.getRecetas();
@@ -71,7 +71,7 @@ void main() {
   group('CA009 - getRecetaById()', () {
     test('retorna la receta cuando existe', () async {
       when(mockRepo.getRecetaById('r1'))
-          .thenAnswer((_) async => _receta(id: 'r1', nombre: 'Pan'));
+          .thenAnswer((_) async => _receta(nombre: 'Pan'));
 
       final resultado = await mockRepo.getRecetaById('r1');
 
@@ -95,7 +95,7 @@ void main() {
   group('CA010 - getRecetaByProductoId()', () {
     test('retorna receta vinculada al producto', () async {
       when(mockRepo.getRecetaByProductoId('p1')).thenAnswer((_) async =>
-        _receta(id: 'r1', nombre: 'Pan', productoId: 'p1'),
+        _receta(nombre: 'Pan', productoId: 'p1'),
       );
 
       final resultado = await mockRepo.getRecetaByProductoId('p1');
@@ -136,7 +136,7 @@ void main() {
   // ═══════════════════════════════════════════════════════
   group('CA012 - updateReceta()', () {
     test('actualiza receta y retorna con datos nuevos', () async {
-      final actualizada = _receta(id: 'r1', nombre: 'Pan Integral', rendimiento: 15);
+      final actualizada = _receta(nombre: 'Pan Integral', rendimiento: 15);
 
       when(mockRepo.updateReceta(any)).thenAnswer((_) async => actualizada);
 
@@ -154,7 +154,7 @@ void main() {
   group('CA013 - getIngredientesPorReceta()', () {
     test('retorna lista de ingredientes de la receta', () async {
       when(mockRepo.getIngredientesPorReceta('r1')).thenAnswer((_) async => [
-        _ingrediente(id: 'ri1', insumoId: 'a1', cantidad: 2.0),
+        _ingrediente(insumoId: 'a1'),
         _ingrediente(id: 'ri2', insumoId: 'a2', cantidad: 0.5),
         _ingrediente(id: 'ri3', insumoId: 'a3', cantidad: 1.0),
       ]);
@@ -200,11 +200,11 @@ void main() {
     test('reemplaza todos los ingredientes y retorna nueva lista', () async {
       final nuevos = [
         _ingrediente(id: '', insumoId: 'a10', cantidad: 1.0),
-        _ingrediente(id: '', insumoId: 'a11', cantidad: 2.0),
+        _ingrediente(id: '', insumoId: 'a11'),
       ];
       final retornados = [
         _ingrediente(id: 'ri-10', insumoId: 'a10', cantidad: 1.0),
-        _ingrediente(id: 'ri-11', insumoId: 'a11', cantidad: 2.0),
+        _ingrediente(id: 'ri-11', insumoId: 'a11'),
       ];
 
       when(mockRepo.reemplazarIngredientes('r1', nuevos))

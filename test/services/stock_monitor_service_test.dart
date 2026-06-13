@@ -34,7 +34,7 @@ Articulo _art({
     id: id, nombre: nombre, categoriaId: null,
     tipo: 'insumo', unidad: 'kg', stockActual: stockActual,
     stockMinimo: stockMinimo, precioUnitario: 5.0, activo: true,
-    createdAt: DateTime(2025, 1, 1), updatedAt: DateTime(2025, 1, 1),
+    createdAt: DateTime(2025, 1), updatedAt: DateTime(2025, 1),
   );
 }
 
@@ -62,7 +62,7 @@ void main() {
   group('CA020 - startMonitoring()', () {
     test('inicia monitoreo y ejecuta chequeo inmediato', () async {
       when(mockArticulosRepo.getArticulos())
-          .thenAnswer((_) async => [_art(stockActual: 100, stockMinimo: 10)]);
+          .thenAnswer((_) async => [_art(stockMinimo: 10)]);
       when(mockAlertasRepo.getAlertasPendientes())
           .thenAnswer((_) async => []);
 
@@ -99,7 +99,7 @@ void main() {
   group('CA021 - checkNow()', () {
     test('no crea alertas cuando todo el stock es normal', () async {
       when(mockArticulosRepo.getArticulos()).thenAnswer((_) async => [
-        _art(id: 'a1', stockActual: 100, stockMinimo: 10),
+        _art(stockActual: 100),
         _art(id: 'a2', stockActual: 50, stockMinimo: 5),
       ]);
       when(mockAlertasRepo.getAlertasPendientes())
@@ -113,7 +113,7 @@ void main() {
 
     test('crea alerta de stock BAJO cuando stock <= stockMinimo', () async {
       when(mockArticulosRepo.getArticulos()).thenAnswer((_) async => [
-        _art(id: 'a1', nombre: 'Harina', stockActual: 8, stockMinimo: 10),
+        _art(nombre: 'Harina', stockActual: 8),
       ]);
       when(mockAlertasRepo.getAlertasPendientes())
           .thenAnswer((_) async => []);
@@ -132,7 +132,7 @@ void main() {
 
     test('crea alerta CRÍTICA cuando stock <= stockMinimo * 0.5', () async {
       when(mockArticulosRepo.getArticulos()).thenAnswer((_) async => [
-        _art(id: 'a1', nombre: 'Azúcar', stockActual: 3, stockMinimo: 10),
+        _art(nombre: 'Azúcar', stockActual: 3),
       ]);
       when(mockAlertasRepo.getAlertasPendientes())
           .thenAnswer((_) async => []);
@@ -149,7 +149,7 @@ void main() {
 
     test('NO duplica alerta si ya existe una pendiente para el artículo', () async {
       when(mockArticulosRepo.getArticulos()).thenAnswer((_) async => [
-        _art(id: 'a1', stockActual: 3, stockMinimo: 10),
+        _art(stockActual: 3),
       ]);
       when(mockAlertasRepo.getAlertasPendientes()).thenAnswer((_) async => [
         Alerta(id: 'al-existente', articuloId: 'a1', tipo: 'stock_bajo',
@@ -164,7 +164,7 @@ void main() {
 
     test('ignora artículos con stockMinimo = 0', () async {
       when(mockArticulosRepo.getArticulos()).thenAnswer((_) async => [
-        _art(id: 'a1', stockActual: 0, stockMinimo: 0),
+        _art(stockActual: 0, stockMinimo: 0),
       ]);
       when(mockAlertasRepo.getAlertasPendientes())
           .thenAnswer((_) async => []);

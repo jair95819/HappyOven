@@ -72,7 +72,7 @@ class AuthState {
 
   // Limpiar errores
   AuthState limpiarError() {
-    return copyWith(error: null);
+    return copyWith();
   }
 }
 

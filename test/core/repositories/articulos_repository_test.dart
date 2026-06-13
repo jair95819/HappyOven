@@ -18,7 +18,7 @@ Articulo _art({
     id: id, nombre: nombre, categoriaId: null,
     tipo: tipo, unidad: unidad, stockActual: stockActual,
     stockMinimo: stockMinimo, precioUnitario: precio, activo: true,
-    createdAt: DateTime(2025, 1, 1), updatedAt: DateTime(2025, 1, 1),
+    createdAt: DateTime(2025, 1), updatedAt: DateTime(2025, 1),
   );
 }
 
@@ -35,8 +35,8 @@ void main() {
   group('CA001 - getArticulos()', () {
     test('retorna lista de artículos ordenada alfabéticamente', () async {
       final articulosFake = [
-        _art(id: 'a1', nombre: 'Azúcar'),
-        _art(id: 'a2', nombre: 'Harina'),
+        _art(nombre: 'Azúcar'),
+        _art(id: 'a2'),
         _art(id: 'a3', nombre: 'Mantequilla'),
       ];
       when(mockRepo.getArticulos()).thenAnswer((_) async => articulosFake);
@@ -64,8 +64,8 @@ void main() {
   group('CA002 - getInsumos()', () {
     test('retorna solo artículos de tipo insumo', () async {
       final insumosFake = [
-        _art(id: 'a1', nombre: 'Harina', tipo: 'insumo'),
-        _art(id: 'a2', nombre: 'Azúcar', tipo: 'insumo'),
+        _art(nombre: 'Harina'),
+        _art(id: 'a2', nombre: 'Azúcar'),
       ];
       when(mockRepo.getInsumos()).thenAnswer((_) async => insumosFake);
 
@@ -106,7 +106,7 @@ void main() {
   group('CA004 - getArticuloById()', () {
     test('retorna el artículo cuando existe', () async {
       when(mockRepo.getArticuloById('a1'))
-          .thenAnswer((_) async => _art(id: 'a1', nombre: 'Harina'));
+          .thenAnswer((_) async => _art(nombre: 'Harina'));
 
       final resultado = await mockRepo.getArticuloById('a1');
 
@@ -153,7 +153,7 @@ void main() {
         id: 'a1', nombre: 'Harina Integral', categoriaId: null,
         tipo: 'insumo', unidad: 'kg', stockActual: 80,
         stockMinimo: 10, precioUnitario: 6.0, activo: true,
-        createdAt: DateTime(2025, 1, 1),
+        createdAt: DateTime(2025, 1),
         updatedAt: DateTime(2025, 6, 15),
       );
 
