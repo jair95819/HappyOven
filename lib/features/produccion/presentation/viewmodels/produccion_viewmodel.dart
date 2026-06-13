@@ -4,9 +4,10 @@ import 'package:happy_oven/core/models/movimiento.dart';
 import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/core/models/receta_ingrediente.dart';
 import 'package:happy_oven/core/repositories/ordenes_produccion_repository.dart';
-import 'package:happy_oven/core/repositories/movimientos_repository.dart';
-import 'package:happy_oven/core/repositories/articulos_repository.dart';
-import 'package:happy_oven/core/repositories/recetas_repository.dart';
+import 'package:happy_oven/core/repositories/i_ordenes_produccion_repository.dart';
+import 'package:happy_oven/core/repositories/i_movimientos_repository.dart';
+import 'package:happy_oven/core/repositories/i_articulos_repository.dart';
+import 'package:happy_oven/core/repositories/i_recetas_repository.dart';
 import 'package:happy_oven/core/providers.dart';
 
 final ordenesProduccionProvider =
@@ -75,16 +76,16 @@ final ejecutarProduccionProvider = Provider<EjecutarProduccion>((ref) {
 });
 
 class EjecutarProduccion {
-  final OrdenesProduccionRepository _ordenesRepo;
-  final MovimientosRepository _movimientosRepo;
-  final ArticulosRepository _articulosRepo;
-  final RecetasRepository _recetasRepo;
+  final IOrdenesProduccionRepository _ordenesRepo;
+  final IMovimientosRepository _movimientosRepo;
+  final IArticulosRepository _articulosRepo;
+  final IRecetasRepository _recetasRepo;
 
   EjecutarProduccion({
-    required OrdenesProduccionRepository ordenesRepo,
-    required MovimientosRepository movimientosRepo,
-    required ArticulosRepository articulosRepo,
-    required RecetasRepository recetasRepo,
+    required IOrdenesProduccionRepository ordenesRepo,
+    required IMovimientosRepository movimientosRepo,
+    required IArticulosRepository articulosRepo,
+    required IRecetasRepository recetasRepo,
   })  : _ordenesRepo = ordenesRepo,
         _movimientosRepo = movimientosRepo,
         _articulosRepo = articulosRepo,
@@ -103,6 +104,19 @@ class EjecutarProduccion {
     required String productoId,
   }) async {
     try {
+      // 0. Validar stock suficiente ANTES de aplicar cualquier cambio (RF-013).
+      //    Si algún insumo no alcanza, se aborta la operación sin tocar el stock.
+      for (final ing in ingredientes) {
+        final insumo = await _articulosRepo.getArticuloById(ing.insumoId);
+        if (insumo == null) continue;
+
+        final requerido = ing.cantidadRequerida * orden.cantidadLotes;
+        if (insumo.stockActual < requerido) {
+          return 'Stock insuficiente para procesar la orden. '
+              'Faltan unidades del insumo requerido.';
+        }
+      }
+
       // Marcar como en_proceso
       await _ordenesRepo.updateOrden(orden.copyWith(estado: 'en_proceso'));
 
@@ -137,7 +151,7 @@ class EjecutarProduccion {
           categoriaId: insumo.categoriaId,
           tipo: insumo.tipo,
           unidad: insumo.unidad,
-          stockActual: nuevoStock < 0 ? 0 : nuevoStock,
+          stockActual: nuevoStock,
           stockMinimo: insumo.stockMinimo,
           precioUnitario: insumo.precioUnitario,
           activo: insumo.activo,
@@ -209,6 +223,37 @@ class EjecutarProduccion {
       } catch (_) {}
       return e.toString();
     }
+  }
+
+  /// Carga la receta y sus ingredientes a partir de la [orden] y ejecuta el
+  /// flujo de producción. Devuelve null si todo fue correcto, o un mensaje de
+  /// error/validación (p. ej. stock insuficiente) en caso contrario.
+  Future<String?> ejecutarOrden({
+    required OrdenProduccion orden,
+    required String usuarioId,
+  }) async {
+    final receta = await _recetasRepo.getRecetaById(orden.recetaId);
+    if (receta == null) return 'No se encontró la receta de la orden.';
+
+    final productoId = receta.productoId;
+    if (productoId == null || productoId.isEmpty) {
+      return 'La receta no tiene un producto final asignado.';
+    }
+
+    final ingredientes = await _recetasRepo.getIngredientesPorReceta(
+      orden.recetaId,
+    );
+    if (ingredientes.isEmpty) {
+      return 'La receta no tiene ingredientes registrados.';
+    }
+
+    return ejecutar(
+      orden: orden,
+      usuarioId: usuarioId,
+      ingredientes: ingredientes,
+      rendimiento: receta.rendimiento,
+      productoId: productoId,
+    );
   }
 }
 

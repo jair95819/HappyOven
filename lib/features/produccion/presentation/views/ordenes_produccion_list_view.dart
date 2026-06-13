@@ -7,6 +7,9 @@ import 'package:happy_oven/core/models/orden_produccion.dart';
 import 'package:happy_oven/core/models/receta.dart';
 import 'package:happy_oven/features/produccion/presentation/viewmodels/produccion_viewmodel.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/viewmodels/recetas_viewmodel.dart';
+import 'package:happy_oven/features/auth/presentation/viewmodels/auth_viewmodel.dart';
+import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
+import 'package:happy_oven/features/analitica_alertas/presentation/viewmodels/dashboard_viewmodel.dart';
 
 class OrdenesProduccionListView extends ConsumerStatefulWidget {
   const OrdenesProduccionListView({super.key});
@@ -51,6 +54,61 @@ class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionLis
         ],
       ),
     );
+  }
+
+  /// Ejecuta una orden pendiente: valida stock, descuenta insumos y registra
+  /// el producto terminado. Muestra la alerta de stock insuficiente si aplica.
+  Future<void> _ejecutarOrden(OrdenProduccion orden) async {
+    final colors = AppTheme.colorsOf(context);
+
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirmar producción'),
+        content: const Text(
+          'Se descontarán automáticamente los insumos del inventario y se '
+          'registrará el producto terminado. ¿Deseas continuar?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Ejecutar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmar != true) return;
+
+    final usuarioId = ref.read(authViewModelProvider).usuario?.id ?? '';
+    final error = await ref
+        .read(ejecutarProduccionProvider)
+        .ejecutarOrden(orden: orden, usuarioId: usuarioId);
+
+    if (!mounted) return;
+
+    if (error == null) {
+      // Refrescar órdenes, inventario y dashboard para ver el stock en tiempo real.
+      await ref.read(ordenesProduccionProvider.notifier).cargarOrdenes();
+      await ref.read(catalogoViewModelProvider.notifier).cargarArticulos();
+      ref.read(dashboardViewModelProvider.notifier).cargarDatos();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('Producción ejecutada y stock actualizado'),
+        backgroundColor: colors.statusNormal,
+        behavior: SnackBarBehavior.floating,
+      ));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(error),
+        backgroundColor: colors.statusCritical,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+      ));
+    }
   }
 
   Widget _buildFiltros(AppColors colors, AppFont font) {
@@ -270,6 +328,38 @@ class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionLis
             if (orden.notas != null && orden.notas!.isNotEmpty) ...[
               const SizedBox(height: 6),
               Text(orden.notas!, style: font.caption.copyWith(fontSize: 10)),
+            ],
+            if (orden.estado == 'pendiente') ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: GestureDetector(
+                  onTap: () => _ejecutarOrden(orden),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: colors.accent,
+                      borderRadius: AppTheme.radius.brSm,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.play_arrow_rounded,
+                            color: colors.titleText, size: 16),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Ejecutar producción',
+                          style: font.label.copyWith(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: colors.titleText,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ],
           ],
         ),
