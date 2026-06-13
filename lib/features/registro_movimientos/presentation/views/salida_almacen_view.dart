@@ -57,6 +57,10 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
       _mostrarError('No hay suficiente stock disponible');
       return;
     }
+    if (_observacionController.text.trim().isEmpty) {
+      _mostrarError('La justificación es obligatoria para registrar la salida');
+      return;
+    }
 
     setState(() => _guardando = true);
 
@@ -229,7 +233,7 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
               const SizedBox(height: 6),
               _buildControlCantidad(colors, font),
               const SizedBox(height: 20),
-              _buildLabel('Observación (opcional)', colors, font),
+              _buildLabel('Justificación (obligatoria)', colors, font),
               const SizedBox(height: 6),
               _buildCampoObservacion(colors, font),
               const SizedBox(height: 20),

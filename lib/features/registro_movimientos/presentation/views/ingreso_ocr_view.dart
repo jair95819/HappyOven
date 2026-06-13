@@ -36,8 +36,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
 
   final List<String> _unidades = ['kg', 'litros', 'unidades', 'gramos', 'ml'];
 
-  double get _totalBoleta =>
-      _items.fold(0, (sum, i) => sum + (i.cantidad * i.precioUnitario));
+  double get _totalBoleta => _items.fold(0, (sum, i) => sum + i.importe);
 
   @override
   void dispose() {
@@ -86,12 +85,13 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
 
       setState(() => _procesandoOcr = true);
 
-      final ocrService = OcrService();
+      final ocrService = ref.read(ocrServiceProvider);
       final recognizedText = await ocrService.reconocerTexto(
         io.File(pickedFile.path),
       );
+      final detectados = ocrService.parsearBoleta(recognizedText);
 
-      _procesarTextoOcr(recognizedText);
+      _procesarItems(detectados);
 
       if (mounted) {
         setState(() {
@@ -107,77 +107,27 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
     }
   }
 
-  void _procesarTextoOcr(String texto) {
-    _items.clear();
+  void _procesarItems(List<OcrItem> detectados) {
+    _items
+      ..clear()
+      ..addAll(
+        detectados.map(
+          (d) => _ItemOCR(
+            nombre: d.nombreRaw,
+            cantidad: d.cantidad,
+            unidad: d.unidad,
+            precioUnitario: d.precioUnitario,
+          ),
+        ),
+      );
 
-    final lineas = texto.split('\n');
-
-    for (final linea in lineas) {
-      final limpia = linea.trim();
-      if (limpia.isEmpty) continue;
-
-      // Buscar patrones: nombre + cantidad + precio
-      // Ejemplo: "Harina 50 kg 2.80" o "Mantequilla 20 kg 8.50"
-
-      final item = _extraerItemDeLinea(limpia);
-      if (item != null) {
-        _items.add(item);
-      }
-    }
-
-    // Si no encontró nada, mostrar el texto completo para que el usuario lo edite
+    // Si no encontró nada, dejar un ítem vacío para edición manual
     if (_items.isEmpty) {
       _mostrarError('No se encontraron ítems. Por favor, edita manualmente.');
-      // Agregar un ítem vacío para que el usuario comience a editar
       _items.add(
         _ItemOCR(nombre: '', cantidad: 0, unidad: 'kg', precioUnitario: 0),
       );
     }
-  }
-
-  _ItemOCR? _extraerItemDeLinea(String linea) {
-    // Intentar extraer: nombre (letras/espacios) + números (cantidad) + números (precio)
-    // Patrón: palabras, seguidas de números, seguidas de más números
-
-    final pattern = RegExp(
-      r'([a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)\s+(\d+(?:[.,]\d+)?)\s+([a-z]+)?\s*(\d+(?:[.,]\d+)?)',
-      caseSensitive: false,
-    );
-
-    final match = pattern.firstMatch(linea);
-    if (match == null) return null;
-
-    String nombre = match.group(1)?.trim() ?? '';
-    String cantidadStr = match.group(2) ?? '0';
-    String? unidadStr = match.group(3)?.trim().toLowerCase();
-    String precioStr = match.group(4) ?? '0';
-
-    if (nombre.isEmpty) return null;
-
-    double cantidad = double.tryParse(cantidadStr.replaceAll(',', '.')) ?? 0;
-    double precio = double.tryParse(precioStr.replaceAll(',', '.')) ?? 0;
-
-    String unidad = 'kg'; // default
-    if (unidadStr != null) {
-      if (unidadStr.startsWith('l')) {
-        unidad = 'litros';
-      } else if (unidadStr.startsWith('u')) {
-        unidad = 'unidades';
-      } else if (unidadStr.startsWith('g')) {
-        unidad = 'gramos';
-      } else if (unidadStr.startsWith('m')) {
-        unidad = 'ml';
-      }
-    }
-
-    if (cantidad <= 0 || precio <= 0) return null;
-
-    return _ItemOCR(
-      nombre: nombre,
-      cantidad: cantidad,
-      unidad: unidad,
-      precioUnitario: precio,
-    );
   }
 
   Future<void> _confirmarTodo() async {
@@ -197,32 +147,38 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
     final supabaseService = ref.read(supabaseServiceProvider);
     final usuarioId = supabaseService.getCurrentUser()?.id ?? '';
 
-    // Buscar artículos en catálogo por nombre para obtener su ID
-    final catalogoState = ref.read(catalogoViewModelProvider);
-    final articulos = catalogoState.maybeWhen(
+    // Buscar artículos en catálogo para obtener su ID. El provider puede no
+    // haber terminado de cargar todavía, así que lo forzamos si viene vacío.
+    var articulos = ref.read(catalogoViewModelProvider).maybeWhen(
       data: (lista) => lista,
       orElse: () => <Articulo>[],
     );
+    if (articulos.isEmpty) {
+      await ref.read(catalogoViewModelProvider.notifier).cargarArticulos();
+      articulos = ref.read(catalogoViewModelProvider).maybeWhen(
+        data: (lista) => lista,
+        orElse: () => <Articulo>[],
+      );
+    }
+    final nombresCatalogo = articulos.map((a) => a.nombre).toList();
 
     int exitosos = 0;
     int fallidos = 0;
 
     for (final item in _items) {
-      // Buscar artículo por nombre (case-insensitive)
-      final articuloMatch = articulos
-          .where(
-            (a) =>
-                a.nombre.toLowerCase().trim() ==
-                item.nombre.toLowerCase().trim(),
-          )
-          .toList();
+      // Asociar al artículo más parecido del catálogo (tolera acentos,
+      // mayúsculas y nombres parciales).
+      final idx = OcrService.indiceMejorCoincidencia(
+        item.nombre,
+        nombresCatalogo,
+      );
 
-      if (articuloMatch.isEmpty) {
+      if (idx == null) {
         fallidos++;
         continue;
       }
 
-      final articulo = articuloMatch.first;
+      final articulo = articulos[idx];
       final nuevoStock = articulo.stockActual + item.cantidad;
 
       final movimiento = Movimiento(
@@ -936,7 +892,8 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                   valor: item.cantidad == 0 ? '' : item.cantidad.toString(),
                   colors: colors,
                   font: font,
-                  onChanged: (v) => item.cantidad = double.tryParse(v) ?? 0,
+                  onChanged: (v) =>
+                      setState(() => item.cantidad = double.tryParse(v) ?? 0),
                 ),
               ),
               const SizedBox(width: 6),
@@ -951,8 +908,30 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                   colors: colors,
                   font: font,
                   prefijo: 'S/',
-                  onChanged: (v) =>
-                      item.precioUnitario = double.tryParse(v) ?? 0,
+                  onChanged: (v) => setState(
+                    () => item.precioUnitario = double.tryParse(v) ?? 0,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'IMPORTE',
+                style: font.caption.copyWith(
+                  fontSize: 9,
+                  color: colors.brownMid,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                'S/ ${item.importe.toStringAsFixed(2)}',
+                style: font.label.copyWith(
+                  fontSize: 13,
+                  color: colors.primary,
                 ),
               ),
             ],
@@ -1124,4 +1103,7 @@ class _ItemOCR {
     required this.unidad,
     required this.precioUnitario,
   });
+
+  /// Importe de la línea = cantidad × precio unitario.
+  double get importe => cantidad * precioUnitario;
 }

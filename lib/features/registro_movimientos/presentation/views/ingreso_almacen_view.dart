@@ -96,6 +96,10 @@ class _IngresoAlmacenViewState extends ConsumerState<IngresoAlmacenView> {
       _mostrarError('Ingresa una cantidad válida');
       return;
     }
+    if (_observacionController.text.trim().isEmpty) {
+      _mostrarError('La justificación es obligatoria para registrar el ingreso');
+      return;
+    }
 
     setState(() => _isSaving = true);
 
@@ -201,11 +205,11 @@ class _IngresoAlmacenViewState extends ConsumerState<IngresoAlmacenView> {
                         colors: colors, font: font,
                       ),
                       const SizedBox(height: 20),
-                      _buildSectionTitle('Observación (opcional)', font),
+                      _buildSectionTitle('Justificación (obligatoria)', font),
                       const SizedBox(height: 12),
                       _buildTextField(
                         controller: _observacionController,
-                        label: 'Nota adicional',
+                        label: 'Motivo del ingreso (ej. compra a proveedor)',
                         icon: Icons.description_outlined,
                         colors: colors, font: font,
                         maxLines: 2,
