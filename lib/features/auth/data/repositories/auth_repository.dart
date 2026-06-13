@@ -52,9 +52,11 @@ class AuthRepository implements IAuthRepository {
 
       final usuario = User(
         id: response.user!.id,
-        nombre: userProfile?['nombre'] ?? response.user!.email ?? 'Usuario',
+        nombre:
+            userProfile?['nombre_completo'] ?? response.user!.email ?? 'Usuario',
         email: response.user!.email ?? '',
-        fotoPerfil: userProfile?['foto_perfil'],
+        fotoPerfil: userProfile?['avatar_url'],
+        rol: userProfile?['rol'] ?? 'operador',
         createdAt: DateTime.parse(response.user!.createdAt),
         activo: true,
       );
@@ -116,16 +118,17 @@ class AuthRepository implements IAuthRepository {
       await _localStorageService.saveUserId(response.user!.id);
       await _localStorageService.saveUserEmail(response.user!.email ?? '');
 
-      // TODO: Crear registro en tabla users con nombre
+      // Crear el perfil asociado en la tabla `perfiles` con rol por defecto.
       await _supabaseService.updateUserProfile(response.user!.id, {
-        'nombre': request.nombre,
-        'email': response.user!.email,
+        'nombre_completo': request.nombre,
+        'rol': 'operador',
       });
 
       final usuario = User(
         id: response.user!.id,
         nombre: request.nombre,
         email: response.user!.email ?? '',
+        rol: 'operador',
         createdAt: DateTime.parse(response.user!.createdAt),
         activo: true,
       );
@@ -183,9 +186,10 @@ class AuthRepository implements IAuthRepository {
 
       return User(
         id: user.id,
-        nombre: userProfile?['nombre'] ?? user.email ?? 'Usuario',
+        nombre: userProfile?['nombre_completo'] ?? user.email ?? 'Usuario',
         email: user.email ?? '',
-        fotoPerfil: userProfile?['foto_perfil'],
+        fotoPerfil: userProfile?['avatar_url'],
+        rol: userProfile?['rol'] ?? 'operador',
         createdAt: DateTime.parse(user.createdAt),
         activo: true,
       );

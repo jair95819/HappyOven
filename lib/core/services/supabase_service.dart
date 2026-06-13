@@ -95,32 +95,33 @@ class SupabaseService {
   }
 
   // ── DB: Obtener perfil de usuario
-  
-  /// Consulta la tabla `users` para obtener los datos extendidos del perfil
-  /// usando el [userId]. Devuelve un mapa con la información o null si falla.
+
+  /// Consulta la tabla `perfiles` para obtener los datos extendidos del perfil
+  /// (incluyendo el rol) usando el [userId]. Devuelve un mapa con la información
+  /// o null si no existe o falla.
   Future<Map<String, dynamic>?> getUserProfile(String userId) async {
     try {
       final response = await _client
-          .from('users')
+          .from('perfiles')
           .select()
           .eq('id', userId)
-          .single();
+          .maybeSingle();
       return response;
     } catch (e) {
       return null;
     }
   }
 
-  // ── DB: Actualizar perfil
-  
-  /// Actualiza los campos del perfil en la tabla `users` para un [userId] dado,
-  /// utilizando la información estructurada en el mapa [data].
+  // ── DB: Crear/actualizar perfil
+
+  /// Inserta o actualiza (upsert) los campos del perfil en la tabla `perfiles`
+  /// para un [userId] dado, utilizando la información del mapa [data].
   Future<void> updateUserProfile(
     String userId,
     Map<String, dynamic> data,
   ) async {
     try {
-      await _client.from('users').update(data).eq('id', userId);
+      await _client.from('perfiles').upsert({'id': userId, ...data});
     } catch (e) {
       throw Exception('Error al actualizar perfil: ${e.toString()}');
     }
