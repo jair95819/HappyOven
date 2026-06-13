@@ -5,12 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:happy_oven/core/models/articulo.dart';
-import 'package:happy_oven/core/models/movimiento.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/core/services/ocr_service.dart';
 import 'package:happy_oven/core/providers.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
 import 'package:happy_oven/features/registro_movimientos/presentation/viewmodels/movimientos_viewmodel.dart';
+import 'package:happy_oven/features/registro_movimientos/presentation/viewmodels/ingreso_ocr_registrador.dart';
 
 class IngresoOcrView extends ConsumerStatefulWidget {
   const IngresoOcrView({super.key});
@@ -160,60 +160,51 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
         orElse: () => <Articulo>[],
       );
     }
-    final nombresCatalogo = articulos.map((a) => a.nombre).toList();
+    // Registrar la boleta: asocia cada ítem al catálogo o crea el insumo si el
+    // nombre no coincide (ver [registrarIngresoOcr]).
+    final resultado = await registrarIngresoOcr(
+      items: _items
+          .map(
+            (i) => ItemOcrIngreso(
+              nombre: i.nombre,
+              cantidad: i.cantidad,
+              unidad: i.unidad,
+              precioUnitario: i.precioUnitario,
+            ),
+          )
+          .toList(),
+      catalogo: articulos,
+      usuarioId: usuarioId,
+      proveedor: _proveedorController.text,
+      articulosRepository: ref.read(articulosRepositoryProvider),
+      movimientosRepository: ref.read(movimientosRepositoryProvider),
+    );
 
-    int exitosos = 0;
-    int fallidos = 0;
+    final exitosos = resultado.exitosos;
+    final creados = resultado.creados;
+    final fallidos = resultado.fallidos;
 
-    for (final item in _items) {
-      // Asociar al artículo más parecido del catálogo (tolera acentos,
-      // mayúsculas y nombres parciales).
-      final idx = OcrService.indiceMejorCoincidencia(
-        item.nombre,
-        nombresCatalogo,
-      );
-
-      if (idx == null) {
-        fallidos++;
-        continue;
-      }
-
-      final articulo = articulos[idx];
-      final nuevoStock = articulo.stockActual + item.cantidad;
-
-      final movimiento = Movimiento(
-        id: '',
-        articuloId: articulo.id,
-        usuarioId: usuarioId,
-        tipoMovimiento: 'entrada',
-        cantidad: item.cantidad,
-        precioUnitario: item.precioUnitario,
-        proveedor: _proveedorController.text.trim().isEmpty
-            ? null
-            : _proveedorController.text.trim(),
-        porOcr: true,
-        fecha: DateTime.now(),
-      );
-
-      final exito = await ref
-          .read(movimientosViewModelProvider.notifier)
-          .registrarMovimiento(movimiento, articulo, nuevoStock);
-
-      if (exito) {
-        exitosos++;
-      } else {
-        fallidos++;
-      }
+    // Refrescar las listas afectadas: el historial de movimientos siempre, y el
+    // catálogo solo si se crearon insumos nuevos.
+    await ref.read(movimientosViewModelProvider.notifier).cargarMovimientos();
+    if (creados > 0) {
+      await ref.read(catalogoViewModelProvider.notifier).cargarArticulos();
     }
 
     setState(() => _guardando = false);
 
     if (!mounted) return;
 
+    final detalleCreados = creados > 0
+        ? ' ($creados nuevo${creados != 1 ? 's' : ''} en catálogo)'
+        : '';
+
     if (fallidos == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('$exitosos insumos registrados correctamente'),
+          content: Text(
+            '$exitosos insumos registrados correctamente$detalleCreados',
+          ),
           backgroundColor: AppTheme.colorsOf(context).statusNormal,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: AppTheme.radius.brSm),
@@ -221,12 +212,12 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
       );
       context.pop();
     } else if (exitosos > 0) {
-      // Algunos fallaron — probablemente el nombre no coincide con el catálogo
+      // Algunos fallaron al guardar en la base de datos.
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '$exitosos registrados. $fallidos no encontrados en catálogo — '
-            'verifica que el nombre coincida exactamente.',
+            '$exitosos registrados$detalleCreados. '
+            '$fallidos no se pudieron guardar — inténtalo de nuevo.',
           ),
           backgroundColor: AppTheme.colorsOf(context).statusLow,
           behavior: SnackBarBehavior.floating,
@@ -236,8 +227,8 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
       );
     } else {
       _mostrarError(
-        'No se encontraron los insumos en el catálogo. '
-        'Verifica que los nombres coincidan exactamente.',
+        'No se pudieron registrar los insumos. '
+        'Verifica tu conexión e inténtalo de nuevo.',
       );
     }
   }
