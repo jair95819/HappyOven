@@ -7,6 +7,7 @@ import 'package:happy_oven/features/auth/presentation/views/recuperar_password_v
 import 'package:happy_oven/features/analitica_alertas/presentation/views/dashboard_inteligente_view.dart';
 import 'package:happy_oven/features/analitica_alertas/presentation/views/centro_alertas_view.dart';
 import 'package:happy_oven/features/analitica_alertas/presentation/views/reportes_view.dart';
+import 'package:happy_oven/features/analitica_alertas/presentation/views/sugerencias_compra_view.dart';
 import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/core/models/receta.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/views/catalogo_general_view.dart';
@@ -24,6 +25,16 @@ import 'package:happy_oven/features/configuracion/presentation/views/perfil_ajus
 import 'package:happy_oven/features/configuracion/presentation/views/gestion_categorias_view.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/views/historial_articulo_view.dart';
 
+/// Prefijos de rutas restringidas exclusivamente al rol Administrador.
+/// Un Operario que intente acceder será redirigido al dashboard.
+const rutasSoloAdmin = ['/recetas', '/categorias', '/reportes'];
+
+/// Determina si la [location] pertenece a un módulo exclusivo de Administrador.
+/// Función pura, expuesta para pruebas de la lógica de autorización (RF-002).
+bool esRutaSoloAdmin(String location) {
+  return rutasSoloAdmin.any((r) => location == r || location.startsWith('$r/'));
+}
+
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/login',
@@ -36,6 +47,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       if (!autenticado && !enLogin) return '/login';
       if (autenticado && enLogin) return '/dashboard';
+
+      // Autorización por rol: bloquear módulos exclusivos de Admin.
+      if (autenticado && !(authState.usuario?.esAdmin ?? false)) {
+        if (esRutaSoloAdmin(state.matchedLocation)) {
+          return '/dashboard';
+        }
+      }
 
       return null;
     },
@@ -57,6 +75,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/dashboard',
                 builder: (c, s) => const DashboardInteligenteView(),
+                routes: [
+                  GoRoute(
+                    path: 'sugerencias',
+                    builder: (c, s) => const SugerenciasCompraView(),
+                  ),
+                ],
               ),
             ],
           ),

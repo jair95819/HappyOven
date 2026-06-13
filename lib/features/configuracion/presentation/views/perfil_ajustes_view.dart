@@ -22,7 +22,7 @@ class PerfilAjustesView extends ConsumerWidget {
                 physics: const BouncingScrollPhysics(),
                 child: Column(
                   children: [ 
-                    _buildProfileHeader(),
+                    _buildProfileHeader(ref),
                     Padding(
                       padding: EdgeInsets.symmetric(
                         horizontal: AppTheme.spacing.lg,
@@ -134,7 +134,11 @@ class PerfilAjustesView extends ConsumerWidget {
   }
 
   // ── Header con avatar y gradiente sutil
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(WidgetRef ref) {
+    final usuario = ref.watch(authViewModelProvider).usuario;
+    final nombre = usuario?.nombre ?? 'Usuario';
+    final email = usuario?.email ?? '';
+    final inicial = nombre.trim().isNotEmpty ? nombre.trim()[0].toUpperCase() : 'U';
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(24, 32, 24, 28),
@@ -169,7 +173,7 @@ class PerfilAjustesView extends ConsumerWidget {
               radius: 40,
               backgroundColor: Colors.white.withValues(alpha: 0.15),
               child: Text(
-                'J',
+                inicial,
                 style: AppTheme.font.h1.copyWith(
                   color: Colors.white,
                   fontSize: 32,
@@ -179,7 +183,7 @@ class PerfilAjustesView extends ConsumerWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            'Jeffrey Luján',
+            nombre,
             style: AppTheme.font.h3.copyWith(
               color: Colors.white,
               letterSpacing: -0.3,
@@ -187,7 +191,7 @@ class PerfilAjustesView extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'jeffrey.lujan@upn.pe',
+            email,
             style: AppTheme.font.bodySmall.copyWith(
               color: Colors.white.withValues(alpha: 0.75),
             ),
@@ -213,7 +217,7 @@ class PerfilAjustesView extends ConsumerWidget {
                 ),
                 const SizedBox(width: 5),
                 Text(
-                  'Administrador',
+                  usuario?.rolLabel ?? 'Operario',
                   style: AppTheme.font.label.copyWith(
                     color: Colors.white,
                     fontSize: 12,
