@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/features/analitica_alertas/presentation/viewmodels/dashboard_viewmodel.dart';
+import 'package:happy_oven/features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:intl/intl.dart';
 
 class DashboardInteligenteView extends ConsumerWidget {
@@ -17,14 +18,15 @@ class DashboardInteligenteView extends ConsumerWidget {
       backgroundColor: AppTheme.colorsOf(context).bg,
       body: Column(
         children: [
-          _buildHeader(context),
+          _buildHeader(context, ref),
           Expanded(child: _buildBody(context, state)),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, WidgetRef ref) {
+    final usuario = ref.watch(authViewModelProvider).usuario;
     return Container(
       color: AppTheme.colors.accent,
       child: SafeArea(
@@ -44,7 +46,8 @@ class DashboardInteligenteView extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text('Administrador', style: AppTheme.font.h3),
+                  Text(usuario?.nombre ?? usuario?.rolLabel ?? 'Usuario',
+                      style: AppTheme.font.h3),
                   const SizedBox(height: 6),
                   Text(
                     'Jueves, 07 de mayo 2026',
@@ -117,7 +120,7 @@ class DashboardInteligenteView extends ConsumerWidget {
             children: [
               _buildKpiRow(context, state),
               const SizedBox(height: 16),
-              _buildConsumoSemanal(context),
+              _buildConsumoSemanal(context, state),
               const SizedBox(height: 14),
               _buildProyeccionIA(context, state),
               const SizedBox(height: 16),
@@ -207,19 +210,14 @@ class DashboardInteligenteView extends ConsumerWidget {
     );
   }
 
-  Widget _buildConsumoSemanal(BuildContext context) {
-    final barGroups = [
-      _barGroup(context, 0, 40),
-      _barGroup(context, 1, 55),
-      _barGroup(context, 2, 65),
-      _barGroup(context, 3, 45),
-      _barGroup(context, 4, 30),
-      _barGroup(context, 5, 20),
-      _barGroup(context, 6, 10),
-    ];
-    final dias = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
+  Widget _buildConsumoSemanal(BuildContext context, DashboardState state) {
     final colors = AppTheme.colorsOf(context);
     final font = AppTheme.fontOf(context);
+    final serie = state.consumoSemanal;
+    final hayDatos = state.totalConsumoSemanal > 0;
+    final maxY = hayDatos
+        ? serie.map((d) => d.cantidad).reduce((a, b) => a > b ? a : b) * 1.25
+        : 10.0;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -235,64 +233,123 @@ class DashboardInteligenteView extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Consumo semanal', style: font.label.copyWith(fontSize: 13)),
-              Text('Esta semana', style: font.caption),
+              Text(
+                '${state.totalConsumoSemanal.toStringAsFixed(1)} kg · 7 días',
+                style: font.caption,
+              ),
             ],
           ),
+          const SizedBox(height: 4),
+          Text(
+            'Salidas y mermas por día. Toca una barra para ver el detalle.',
+            style: font.caption.copyWith(fontSize: 10, color: colors.hint),
+          ),
           const SizedBox(height: 16),
-          SizedBox(
-            height: 120,
-            child: BarChart(
-              BarChartData(
-                alignment: BarChartAlignment.spaceAround,
-                maxY: 80,
-                barTouchData: BarTouchData(enabled: false),
-                titlesData: FlTitlesData(
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  topTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        final index = value.toInt();
-                        final esHoy = index == 2;
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text(
-                            dias[index],
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: esHoy
-                                  ? FontWeight.w500
-                                  : FontWeight.normal,
-                              color: esHoy ? colors.titleText : colors.hint,
-                            ),
+          if (!hayDatos)
+            SizedBox(
+              height: 120,
+              child: Center(
+                child: Text(
+                  'Sin consumo registrado en los últimos 7 días.',
+                  style: font.hint,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            )
+          else
+            SizedBox(
+              height: 120,
+              child: BarChart(
+                BarChartData(
+                  alignment: BarChartAlignment.spaceAround,
+                  maxY: maxY,
+                  barTouchData: BarTouchData(
+                    enabled: true,
+                    touchTooltipData: BarTouchTooltipData(
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        final dia = serie[group.x];
+                        final fechaTxt =
+                            DateFormat('EEE d MMM', 'es').format(dia.fecha);
+                        return BarTooltipItem(
+                          '$fechaTxt\n${dia.cantidad.toStringAsFixed(1)} kg',
+                          TextStyle(
+                            color: colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 11,
                           ),
                         );
                       },
                     ),
                   ),
+                  titlesData: FlTitlesData(
+                    leftTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          final index = value.toInt();
+                          if (index < 0 || index >= serie.length) {
+                            return const SizedBox.shrink();
+                          }
+                          final esHoy = index == serie.length - 1;
+                          final etiqueta = DateFormat(
+                            'EEE',
+                            'es',
+                          ).format(serie[index].fecha);
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              etiqueta,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: esHoy
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                                color: esHoy ? colors.titleText : colors.hint,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  gridData: const FlGridData(show: false),
+                  borderData: FlBorderData(show: false),
+                  barGroups: serie
+                      .asMap()
+                      .entries
+                      .map(
+                        (e) => _barGroup(
+                          context,
+                          e.key,
+                          e.value.cantidad,
+                          esHoy: e.key == serie.length - 1,
+                        ),
+                      )
+                      .toList(),
                 ),
-                gridData: FlGridData(show: false),
-                borderData: FlBorderData(show: false),
-                barGroups: barGroups,
               ),
             ),
-          ),
         ],
       ),
     );
   }
 
-  BarChartGroupData _barGroup(BuildContext context, int x, double y) {
+  BarChartGroupData _barGroup(
+    BuildContext context,
+    int x,
+    double y, {
+    required bool esHoy,
+  }) {
     final colors = AppTheme.colorsOf(context);
-    final esHoy = x == 2;
     return BarChartGroupData(
       x: x,
       barRods: [
@@ -359,6 +416,31 @@ class DashboardInteligenteView extends ConsumerWidget {
             ...state.proyecciones.map(
               (i) => _buildInsumoProyeccion(context, i),
             ),
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: () => context.push('/dashboard/sugerencias'),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 11),
+              decoration: BoxDecoration(
+                color: colors.primaryLight,
+                borderRadius: AppTheme.radius.brSm,
+                border: Border.all(color: colors.primaryBorder),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.shopping_cart_outlined,
+                      size: 16, color: colors.primary),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Ver sugerencias de compra',
+                    style: font.label.copyWith(fontSize: 13, color: colors.primary),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -395,6 +477,14 @@ class DashboardInteligenteView extends ConsumerWidget {
                 style: font.label.copyWith(fontSize: 12, color: colorBarra),
               ),
             ],
+          ),
+          const SizedBox(height: 2),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Tasa: ${insumo.consumoDiario.toStringAsFixed(2)}/día',
+              style: font.caption.copyWith(fontSize: 10, color: colors.hint),
+            ),
           ),
           const SizedBox(height: 6),
           ClipRRect(
