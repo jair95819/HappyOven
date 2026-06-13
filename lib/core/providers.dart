@@ -3,6 +3,7 @@ import 'package:happy_oven/core/services/supabase_service.dart';
 import 'package:happy_oven/core/services/local_storage_service.dart';
 import 'package:happy_oven/core/services/notification_service.dart';
 import 'package:happy_oven/core/services/stock_monitor_service.dart';
+import 'package:happy_oven/core/services/ocr_service.dart';
 import 'package:happy_oven/core/repositories/articulos_repository.dart';
 import 'package:happy_oven/core/repositories/categorias_repository.dart';
 import 'package:happy_oven/core/repositories/movimientos_repository.dart';
@@ -44,6 +45,12 @@ final ordenesProduccionRepositoryProvider = Provider<OrdenesProduccionRepository
 
 final notificationServiceProvider = Provider<NotificationService>((ref) {
   return NotificationService();
+});
+
+final ocrServiceProvider = Provider<OcrService>((ref) {
+  final service = OcrService();
+  ref.onDispose(service.dispose);
+  return service;
 });
 
 final stockMonitorServiceProvider = Provider<StockMonitorService>((ref) {
