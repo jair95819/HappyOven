@@ -222,4 +222,70 @@ class AuthRepository implements IAuthRepository {
       return null;
     }
   }
+
+  @override
+  Future<AuthResponse> updateProfile({required String nombre, String? email}) async {
+    try {
+      final user = _supabaseService.getCurrentUser();
+      if (user == null) {
+        throw Exception('No hay usuario autenticado');
+      }
+
+      // Actualizar email si es diferente
+      if (email != null && email.isNotEmpty && email != user.email) {
+        await _supabaseService.updateAuthEmail(email);
+      }
+
+      // Actualizar perfil
+      await _supabaseService.updateUserProfile(user.id, {
+        'nombre_completo': nombre,
+      });
+
+      final updatedUser = await obtenerUsuarioActual();
+
+      return AuthResponse(
+        token: _localStorageService.getToken() ?? '',
+        usuario: updatedUser ?? User(id: '', nombre: '', email: '', createdAt: DateTime.now(), activo: false),
+        exito: true,
+        mensaje: 'Perfil actualizado exitosamente',
+      );
+    } catch (e) {
+      return AuthResponse(
+        token: '',
+        usuario: User(id: '', nombre: '', email: '', createdAt: DateTime.now(), activo: false),
+        exito: false,
+        mensaje: 'Error al actualizar perfil: ${e.toString()}',
+      );
+    }
+  }
+
+  @override
+  Future<AuthResponse> updatePassword(String currentPassword, String newPassword) async {
+    try {
+      final user = _supabaseService.getCurrentUser();
+      if (user == null) {
+        throw Exception('No hay usuario autenticado');
+      }
+
+      // Para validar el password actual, intentamos hacer login
+      await _supabaseService.signInWithEmail(user.email ?? '', currentPassword);
+
+      // Si es exitoso, cambiamos la contraseña
+      await _supabaseService.updateAuthPassword(newPassword);
+
+      return AuthResponse(
+        token: _localStorageService.getToken() ?? '',
+        usuario: (await obtenerUsuarioActual()) ?? User(id: '', nombre: '', email: '', createdAt: DateTime.now(), activo: false),
+        exito: true,
+        mensaje: 'Contraseña actualizada exitosamente',
+      );
+    } catch (e) {
+      return AuthResponse(
+        token: '',
+        usuario: User(id: '', nombre: '', email: '', createdAt: DateTime.now(), activo: false),
+        exito: false,
+        mensaje: 'Error al actualizar contraseña: ${e.toString()}',
+      );
+    }
+  }
 }

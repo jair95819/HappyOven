@@ -38,6 +38,22 @@ final recuperarPasswordUseCaseProvider = Provider<RecuperarPasswordUseCase>((
   return RecuperarPasswordUseCase(repository);
 });
 
+final updateProfileUseCaseProvider = Provider<UpdateProfileUseCase>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return UpdateProfileUseCase(repository);
+});
+
+final updatePasswordUseCaseProvider = Provider<UpdatePasswordUseCase>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return UpdatePasswordUseCase(repository);
+});
+
+final obtenerUsuarioActualUseCaseProvider =
+    Provider<ObtenerUsuarioActualUseCase>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return ObtenerUsuarioActualUseCase(repository);
+});
+
 // ── Estado de autenticación
 class AuthState {
   final bool cargando;
@@ -46,12 +62,18 @@ class AuthState {
   final String? error;
   final bool autenticado;
 
+  /// Indica que aún se está restaurando la sesión persistida al arrancar la app.
+  /// Mientras es `true`, el router muestra un splash en lugar de decidir entre
+  /// login y dashboard, evitando el parpadeo de la pantalla de login.
+  final bool inicializando;
+
   AuthState({
     this.cargando = false,
     this.usuario,
     this.token,
     this.error,
     this.autenticado = false,
+    this.inicializando = false,
   });
 
   AuthState copyWith({
@@ -60,6 +82,7 @@ class AuthState {
     String? token,
     String? error,
     bool? autenticado,
+    bool? inicializando,
   }) {
     return AuthState(
       cargando: cargando ?? this.cargando,
@@ -67,6 +90,7 @@ class AuthState {
       token: token ?? this.token,
       error: error ?? this.error,
       autenticado: autenticado ?? this.autenticado,
+      inicializando: inicializando ?? this.inicializando,
     );
   }
 
@@ -82,17 +106,48 @@ class AuthViewModel extends StateNotifier<AuthState> {
   final RegisterUseCase _registerUseCase;
   final LogoutUseCase _logoutUseCase;
   final RecuperarPasswordUseCase _recuperarPasswordUseCase;
+  final UpdateProfileUseCase _updateProfileUseCase;
+  final UpdatePasswordUseCase _updatePasswordUseCase;
+  final ObtenerUsuarioActualUseCase _obtenerUsuarioActualUseCase;
 
   AuthViewModel({
     required LoginUseCase loginUseCase,
     required RegisterUseCase registerUseCase,
     required LogoutUseCase logoutUseCase,
     required RecuperarPasswordUseCase recuperarPasswordUseCase,
+    required UpdateProfileUseCase updateProfileUseCase,
+    required UpdatePasswordUseCase updatePasswordUseCase,
+    required ObtenerUsuarioActualUseCase obtenerUsuarioActualUseCase,
   }) : _loginUseCase = loginUseCase,
        _registerUseCase = registerUseCase,
        _logoutUseCase = logoutUseCase,
        _recuperarPasswordUseCase = recuperarPasswordUseCase,
-       super(AuthState());
+       _updateProfileUseCase = updateProfileUseCase,
+       _updatePasswordUseCase = updatePasswordUseCase,
+       _obtenerUsuarioActualUseCase = obtenerUsuarioActualUseCase,
+       super(AuthState(inicializando: true)) {
+    _restaurarSesion();
+  }
+
+  // ── Restaurar sesión persistida
+  /// Comprueba si existe una sesión válida restaurada por Supabase al iniciar
+  /// la app. Si la hay, deja al usuario autenticado sin pedir credenciales.
+  Future<void> _restaurarSesion() async {
+    try {
+      final usuario = await _obtenerUsuarioActualUseCase();
+      if (usuario != null) {
+        state = state.copyWith(
+          usuario: usuario,
+          autenticado: true,
+          inicializando: false,
+        );
+      } else {
+        state = state.copyWith(inicializando: false);
+      }
+    } catch (_) {
+      state = state.copyWith(inicializando: false);
+    }
+  }
 
   // ── Login
   Future<bool> login(String email, String password) async {
@@ -237,6 +292,59 @@ class AuthViewModel extends StateNotifier<AuthState> {
   void limpiarError() {
     state = state.limpiarError();
   }
+
+  // ── Actualizar perfil
+  Future<bool> updateProfile(String nombre, String email) async {
+    state = state.copyWith(cargando: true);
+
+    try {
+      if (nombre.isEmpty) {
+        state = state.copyWith(error: 'El nombre no puede estar vacío', cargando: false);
+        return false;
+      }
+      
+      final response = await _updateProfileUseCase(nombre: nombre, email: email);
+
+      if (response.exito) {
+        state = state.copyWith(
+          usuario: response.usuario,
+          cargando: false,
+        );
+        return true;
+      } else {
+        state = state.copyWith(error: response.mensaje ?? 'Error al actualizar', cargando: false);
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(error: 'Error: ${e.toString()}', cargando: false);
+      return false;
+    }
+  }
+
+  // ── Cambiar contraseña
+  Future<bool> updatePassword(String currentPassword, String newPassword) async {
+    state = state.copyWith(cargando: true);
+
+    try {
+      if (currentPassword.isEmpty || newPassword.isEmpty || newPassword.length < 6) {
+        state = state.copyWith(error: 'Contraseña inválida', cargando: false);
+        return false;
+      }
+      
+      final response = await _updatePasswordUseCase(currentPassword, newPassword);
+
+      if (response.exito) {
+        state = state.copyWith(cargando: false);
+        return true;
+      } else {
+        state = state.copyWith(error: response.mensaje ?? 'Error al actualizar', cargando: false);
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(error: 'Error: ${e.toString()}', cargando: false);
+      return false;
+    }
+  }
 }
 
 // ── Proveedor del ViewModel
@@ -247,11 +355,18 @@ final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((
   final registerUseCase = ref.watch(registerUseCaseProvider);
   final logoutUseCase = ref.watch(logoutUseCaseProvider);
   final recuperarPasswordUseCase = ref.watch(recuperarPasswordUseCaseProvider);
+  final updateProfileUseCase = ref.watch(updateProfileUseCaseProvider);
+  final updatePasswordUseCase = ref.watch(updatePasswordUseCaseProvider);
+  final obtenerUsuarioActualUseCase =
+      ref.watch(obtenerUsuarioActualUseCaseProvider);
 
   return AuthViewModel(
     loginUseCase: loginUseCase,
     registerUseCase: registerUseCase,
     logoutUseCase: logoutUseCase,
     recuperarPasswordUseCase: recuperarPasswordUseCase,
+    updateProfileUseCase: updateProfileUseCase,
+    updatePasswordUseCase: updatePasswordUseCase,
+    obtenerUsuarioActualUseCase: obtenerUsuarioActualUseCase,
   );
 });

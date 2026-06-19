@@ -1,6 +1,7 @@
 import '../repositories/i_auth_repository.dart';
 import '../entities/auth_request.dart';
 import '../entities/auth_response.dart';
+import '../entities/user.dart';
 
 class LoginUseCase {
   final IAuthRepository repository;
@@ -49,5 +50,35 @@ class VerificarSesionActivaUseCase {
 
   Future<bool> call() {
     return repository.tieneSesionActiva();
+  }
+}
+
+class ObtenerUsuarioActualUseCase {
+  final IAuthRepository repository;
+
+  ObtenerUsuarioActualUseCase(this.repository);
+
+  Future<User?> call() {
+    return repository.obtenerUsuarioActual();
+  }
+}
+
+class UpdateProfileUseCase {
+  final IAuthRepository repository;
+
+  UpdateProfileUseCase(this.repository);
+
+  Future<AuthResponse> call({required String nombre, String? email}) {
+    return repository.updateProfile(nombre: nombre, email: email);
+  }
+}
+
+class UpdatePasswordUseCase {
+  final IAuthRepository repository;
+
+  UpdatePasswordUseCase(this.repository);
+
+  Future<AuthResponse> call(String currentPassword, String newPassword) {
+    return repository.updatePassword(currentPassword, newPassword);
   }
 }

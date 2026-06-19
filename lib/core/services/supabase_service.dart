@@ -94,6 +94,26 @@ class SupabaseService {
     }
   }
 
+  // ── Auth: Update user auth attributes
+  
+  /// Actualiza el correo electrónico del usuario actual
+  Future<void> updateAuthEmail(String email) async {
+    try {
+      await _client.auth.updateUser(UserAttributes(email: email));
+    } on AuthException catch (e) {
+      throw Exception('Error al actualizar correo: ${e.message}');
+    }
+  }
+
+  /// Actualiza la contraseña del usuario actual
+  Future<void> updateAuthPassword(String password) async {
+    try {
+      await _client.auth.updateUser(UserAttributes(password: password));
+    } on AuthException catch (e) {
+      throw Exception('Error al actualizar contraseña: ${e.message}');
+    }
+  }
+
   // ── DB: Obtener perfil de usuario
 
   /// Consulta la tabla `perfiles` para obtener los datos extendidos del perfil

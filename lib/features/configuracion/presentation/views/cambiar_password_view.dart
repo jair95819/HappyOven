@@ -1,0 +1,215 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:happy_oven/core/theme/theme.dart';
+import 'package:happy_oven/features/auth/presentation/viewmodels/auth_viewmodel.dart';
+
+class CambiarPasswordView extends ConsumerStatefulWidget {
+  const CambiarPasswordView({super.key});
+
+  @override
+  ConsumerState<CambiarPasswordView> createState() => _CambiarPasswordViewState();
+}
+
+class _CambiarPasswordViewState extends ConsumerState<CambiarPasswordView> {
+  final TextEditingController _currentPasswordController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+
+  bool _hideCurrentPassword = true;
+  bool _hideNewPassword = true;
+  bool _hideConfirmPassword = true;
+
+  @override
+  void dispose() {
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final authState = ref.watch(authViewModelProvider);
+    final authViewModel = ref.read(authViewModelProvider.notifier);
+
+    return Scaffold(
+      backgroundColor: AppTheme.colors.bg,
+      appBar: AppBar(
+        title: Text('Cambiar contraseña', style: AppTheme.font.h3),
+        backgroundColor: AppTheme.colors.card,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_rounded, color: AppTheme.colors.titleText),
+          onPressed: () => context.pop(),
+        ),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(28.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildLabel('Contraseña actual'),
+              const SizedBox(height: 6),
+              _buildPasswordField(
+                controller: _currentPasswordController,
+                hidePassword: _hideCurrentPassword,
+                onVisibilityChanged: () => setState(() => _hideCurrentPassword = !_hideCurrentPassword),
+                enabled: !authState.cargando,
+              ),
+              const SizedBox(height: 20),
+
+              _buildLabel('Nueva contraseña'),
+              const SizedBox(height: 6),
+              _buildPasswordField(
+                controller: _newPasswordController,
+                hidePassword: _hideNewPassword,
+                onVisibilityChanged: () => setState(() => _hideNewPassword = !_hideNewPassword),
+                enabled: !authState.cargando,
+              ),
+              const SizedBox(height: 20),
+
+              _buildLabel('Confirmar nueva contraseña'),
+              const SizedBox(height: 6),
+              _buildPasswordField(
+                controller: _confirmPasswordController,
+                hidePassword: _hideConfirmPassword,
+                onVisibilityChanged: () => setState(() => _hideConfirmPassword = !_hideConfirmPassword),
+                enabled: !authState.cargando,
+              ),
+              const SizedBox(height: 40),
+
+              _buildPrimaryButton(authState, () async {
+                if (_newPasswordController.text != _confirmPasswordController.text) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Las contraseñas no coinciden'),
+                      backgroundColor: AppTheme.colors.statusCritical,
+                    ),
+                  );
+                  return;
+                }
+
+                final exito = await authViewModel.updatePassword(
+                  _currentPasswordController.text,
+                  _newPasswordController.text,
+                );
+
+                if (exito && mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Contraseña actualizada exitosamente'),
+                      backgroundColor: Colors.green.shade600,
+                    ),
+                  );
+                  context.pop();
+                } else if (!exito && mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(authState.error ?? 'Error al actualizar contraseña'),
+                      backgroundColor: AppTheme.colors.statusCritical,
+                    ),
+                  );
+                }
+              }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLabel(String text) {
+    return Text(
+      text.toUpperCase(),
+      style: AppTheme.font.label.copyWith(
+        fontSize: 11,
+        color: AppTheme.colors.brownMid,
+        letterSpacing: 0.5,
+      ),
+    );
+  }
+
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required bool hidePassword,
+    required VoidCallback onVisibilityChanged,
+    bool enabled = true,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.colors.primaryLight,
+        borderRadius: AppTheme.radius.brSm,
+        border: Border.all(color: AppTheme.colors.border, width: 0.5),
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: hidePassword,
+        enabled: enabled,
+        style: AppTheme.font.bodySmall.copyWith(
+          color: AppTheme.colors.titleText,
+        ),
+        decoration: InputDecoration(
+          hintText: '••••••••',
+          hintStyle: AppTheme.font.hint,
+          prefixIcon: Icon(
+            Icons.lock_outline_rounded,
+            color: AppTheme.colors.brownMid,
+            size: 18,
+          ),
+          suffixIcon: IconButton(
+            icon: Icon(
+              hidePassword
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
+              color: AppTheme.colors.brownMid,
+              size: 18,
+            ),
+            onPressed: onVisibilityChanged,
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 14,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPrimaryButton(AuthState authState, VoidCallback onPressed) {
+    return GestureDetector(
+      onTap: authState.cargando ? null : onPressed,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: authState.cargando
+              ? AppTheme.colors.hint
+              : AppTheme.colors.primary,
+          borderRadius: AppTheme.radius.brMd,
+        ),
+        child: authState.cargando
+            ? const SizedBox(
+                height: 20,
+                child: Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      strokeWidth: 2,
+                    ),
+                  ),
+                ),
+              )
+            : Text(
+                'Actualizar contraseña',
+                textAlign: TextAlign.center,
+                style: AppTheme.font.button,
+              ),
+      ),
+    );
+  }
+}

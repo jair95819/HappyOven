@@ -23,4 +23,10 @@ abstract class IAuthRepository {
 
   /// Refrescar token
   Future<String?> refrescarToken(String refreshToken);
+
+  /// Actualizar perfil
+  Future<AuthResponse> updateProfile({required String nombre, String? email});
+
+  /// Cambiar contraseña
+  Future<AuthResponse> updatePassword(String currentPassword, String newPassword);
 }
