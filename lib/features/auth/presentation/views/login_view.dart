@@ -60,7 +60,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
   }
 
   Widget _buildHero() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

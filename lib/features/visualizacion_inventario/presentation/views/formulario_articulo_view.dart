@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
 
 class FormularioArticuloView extends ConsumerStatefulWidget {
@@ -22,9 +23,9 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
   final _stockInicialController = TextEditingController();
   final _precioController = TextEditingController();
 
-  _TipoArticulo _tipoSeleccionado = _TipoArticulo.insumo;
-  String _unidadSeleccionada = 'kg';
-  final List<String> _unidades = ['kg', 'litros', 'unidades', 'gramos', 'ml'];
+  TipoArticulo _tipoSeleccionado = TipoArticulo.insumo;
+  UnidadMedida _unidadSeleccionada = UnidadMedida.kg;
+  final List<UnidadMedida> _unidades = UnidadMedida.values;
   bool _isSaving = false;
 
   @override
@@ -36,7 +37,7 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
       _stockMinimoController.text = a.stockMinimo.toString();
       _stockInicialController.text = a.stockActual.toString();
       _precioController.text = a.precioUnitario.toString();
-      _tipoSeleccionado = a.tipo == 'insumo' ? _TipoArticulo.insumo : _TipoArticulo.productoFinal;
+      _tipoSeleccionado = a.tipo;
       _unidadSeleccionada = a.unidad;
     }
   }
@@ -57,7 +58,7 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
       final nuevoArticulo = Articulo(
         id: widget.articulo?.id ?? '', // Si tiene ID, se actualiza, si no, se crea
         nombre: _nombreController.text.trim(),
-        tipo: _tipoSeleccionado == _TipoArticulo.insumo ? 'insumo' : 'producto_final',
+        tipo: _tipoSeleccionado,
         unidad: _unidadSeleccionada,
         stockActual: double.parse(_stockInicialController.text),
         stockMinimo: double.parse(_stockMinimoController.text),
@@ -257,13 +258,13 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
 
   Widget _buildSelectorTipo() {
     return Row(
-      children: _TipoArticulo.values.map((tipo) {
+      children: TipoArticulo.values.map((tipo) {
         final activo = _tipoSeleccionado == tipo;
         return Expanded(
           child: GestureDetector(
             onTap: () => setState(() => _tipoSeleccionado = tipo),
             child: Container(
-              margin: EdgeInsets.only(right: tipo == _TipoArticulo.insumo ? 8 : 0),
+              margin: EdgeInsets.only(right: tipo == TipoArticulo.insumo ? 8 : 0),
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
                 color: activo ? AppTheme.colors.titleText : AppTheme.colors.surface,
@@ -274,12 +275,12 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
               child: Column(
                 children: [
                   Icon(
-                    tipo == _TipoArticulo.insumo ? Icons.inventory_2_outlined : Icons.breakfast_dining_outlined,
+                    tipo == TipoArticulo.insumo ? Icons.inventory_2_outlined : Icons.breakfast_dining_outlined,
                     color: activo ? AppTheme.colors.accent : AppTheme.colors.hint, size: 20,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    tipo == _TipoArticulo.insumo ? 'Insumo' : 'Producto final',
+                    tipo == TipoArticulo.insumo ? 'Insumo' : 'Producto final',
                     style: AppTheme.font.bodySmall.copyWith(fontSize: 12,
                       fontWeight: activo ? FontWeight.w500 : FontWeight.normal,
                       color: activo ? AppTheme.colors.white : AppTheme.colors.hint),
@@ -308,7 +309,7 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
               border: Border.all(
                 color: activo ? AppTheme.colors.titleText : AppTheme.colors.border, width: 0.5),
             ),
-            child: Text(unidad, style: AppTheme.font.bodySmall.copyWith(fontSize: 12,
+            child: Text(unidad.dbValue, style: AppTheme.font.bodySmall.copyWith(fontSize: 12,
               fontWeight: activo ? FontWeight.w500 : FontWeight.normal,
               color: activo ? AppTheme.colors.white : AppTheme.colors.hint)),
           ),
@@ -375,5 +376,3 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
     );
   }
 }
-
-enum _TipoArticulo { insumo, productoFinal }

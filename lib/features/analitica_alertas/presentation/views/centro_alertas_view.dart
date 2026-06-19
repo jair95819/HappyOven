@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/core/models/alerta.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/features/analitica_alertas/presentation/viewmodels/alertas_viewmodel.dart';
 import 'package:intl/intl.dart';
 
@@ -13,16 +14,17 @@ class CentroAlertasView extends ConsumerStatefulWidget {
 }
 
 class _CentroAlertasViewState extends ConsumerState<CentroAlertasView> {
-  String _filtroActivo = 'todas';
+  TipoAlerta? _filtroActivo;
 
-  final Map<String, String> _filtros = {
-    'todas': 'Todas',
-    'stock_bajo': 'Stock bajo',
-    'anomalia': 'Anomalías',
-    'ia': 'IA',
-    'ingreso': 'Ingresos',
-    'sistema': 'Sistema',
+  final Map<TipoAlerta?, String> _filtros = {
+    null: 'Todas',
+    TipoAlerta.stockBajo: 'Stock bajo',
+    TipoAlerta.anomalia: 'Anomalías',
+    TipoAlerta.ia: 'IA',
+    TipoAlerta.ingreso: 'Ingresos',
   };
+
+
 
   String _formatTiempo(DateTime fecha) {
     final ahora = DateTime.now();
@@ -49,13 +51,13 @@ class _CentroAlertasViewState extends ConsumerState<CentroAlertasView> {
           Expanded(
             child: alertasState.when(
               data: (alertas) {
-                final filtradas = _filtroActivo == 'todas'
+                final filtradas = _filtroActivo == null
                     ? alertas
                     : alertas.where((a) => a.tipo == _filtroActivo).toList();
                 return _buildLista(filtradas, colors, font);
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Error al cargar alertas')),
+              error: (e, _) => const Center(child: Text('Error al cargar alertas')),
             ),
           ),
         ],
@@ -132,7 +134,7 @@ class _CentroAlertasViewState extends ConsumerState<CentroAlertasView> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: _filtros.entries.map((entry) {
-                    final activo = _filtroActivo == entry.key;
+                    final activo = (_filtroActivo == entry.key) || (_filtroActivo == null && entry.key == null);
                     return GestureDetector(
                       onTap: () => setState(() => _filtroActivo = entry.key),
                       child: Container(
@@ -189,7 +191,7 @@ class _CentroAlertasViewState extends ConsumerState<CentroAlertasView> {
             : ListView.separated(
                 padding: const EdgeInsets.fromLTRB(14, 20, 14, 8),
                 itemCount: alertas.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (context, index) => _buildAlertaCard(alertas[index], colors, font),
               ),
       ),
@@ -278,33 +280,28 @@ class _CentroAlertasViewState extends ConsumerState<CentroAlertasView> {
     );
   }
 
-  _ConfigAlerta _configPorTipo(String tipo, AppColors colors) {
+  _ConfigAlerta _configPorTipo(TipoAlerta tipo, AppColors colors) {
     switch (tipo) {
-      case 'stock_bajo':
+      case TipoAlerta.stockBajo:
         return _ConfigAlerta(icono: Icons.warning_amber_rounded,
           colorFondo: colors.dangerLight, colorBorde: colors.dangerBorder,
           colorIcono: colors.statusCritical,
           colorIconoFondo: colors.statusCritical.withValues(alpha: 0.12));
-      case 'anomalia':
+      case TipoAlerta.anomalia:
         return _ConfigAlerta(icono: Icons.query_stats_rounded,
           colorFondo: colors.dangerLight, colorBorde: colors.dangerBorder,
           colorIcono: colors.statusCritical,
           colorIconoFondo: colors.statusCritical.withValues(alpha: 0.12));
-      case 'ia':
+      case TipoAlerta.ia:
         return _ConfigAlerta(icono: Icons.psychology_outlined,
           colorFondo: colors.primaryLight, colorBorde: colors.primaryBorder,
           colorIcono: colors.primary,
           colorIconoFondo: colors.primary.withValues(alpha: 0.12));
-      case 'ingreso':
+      case TipoAlerta.ingreso:
         return _ConfigAlerta(icono: Icons.move_to_inbox_outlined,
           colorFondo: colors.successLight, colorBorde: colors.successBorder,
           colorIcono: colors.statusNormal,
           colorIconoFondo: colors.statusNormal.withValues(alpha: 0.12));
-      default:
-        return _ConfigAlerta(icono: Icons.notifications_outlined,
-          colorFondo: colors.bg, colorBorde: colors.border,
-          colorIcono: colors.titleText,
-          colorIconoFondo: colors.surface);
     }
   }
 }

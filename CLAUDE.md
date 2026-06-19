@@ -4,8 +4,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**Happy Oven** (`happy_oven`) is a multiplatform Flutter app for bakery inventory management: insumos (raw materials) and productos finales (finished goods), recipes with batch costing, kardex-style stock movements (including OCR receipt entry), production orders, an analytics dashboard, a stock-alert center, and PDF report export. Backend is Supabase (Auth + Postgres). Code and domain naming are in **Spanish** — match this convention when adding features, models, routes, and tables.
-
 ## Commands
 
 ```bash
@@ -27,7 +25,7 @@ dart run build_runner build --delete-conflicting-outputs
 **Feature-first** layout with a shared **`core/`** layer:
 
 - `lib/core/models/` — domain models (`Articulo`, `Receta`, `Movimiento`, `OrdenProduccion`, `Alerta`, `Categoria`, `Perfil`, `RecetaIngrediente`) shared across all features. Each has `fromJson`/`toJson`.
-- `lib/core/enums.dart` — **critical convention**: Dart enums (`TipoArticulo`, `TipoMovimiento`, `TipoAlerta`, etc.) map to/from Postgres string values via `.dbValue` (write) and `.fromDb(String)` (read). Postgres uses snake_case (`producto_final`, `salida_produccion`, `stock_bajo`); Dart uses camelCase. Always go through these mappers when reading/writing the DB — never pass `enum.name` directly.
+- `lib/core/models/enums.dart` — **critical convention**: Dart enums (`TipoArticulo`, `TipoMovimiento`, `TipoAlerta`, etc.) map to/from Postgres string values via `.dbValue` (write) and `.fromDb(String)` (read). Postgres uses snake_case (`producto_final`, `salida_produccion`, `stock_bajo`); Dart uses camelCase. Always go through these mappers when reading/writing the DB — never pass `enum.name` directly.
 - `lib/core/repositories/` — each entity has an interface `i_<name>_repository.dart` and a Supabase implementation `<name>_repository.dart`. Repositories take a `SupabaseService` via constructor and talk to tables directly.
 - `lib/core/providers.dart` — central Riverpod wiring: singleton services and every repository are exposed as `Provider`s here. ViewModels read repositories from these providers; do not instantiate repositories directly in features.
 - `lib/core/services/` — `SupabaseService` (singleton client + auth helpers), `LocalStorageService` (shared_preferences: `auth_token`, `refresh_token`, `user_id`, `user_email`, theme), `NotificationService` (local push), `StockMonitorService` (periodic 20-min timer that scans stock and raises alerts + notifications), `OcrService` (ML Kit text recognition for receipts).

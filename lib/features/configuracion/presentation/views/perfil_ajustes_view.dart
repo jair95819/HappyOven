@@ -88,7 +88,7 @@ class PerfilAjustesView extends ConsumerWidget {
                                   }
                                   return null;
                                 }),
-                                activeColor: AppTheme.colors.primary,
+
                                 activeTrackColor: AppTheme.colors.primary.withValues(alpha: 0.3),
                               ),
                             ),
@@ -105,7 +105,7 @@ class PerfilAjustesView extends ConsumerWidget {
                                   }
                                   return null;
                                 }),
-                                activeColor: AppTheme.colors.primary,
+
                                 activeTrackColor: AppTheme.colors.primary.withValues(alpha: 0.3),
                               ),
                             ),

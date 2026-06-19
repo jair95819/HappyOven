@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 
 import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/models/receta.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/viewmodels/recetas_viewmodel.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
@@ -61,7 +62,7 @@ class _RecetarioViewState extends ConsumerState<RecetarioView> {
   ) {
     final productos =
         articulosState.valueOrNull
-            ?.where((a) => a.tipo == 'producto_final')
+            ?.where((a) => a.tipo == TipoArticulo.productoFinal)
             .length ??
         0;
 
@@ -168,7 +169,7 @@ class _RecetarioViewState extends ConsumerState<RecetarioView> {
     final articulos = articulosState.valueOrNull ?? [];
     final recetas = recetasState.valueOrNull ?? [];
     final productos = articulos
-        .where((a) => a.tipo == 'producto_final')
+        .where((a) => a.tipo == TipoArticulo.productoFinal)
         .toList();
 
     final filtrados = productos
@@ -459,7 +460,7 @@ class _TarjetaProductoConRecetaState
                 'Cargando...',
                 style: font.caption.copyWith(fontSize: 10),
               ),
-              error: (_, __) =>
+              error: (_, _) =>
                   Text('Error', style: font.caption.copyWith(fontSize: 10)),
             ),
             const Spacer(),
@@ -614,7 +615,7 @@ class _TarjetaProductoConRecetaState
                       ],
                     ),
                   ),
-                  error: (_, __) => Padding(
+                  error: (_, _) => Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
                       'Error al cargar ingredientes',

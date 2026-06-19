@@ -139,7 +139,6 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
                   borderRadius: AppTheme.radius.brSm,
                   border: Border.all(
                     color: AppTheme.colors.successBorder,
-                    width: 1,
                   ),
                 ),
                 child: Row(

@@ -1,7 +1,9 @@
+import 'package:happy_oven/core/models/enums.dart';
+
 class Categoria {
   final String id;
   final String nombre;
-  final String tipo;
+  final TipoArticulo tipo;
   final int orden;
   final DateTime createdAt;
 
@@ -17,8 +19,8 @@ class Categoria {
     return Categoria(
       id: json['id'] as String,
       nombre: json['nombre'] as String,
-      tipo: json['tipo'] as String,
-      orden: json['orden'] as int,
+      tipo: TipoArticulo.fromDb(json['tipo'] as String? ?? 'insumo'),
+      orden: (json['orden'] as num?)?.toInt() ?? 0,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : DateTime.now(),
@@ -29,7 +31,7 @@ class Categoria {
     return {
       if (id.isNotEmpty) 'id': id,
       'nombre': nombre,
-      'tipo': tipo,
+      'tipo': tipo.dbValue,
       'orden': orden,
     };
   }

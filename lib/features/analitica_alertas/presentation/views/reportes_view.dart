@@ -9,6 +9,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/providers.dart';
 
 // ───────────────────────────── Lógica pura (testeable) ─────────────────────────────
@@ -75,18 +76,20 @@ class ReportesData {
     for (final m in movimientos) {
       valor += (m.precioUnitario ?? 0) * m.cantidad.abs();
       switch (m.tipoMovimiento) {
-        case 'entrada':
+        case TipoMovimiento.entrada:
           entradas += m.cantidad;
           break;
-        case 'salida_produccion':
+        case TipoMovimiento.salidaProduccion:
           salidas += m.cantidad;
           porInsumo.update(m.articuloId, (v) => v + m.cantidad,
               ifAbsent: () => m.cantidad);
           final dia = DateTime(m.fecha.year, m.fecha.month, m.fecha.day);
           if (porDia.containsKey(dia)) porDia[dia] = porDia[dia]! + m.cantidad;
           break;
-        case 'merma':
+        case TipoMovimiento.merma:
           mermas += m.cantidad;
+          break;
+        case TipoMovimiento.ajuste:
           break;
       }
     }
@@ -564,9 +567,9 @@ class _ReportesViewState extends ConsumerState<ReportesView> {
                         FlLine(color: AppTheme.colors.border, strokeWidth: 0.5),
                   ),
                   titlesData: FlTitlesData(
-                    leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    leftTitles: const AxisTitles(sideTitles: SideTitles()),
+                    rightTitles: const AxisTitles(sideTitles: SideTitles()),
+                    topTitles: const AxisTitles(sideTitles: SideTitles()),
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
@@ -673,9 +676,9 @@ class _ReportesViewState extends ConsumerState<ReportesView> {
                     ),
                   ),
                   titlesData: FlTitlesData(
-                    leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    leftTitles: const AxisTitles(sideTitles: SideTitles()),
+                    rightTitles: const AxisTitles(sideTitles: SideTitles()),
+                    topTitles: const AxisTitles(sideTitles: SideTitles()),
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,

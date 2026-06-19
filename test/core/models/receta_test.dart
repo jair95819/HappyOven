@@ -69,7 +69,7 @@ void main() {
     test('serializa con rendimiento como entero', () {
       final receta = Receta(
         id: 'r1', nombre: 'Pan', rendimiento: 12.0,
-        createdAt: DateTime(2025),
+        createdAt: DateTime(2025), updatedAt: DateTime(2025),
       );
 
       final json = receta.toJson();
@@ -81,7 +81,7 @@ void main() {
     test('omite id cuando está vacío', () {
       final receta = Receta(
         id: '', nombre: 'Pan', rendimiento: 10,
-        createdAt: DateTime(2025),
+        createdAt: DateTime(2025), updatedAt: DateTime(2025),
       );
 
       expect(receta.toJson().containsKey('id'), false);
@@ -90,7 +90,7 @@ void main() {
     test('incluye producto_id', () {
       final receta = Receta(
         id: 'r1', nombre: 'Pan', productoId: 'p1',
-        rendimiento: 10, createdAt: DateTime(2025),
+        rendimiento: 10, createdAt: DateTime(2025), updatedAt: DateTime(2025),
       );
 
       expect(receta.toJson()['producto_id'], 'p1');

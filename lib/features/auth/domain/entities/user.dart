@@ -1,9 +1,11 @@
+import 'package:happy_oven/core/models/enums.dart';
+
 class User {
   final String id;
   final String nombre;
   final String email;
   final String? fotoPerfil;
-  final String rol;
+  final RolUsuario rol;
   final DateTime createdAt;
   final bool activo;
 
@@ -12,13 +14,13 @@ class User {
     required this.nombre,
     required this.email,
     this.fotoPerfil,
-    this.rol = 'operador',
+    this.rol = RolUsuario.operador,
     required this.createdAt,
     required this.activo,
   });
 
   /// Verdadero si el usuario tiene el rol de administrador.
-  bool get esAdmin => rol == 'admin';
+  bool get esAdmin => rol.esAdmin;
 
   /// Etiqueta legible del rol para mostrar en la interfaz.
   String get rolLabel => esAdmin ? 'Administrador' : 'Operario';
@@ -29,7 +31,7 @@ class User {
     String? nombre,
     String? email,
     String? fotoPerfil,
-    String? rol,
+    RolUsuario? rol,
     DateTime? createdAt,
     bool? activo,
   }) {

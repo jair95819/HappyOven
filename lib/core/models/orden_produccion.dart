@@ -1,10 +1,12 @@
+import 'package:happy_oven/core/models/enums.dart';
+
 class OrdenProduccion {
   final String id;
   final String recetaId;
   final String usuarioId;
   final int cantidadLotes;
   final int cantidadProducida;
-  final String estado; // pendiente, en_proceso, completada, cancelada
+  final EstadoOrden estado;
   final DateTime? fechaProgramada;
   final DateTime? fechaInicio;
   final DateTime? fechaFin;
@@ -18,7 +20,7 @@ class OrdenProduccion {
     required this.usuarioId,
     required this.cantidadLotes,
     this.cantidadProducida = 0,
-    this.estado = 'pendiente',
+    this.estado = EstadoOrden.pendiente,
     this.fechaProgramada,
     this.fechaInicio,
     this.fechaFin,
@@ -32,9 +34,9 @@ class OrdenProduccion {
       id: json['id'] as String,
       recetaId: json['receta_id'] as String,
       usuarioId: json['usuario_id'] as String,
-      cantidadLotes: (json['cantidad_lotes'] as num).toInt(),
+      cantidadLotes: (json['cantidad_lotes'] as num?)?.toInt() ?? 1,
       cantidadProducida: (json['cantidad_producida'] as num?)?.toInt() ?? 0,
-      estado: json['estado'] as String? ?? 'pendiente',
+      estado: EstadoOrden.fromDb(json['estado'] as String? ?? 'pendiente'),
       fechaProgramada: json['fecha_programada'] != null
           ? DateTime.parse(json['fecha_programada'] as String)
           : null,
@@ -57,7 +59,7 @@ class OrdenProduccion {
       'usuario_id': usuarioId,
       'cantidad_lotes': cantidadLotes,
       'cantidad_producida': cantidadProducida,
-      'estado': estado,
+      'estado': estado.dbValue,
       'fecha_programada': fechaProgramada?.toIso8601String(),
       'fecha_inicio': fechaInicio?.toIso8601String(),
       'fecha_fin': fechaFin?.toIso8601String(),

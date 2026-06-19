@@ -1,7 +1,9 @@
+import 'package:happy_oven/core/models/enums.dart';
+
 class Alerta {
   final String id;
   final String? articuloId;
-  final String tipo;
+  final TipoAlerta tipo;
   final String titulo;
   final String mensaje;
   final bool leida;
@@ -21,10 +23,10 @@ class Alerta {
     return Alerta(
       id: json['id'] as String,
       articuloId: json['articulo_id'] as String?,
-      tipo: json['tipo'] as String,
+      tipo: TipoAlerta.fromDb(json['tipo'] as String? ?? 'stock_bajo'),
       titulo: json['titulo'] as String,
       mensaje: json['mensaje'] as String,
-      leida: json['leida'] as bool,
+      leida: json['leida'] as bool? ?? false,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : DateTime.now(),
@@ -35,7 +37,7 @@ class Alerta {
     return {
       if (id.isNotEmpty) 'id': id,
       'articulo_id': articuloId,
-      'tipo': tipo,
+      'tipo': tipo.dbValue,
       'titulo': titulo,
       'mensaje': mensaje,
       'leida': leida,

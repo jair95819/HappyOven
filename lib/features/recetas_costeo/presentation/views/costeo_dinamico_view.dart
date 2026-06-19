@@ -5,6 +5,7 @@ import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/core/models/receta.dart';
 import 'package:happy_oven/core/models/receta_ingrediente.dart';
 import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/viewmodels/recetas_viewmodel.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/views/formulario_articulo_view.dart';
@@ -63,7 +64,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
     final articulos = ref.read(catalogoViewModelProvider).value ?? [];
     try {
       return articulos.firstWhere(
-        (a) => a.id == id && a.tipo == 'producto_final',
+        (a) => a.id == id && a.tipo == TipoArticulo.productoFinal,
       );
     } catch (_) {
       return null;
@@ -161,7 +162,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
 
   void _seleccionarArticulo(int index) {
     final articulos = ref.read(catalogoViewModelProvider).value ?? [];
-    final insumos = articulos.where((a) => a.tipo == 'insumo').toList();
+    final insumos = articulos.where((a) => a.tipo == TipoArticulo.insumo).toList();
     final colors = AppTheme.colorsOf(context);
     final font = AppTheme.fontOf(context);
 
@@ -269,7 +270,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
   void _seleccionarProductoFinal() {
     final articulos = ref.read(catalogoViewModelProvider).value ?? [];
     final productos = articulos
-        .where((a) => a.tipo == 'producto_final')
+        .where((a) => a.tipo == TipoArticulo.productoFinal)
         .toList();
     final colors = AppTheme.colorsOf(context);
     final font = AppTheme.fontOf(context);
@@ -395,6 +396,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
         instrucciones: instrucciones.isNotEmpty ? instrucciones : null,
         rendimiento: rendimiento,
         createdAt: widget.receta!.createdAt,
+        updatedAt: DateTime.now(),
       );
       error = await ref
           .read(recetasViewModelProvider.notifier)
@@ -407,6 +409,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
         instrucciones: instrucciones.isNotEmpty ? instrucciones : null,
         rendimiento: rendimiento,
         createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
       error = await ref
           .read(recetasViewModelProvider.notifier)
@@ -931,7 +934,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                ing.articulo?.unidad ?? '-',
+                                ing.articulo?.unidad.dbValue ?? '-',
                                 style: font.label.copyWith(fontSize: 13),
                               ),
                             ],

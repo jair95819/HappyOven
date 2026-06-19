@@ -1,14 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
 import 'package:happy_oven/features/analitica_alertas/presentation/viewmodels/sugerencias_viewmodel.dart';
 
 Articulo _insumo({required String id, required double stock}) => Articulo(
       id: id,
       nombre: id == 'A' ? 'Insumo A' : 'Insumo B',
-      tipo: 'insumo',
-      unidad: 'kg',
+      tipo: TipoArticulo.insumo,
+      unidad: UnidadMedida.kg,
       stockActual: stock,
       stockMinimo: 0,
       precioUnitario: 1,
@@ -26,7 +27,7 @@ Movimiento _consumo({
       id: 'm-$insumoId-${fecha.day}',
       articuloId: insumoId,
       usuarioId: 'u1',
-      tipoMovimiento: 'salida_produccion',
+      tipoMovimiento: TipoMovimiento.salidaProduccion,
       cantidad: cantidad,
       porOcr: false,
       fecha: fecha,

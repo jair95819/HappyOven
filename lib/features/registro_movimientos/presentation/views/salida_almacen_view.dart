@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:happy_oven/features/registro_movimientos/presentation/viewmodels/movimientos_viewmodel.dart';
@@ -16,7 +17,7 @@ class SalidaAlmacenView extends ConsumerStatefulWidget {
 }
 
 class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
-  _MotivoSalida _motivoSeleccionado = _MotivoSalida.venta;
+  MotivoSalida _motivoSeleccionado = MotivoSalida.venta;
   Articulo? _productoSeleccionado;
   int _cantidad = 1;
   final _observacionController = TextEditingController();
@@ -71,8 +72,8 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
       id: '',
       articuloId: _productoSeleccionado!.id,
       usuarioId: usuarioId,
-      tipoMovimiento: 'salida_produccion',
-      motivoSalida: _motivoSeleccionado.valor,
+      tipoMovimiento: TipoMovimiento.salidaProduccion,
+      motivoSalida: _motivoSeleccionado,
       cantidad: _cantidad.toDouble(),
       observacion: _observacionController.text.trim().isEmpty
           ? null
@@ -130,7 +131,7 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
     final catalogoState = ref.watch(catalogoViewModelProvider);
     final productos = catalogoState.maybeWhen(
       data: (lista) =>
-          lista.where((a) => a.tipo == 'producto_final' && a.activo).toList(),
+          lista.where((a) => a.tipo == TipoArticulo.productoFinal && a.activo).toList(),
       orElse: () => <Articulo>[],
     );
 
@@ -267,7 +268,7 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
       crossAxisSpacing: 8,
       mainAxisSpacing: 8,
       childAspectRatio: 2.8,
-      children: _MotivoSalida.values.map((motivo) {
+      children: MotivoSalida.values.map((motivo) {
         final activo = _motivoSeleccionado == motivo;
         return GestureDetector(
           onTap: () => setState(() => _motivoSeleccionado = motivo),
@@ -284,13 +285,13 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  motivo.icono,
+                  _iconoMotivo(motivo),
                   color: activo ? colors.accent : colors.hint,
                   size: 16,
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  motivo.etiqueta,
+                  _etiquetaMotivo(motivo),
                   style: font.label.copyWith(
                     fontSize: 12,
                     fontWeight: activo ? FontWeight.w500 : FontWeight.normal,
@@ -459,7 +460,7 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
                   Text('$_cantidad', style: font.h3.copyWith(fontSize: 16)),
                   const SizedBox(width: 6),
                   Text(
-                    _productoSeleccionado?.unidad ?? '',
+                    _productoSeleccionado?.unidad.dbValue ?? '',
                     style: font.caption,
                   ),
                 ],
@@ -567,7 +568,7 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
                       style: font.h3.copyWith(fontSize: 18, color: colorStock),
                     ),
                     TextSpan(
-                      text: _productoSeleccionado?.unidad ?? '',
+                      text: _productoSeleccionado?.unidad.dbValue ?? '',
                       style: font.caption,
                     ),
                   ],
@@ -581,7 +582,7 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
               Text('Motivo', style: font.caption),
               const SizedBox(height: 4),
               Text(
-                _motivoSeleccionado.etiqueta,
+                _etiquetaMotivo(_motivoSeleccionado),
                 style: font.label.copyWith(fontSize: 13, color: colors.primary),
               ),
             ],
@@ -621,48 +622,28 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
   }
 }
 
-enum _MotivoSalida {
-  venta,
-  merma,
-  degustacion,
-  ajuste;
-
-  String get etiqueta {
-    switch (this) {
-      case _MotivoSalida.venta:
-        return 'Venta';
-      case _MotivoSalida.merma:
-        return 'Merma';
-      case _MotivoSalida.degustacion:
-        return 'Degustación';
-      case _MotivoSalida.ajuste:
-        return 'Ajuste';
-    }
+String _etiquetaMotivo(MotivoSalida motivo) {
+  switch (motivo) {
+    case MotivoSalida.venta:
+      return 'Venta';
+    case MotivoSalida.merma:
+      return 'Merma';
+    case MotivoSalida.degustacion:
+      return 'Degustación';
+    case MotivoSalida.ajuste:
+      return 'Ajuste';
   }
+}
 
-  String get valor {
-    switch (this) {
-      case _MotivoSalida.venta:
-        return 'venta';
-      case _MotivoSalida.merma:
-        return 'merma';
-      case _MotivoSalida.degustacion:
-        return 'degustacion';
-      case _MotivoSalida.ajuste:
-        return 'ajuste';
-    }
-  }
-
-  IconData get icono {
-    switch (this) {
-      case _MotivoSalida.venta:
-        return Icons.shopping_cart_outlined;
-      case _MotivoSalida.merma:
-        return Icons.delete_outline_rounded;
-      case _MotivoSalida.degustacion:
-        return Icons.card_giftcard_outlined;
-      case _MotivoSalida.ajuste:
-        return Icons.tune_rounded;
-    }
+IconData _iconoMotivo(MotivoSalida motivo) {
+  switch (motivo) {
+    case MotivoSalida.venta:
+      return Icons.shopping_cart_outlined;
+    case MotivoSalida.merma:
+      return Icons.delete_outline_rounded;
+    case MotivoSalida.degustacion:
+      return Icons.card_giftcard_outlined;
+    case MotivoSalida.ajuste:
+      return Icons.tune_rounded;
   }
 }

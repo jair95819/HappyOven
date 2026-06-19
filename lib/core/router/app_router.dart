@@ -18,7 +18,6 @@ import 'package:happy_oven/features/registro_movimientos/presentation/views/sali
 import 'package:happy_oven/features/registro_movimientos/presentation/views/ingreso_almacen_view.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/views/recetario_view.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/views/costeo_dinamico_view.dart';
-import 'package:happy_oven/features/recetas_costeo/presentation/views/create_recipe_screen.dart';
 import 'package:happy_oven/features/produccion/presentation/views/ordenes_produccion_list_view.dart';
 import 'package:happy_oven/features/produccion/presentation/views/nueva_orden_produccion_view.dart';
 import 'package:happy_oven/features/configuracion/presentation/views/perfil_ajustes_view.dart';
@@ -36,10 +35,11 @@ bool esRutaSoloAdmin(String location) {
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
+  final authState = ref.watch(authViewModelProvider);
   return GoRouter(
     initialLocation: '/login',
+    errorBuilder: (context, state) => const LoginView(),
     redirect: (context, state) {
-      final authState = ref.read(authViewModelProvider);
       final autenticado = authState.autenticado;
       final enLogin =
           state.matchedLocation == '/login' ||

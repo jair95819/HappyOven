@@ -65,11 +65,11 @@ class RecetasRepository implements IRecetasRepository {
     return Receta.fromJson(response);
   }
 
-  /// Actualiza los datos de la receta maestra (rendimiento, costos de preparación, etc.).
   @override
   Future<Receta> updateReceta(Receta receta) async {
     final data = receta.toJson();
     data.remove('id');
+    data['updated_at'] = DateTime.now().toIso8601String();
 
     final response = await _supabaseService.client
         .from('recetas')
@@ -150,12 +150,6 @@ class RecetasRepository implements IRecetasRepository {
       d['receta_id'] = recetaId;
       return d;
     }).toList();
-
-    // DEBUG: imprimir payload para diagnosticar discrepancias con el esquema
-    try {
-      // ignore: avoid_print
-      print('REEMPLAZAR_INGREDIENTES_PAYLOAD: ' + datos.toString());
-    } catch (_) {}
 
     final response = await _supabaseService.client
         .from('receta_ingredientes')

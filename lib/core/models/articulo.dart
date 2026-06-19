@@ -1,9 +1,11 @@
+import 'package:happy_oven/core/models/enums.dart';
+
 class Articulo {
   final String id;
   final String nombre;
   final String? categoriaId;
-  final String tipo;
-  final String unidad;
+  final TipoArticulo tipo;
+  final UnidadMedida unidad;
   final double stockActual;
   final double stockMinimo;
   final double precioUnitario;
@@ -30,8 +32,8 @@ class Articulo {
       id: json['id'] as String,
       nombre: json['nombre'] as String,
       categoriaId: json['categoria_id'] as String?,
-      tipo: json['tipo'] as String,
-      unidad: json['unidad'] as String? ?? 'unidades',
+      tipo: TipoArticulo.fromDb(json['tipo'] as String? ?? 'insumo'),
+      unidad: UnidadMedida.fromDb(json['unidad'] as String? ?? 'unidades'),
       stockActual: (json['stock_actual'] as num?)?.toDouble() ?? 0.0,
       stockMinimo: (json['stock_minimo'] as num?)?.toDouble() ?? 0.0,
       precioUnitario: (json['precio_unitario'] as num?)?.toDouble() ?? 0.0,
@@ -50,8 +52,8 @@ class Articulo {
       if (id.isNotEmpty) 'id': id,
       'nombre': nombre,
       'categoria_id': categoriaId,
-      'tipo': tipo,
-      'unidad': unidad,
+      'tipo': tipo.dbValue,
+      'unidad': unidad.dbValue,
       'stock_actual': stockActual,
       'stock_minimo': stockMinimo,
       'precio_unitario': precioUnitario,

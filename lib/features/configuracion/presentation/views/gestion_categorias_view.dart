@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/core/models/categoria.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/repositories/categorias_repository.dart';
 import 'package:happy_oven/core/providers.dart';
 
@@ -27,7 +28,7 @@ class CategoriasViewModel extends StateNotifier<AsyncValue<List<Categoria>>> {
     }
   }
 
-  Future<String?> crear(String nombre, String tipo) async {
+  Future<String?> crear(String nombre, TipoArticulo tipo) async {
     try {
       final cat = Categoria(
         id: '',
@@ -73,7 +74,7 @@ class GestionCategoriasView extends ConsumerStatefulWidget {
 }
 
 class _GestionCategoriasViewState extends ConsumerState<GestionCategoriasView> {
-  String _tab = 'insumo';
+  TipoArticulo _tab = TipoArticulo.insumo;
 
   void _mostrarDialogo({Categoria? existente}) {
     final controller = TextEditingController(text: existente?.nombre ?? '');
@@ -130,7 +131,6 @@ class _GestionCategoriasViewState extends ConsumerState<GestionCategoriasView> {
 
     final cats = catsAsync.valueOrNull ?? [];
     final filtradas = cats.where((c) => c.tipo == _tab).toList();
-
     return Scaffold(
       backgroundColor: colors.bg,
       body: Column(
@@ -178,8 +178,8 @@ class _GestionCategoriasViewState extends ConsumerState<GestionCategoriasView> {
             color: colors.accent,
             child: Row(
               children: [
-                _buildTab('insumo', 'Insumos'),
-                _buildTab('producto_final', 'Productos'),
+                _buildTab(TipoArticulo.insumo, 'Insumos'),
+                _buildTab(TipoArticulo.productoFinal, 'Productos'),
               ],
             ),
           ),
@@ -284,7 +284,7 @@ class _GestionCategoriasViewState extends ConsumerState<GestionCategoriasView> {
     );
   }
 
-  Widget _buildTab(String tipo, String etiqueta) {
+  Widget _buildTab(TipoArticulo tipo, String etiqueta) {
     final colors = AppTheme.colorsOf(context);
     final activo = _tab == tipo;
     return Expanded(

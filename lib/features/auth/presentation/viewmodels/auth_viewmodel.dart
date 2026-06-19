@@ -96,7 +96,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
   // ── Login
   Future<bool> login(String email, String password) async {
-    state = state.copyWith(cargando: true, error: null);
+    state = state.copyWith(cargando: true);
 
     try {
       final request = LoginRequest(email: email, password: password);
@@ -108,7 +108,6 @@ class AuthViewModel extends StateNotifier<AuthState> {
           token: response.token,
           autenticado: true,
           cargando: false,
-          error: null,
         );
         return true;
       } else {
@@ -131,7 +130,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
     String password,
     String passwordConfirmacion,
   ) async {
-    state = state.copyWith(cargando: true, error: null);
+    state = state.copyWith(cargando: true);
 
     try {
       // Validaciones básicas
@@ -179,7 +178,6 @@ class AuthViewModel extends StateNotifier<AuthState> {
           token: response.token,
           autenticado: true,
           cargando: false,
-          error: null,
         );
         return true;
       } else {
@@ -212,7 +210,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
   // ── Recuperar contraseña
   Future<bool> recuperarPassword(String email) async {
-    state = state.copyWith(cargando: true, error: null);
+    state = state.copyWith(cargando: true);
 
     try {
       if (email.isEmpty || !email.contains('@')) {

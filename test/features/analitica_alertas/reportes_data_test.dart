@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart' show DateTimeRange;
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
 import 'package:happy_oven/features/analitica_alertas/presentation/views/reportes_view.dart';
 
 Movimiento _mov({
   required String articuloId,
-  required String tipo,
+  required TipoMovimiento tipo,
   required double cantidad,
   required DateTime fecha,
   double? precio,
@@ -44,11 +45,11 @@ void main() {
     final nombres = {'harina': 'Harina', 'azucar': 'Azúcar'};
 
     final movimientos = [
-      _mov(articuloId: 'harina', tipo: 'salida_produccion', cantidad: 10, fecha: DateTime(2026, 6, 1), precio: 2),
-      _mov(articuloId: 'harina', tipo: 'salida_produccion', cantidad: 5, fecha: DateTime(2026, 6, 2), precio: 2),
-      _mov(articuloId: 'azucar', tipo: 'salida_produccion', cantidad: 4, fecha: DateTime(2026, 6, 2), precio: 3),
-      _mov(articuloId: 'harina', tipo: 'entrada', cantidad: 20, fecha: DateTime(2026, 6, 1), precio: 2),
-      _mov(articuloId: 'azucar', tipo: 'merma', cantidad: 1, fecha: DateTime(2026, 6, 3), precio: 3),
+      _mov(articuloId: 'harina', tipo: TipoMovimiento.salidaProduccion, cantidad: 10, fecha: DateTime(2026, 6, 1), precio: 2),
+      _mov(articuloId: 'harina', tipo: TipoMovimiento.salidaProduccion, cantidad: 5, fecha: DateTime(2026, 6, 2), precio: 2),
+      _mov(articuloId: 'azucar', tipo: TipoMovimiento.salidaProduccion, cantidad: 4, fecha: DateTime(2026, 6, 2), precio: 3),
+      _mov(articuloId: 'harina', tipo: TipoMovimiento.entrada, cantidad: 20, fecha: DateTime(2026, 6, 1), precio: 2),
+      _mov(articuloId: 'azucar', tipo: TipoMovimiento.merma, cantidad: 1, fecha: DateTime(2026, 6, 3), precio: 3),
     ];
 
     test('CA039 - totales de entradas, salidas, mermas y valor movido', () {
@@ -86,7 +87,7 @@ void main() {
       );
       final data = ReportesData.calcular(
         [
-          _mov(articuloId: 'harina', tipo: 'salida_produccion', cantidad: 10, fecha: DateTime(2026, 6, 1), precio: 2),
+          _mov(articuloId: 'harina', tipo: TipoMovimiento.salidaProduccion, cantidad: 10, fecha: DateTime(2026, 6, 1), precio: 2),
         ],
         {'harina': 'Harina'},
         rango,

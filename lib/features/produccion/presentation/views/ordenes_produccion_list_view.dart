@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/core/models/orden_produccion.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/models/receta.dart';
 import 'package:happy_oven/features/produccion/presentation/viewmodels/produccion_viewmodel.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/viewmodels/recetas_viewmodel.dart';
@@ -20,6 +21,7 @@ class OrdenesProduccionListView extends ConsumerStatefulWidget {
 
 class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionListView> {
   String _filtroEstado = 'todas';
+  static const _estados = ['todas', 'pendiente', 'en_proceso', 'completada', 'cancelada'];
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +45,7 @@ class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionLis
               data: (ordenes) {
                 final filtradas = _filtroEstado == 'todas'
                     ? ordenes
-                    : ordenes.where((o) => o.estado == _filtroEstado).toList();
+                    : ordenes.where((o) => o.estado.dbValue == _filtroEstado).toList();
                 if (filtradas.isEmpty) {
                   return _buildVacio(colors, font);
                 }
@@ -106,13 +108,12 @@ class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionLis
         content: Text(error),
         backgroundColor: colors.statusCritical,
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 4),
       ));
     }
   }
 
   Widget _buildFiltros(AppColors colors, AppFont font) {
-    final filtros = ['todas', 'pendiente', 'en_proceso', 'completada', 'cancelada'];
+    const filtros = _estados;
     final etiquetas = {
       'todas': 'Todas',
       'pendiente': 'Pendientes',
@@ -329,7 +330,7 @@ class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionLis
               const SizedBox(height: 6),
               Text(orden.notas!, style: font.caption.copyWith(fontSize: 10)),
             ],
-            if (orden.estado == 'pendiente') ...[
+            if (orden.estado == EstadoOrden.pendiente) ...[
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
@@ -367,42 +368,35 @@ class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionLis
     );
   }
 
-  _ConfigEstado _configEstado(String estado, AppColors colors) {
+  _ConfigEstado _configEstado(EstadoOrden estado, AppColors colors) {
     switch (estado) {
-      case 'pendiente':
+      case EstadoOrden.pendiente:
         return _ConfigEstado(
           icono: Icons.schedule_rounded,
           colorPrincipal: colors.primary,
           colorFondo: colors.primaryLight,
           etiqueta: 'Pendiente',
         );
-      case 'en_proceso':
+      case EstadoOrden.enProceso:
         return _ConfigEstado(
           icono: Icons.play_circle_outline,
           colorPrincipal: colors.statusLow,
           colorFondo: const Color(0xFFFFF3E0),
           etiqueta: 'En Proceso',
         );
-      case 'completada':
+      case EstadoOrden.completada:
         return _ConfigEstado(
           icono: Icons.check_circle_outline,
           colorPrincipal: colors.statusNormal,
           colorFondo: colors.successLight,
           etiqueta: 'Completada',
         );
-      case 'cancelada':
+      case EstadoOrden.cancelada:
         return _ConfigEstado(
           icono: Icons.cancel_outlined,
           colorPrincipal: colors.statusCritical,
           colorFondo: colors.dangerLight,
           etiqueta: 'Cancelada',
-        );
-      default:
-        return _ConfigEstado(
-          icono: Icons.help_outline,
-          colorPrincipal: colors.hint,
-          colorFondo: colors.surface,
-          etiqueta: estado,
         );
     }
   }

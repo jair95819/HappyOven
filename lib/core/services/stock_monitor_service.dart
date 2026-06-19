@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:happy_oven/core/models/alerta.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/repositories/i_articulos_repository.dart';
 import 'package:happy_oven/core/repositories/i_alertas_repository.dart';
 import 'package:happy_oven/core/services/notification_service.dart';
@@ -60,7 +61,7 @@ class StockMonitorService {
 
       // IDs de artículos que ya tienen una alerta sin leer
       final idsConAlerta = alertasExistentes
-          .where((a) => a.tipo == 'stock_bajo' && a.articuloId != null)
+          .where((a) => a.tipo == TipoAlerta.stockBajo && a.articuloId != null)
           .map((a) => a.articuloId!)
           .toSet();
 
@@ -96,7 +97,7 @@ class StockMonitorService {
             await _alertasRepo.createAlerta(Alerta(
               id: '',
               articuloId: art.id,
-              tipo: 'stock_bajo',
+              tipo: TipoAlerta.stockBajo,
               titulo: titulo,
               mensaje: mensaje,
               leida: false,

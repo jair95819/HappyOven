@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 
 import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
 import 'package:happy_oven/core/models/orden_produccion.dart';
 import 'package:happy_oven/core/models/receta_ingrediente.dart';
@@ -11,7 +12,7 @@ import '../../helpers/test_helpers.mocks.dart';
 
 Articulo _articulo({
   required String id,
-  required String tipo,
+  required TipoArticulo tipo,
   required double stock,
   double precio = 1.0,
 }) {
@@ -19,7 +20,7 @@ Articulo _articulo({
     id: id,
     nombre: id,
     tipo: tipo,
-    unidad: 'kg',
+    unidad: UnidadMedida.kg,
     stockActual: stock,
     stockMinimo: 0,
     precioUnitario: precio,
@@ -66,7 +67,7 @@ void main() {
         'sin modificar inventario ni orden', () async {
       // Harina: 15kg disponibles; la orden de 2 lotes requiere 10kg x 2 = 20kg.
       when(articulosRepo.getArticuloById('harina'))
-          .thenAnswer((_) async => _articulo(id: 'harina', tipo: 'insumo', stock: 15));
+          .thenAnswer((_) async => _articulo(id: 'harina', tipo: TipoArticulo.insumo, stock: 15));
 
       final resultado = await sut.ejecutar(
         orden: _orden(lotes: 2),
@@ -95,9 +96,9 @@ void main() {
         'completa la orden cuando hay stock suficiente', () async {
       // Harina: 15kg; la orden de 1 lote requiere 10kg -> debe quedar en 5kg.
       when(articulosRepo.getArticuloById('harina'))
-          .thenAnswer((_) async => _articulo(id: 'harina', tipo: 'insumo', stock: 15));
+          .thenAnswer((_) async => _articulo(id: 'harina', tipo: TipoArticulo.insumo, stock: 15));
       when(articulosRepo.getArticuloById('pan'))
-          .thenAnswer((_) async => _articulo(id: 'pan', tipo: 'producto_final', stock: 0));
+          .thenAnswer((_) async => _articulo(id: 'pan', tipo: TipoArticulo.productoFinal, stock: 0));
       when(ordenesRepo.updateOrden(any))
           .thenAnswer((inv) async => inv.positionalArguments[0] as OrdenProduccion);
       when(movimientosRepo.registrarMovimiento(any))
@@ -130,7 +131,7 @@ void main() {
       final ordenesActualizadas = verify(ordenesRepo.updateOrden(captureAny))
           .captured
           .cast<OrdenProduccion>();
-      expect(ordenesActualizadas.last.estado, 'completada');
+      expect(ordenesActualizadas.last.estado, EstadoOrden.completada);
     });
   });
 }

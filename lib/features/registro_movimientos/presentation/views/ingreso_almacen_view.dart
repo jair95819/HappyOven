@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
 import 'package:happy_oven/features/registro_movimientos/presentation/viewmodels/movimientos_viewmodel.dart';
@@ -60,7 +61,7 @@ class _IngresoAlmacenViewState extends ConsumerState<IngresoAlmacenView> {
                     final a = articulos[i];
                     return ListTile(
                       leading: Icon(
-                        a.tipo == 'insumo' ? Icons.inventory_2_outlined : Icons.breakfast_dining_outlined,
+                        a.tipo == TipoArticulo.insumo ? Icons.inventory_2_outlined : Icons.breakfast_dining_outlined,
                         color: colors.primary, size: 18,
                       ),
                       title: Text(a.nombre, style: font.bodySmall),
@@ -111,7 +112,7 @@ class _IngresoAlmacenViewState extends ConsumerState<IngresoAlmacenView> {
       id: '',
       articuloId: _articuloSeleccionado!.id,
       usuarioId: usuarioId,
-      tipoMovimiento: 'entrada',
+      tipoMovimiento: TipoMovimiento.entrada,
       cantidad: cantidad,
       precioUnitario: double.tryParse(_precioController.text),
       proveedor: _proveedorController.text.trim().isEmpty ? null : _proveedorController.text.trim(),
@@ -125,7 +126,7 @@ class _IngresoAlmacenViewState extends ConsumerState<IngresoAlmacenView> {
 
     if (ok && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('${_articuloSeleccionado!.nombre}: +${cantidad} ${_articuloSeleccionado!.unidad}'),
+        content: Text('${_articuloSeleccionado!.nombre}: +$cantidad ${_articuloSeleccionado!.unidad}'),
         backgroundColor: AppTheme.colorsOf(context).statusNormal,
         behavior: SnackBarBehavior.floating,
       ));

@@ -3,24 +3,28 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i9;
+import 'dart:async' as _i10;
 
 import 'package:happy_oven/core/models/alerta.dart' as _i6;
 import 'package:happy_oven/core/models/articulo.dart' as _i2;
+import 'package:happy_oven/core/models/categoria.dart' as _i7;
+import 'package:happy_oven/core/models/enums.dart' as _i15;
 import 'package:happy_oven/core/models/movimiento.dart' as _i5;
-import 'package:happy_oven/core/models/orden_produccion.dart' as _i7;
+import 'package:happy_oven/core/models/orden_produccion.dart' as _i8;
 import 'package:happy_oven/core/models/receta.dart' as _i3;
 import 'package:happy_oven/core/models/receta_ingrediente.dart' as _i4;
-import 'package:happy_oven/core/repositories/alertas_repository.dart' as _i15;
-import 'package:happy_oven/core/repositories/articulos_repository.dart' as _i14;
-import 'package:happy_oven/core/repositories/i_alertas_repository.dart' as _i12;
+import 'package:happy_oven/core/repositories/alertas_repository.dart' as _i18;
+import 'package:happy_oven/core/repositories/articulos_repository.dart' as _i17;
+import 'package:happy_oven/core/repositories/i_alertas_repository.dart' as _i13;
 import 'package:happy_oven/core/repositories/i_articulos_repository.dart'
-    as _i8;
+    as _i9;
+import 'package:happy_oven/core/repositories/i_categorias_repository.dart'
+    as _i14;
 import 'package:happy_oven/core/repositories/i_movimientos_repository.dart'
-    as _i11;
+    as _i12;
 import 'package:happy_oven/core/repositories/i_ordenes_produccion_repository.dart'
-    as _i13;
-import 'package:happy_oven/core/repositories/i_recetas_repository.dart' as _i10;
+    as _i16;
+import 'package:happy_oven/core/repositories/i_recetas_repository.dart' as _i11;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -64,9 +68,14 @@ class _FakeAlerta_4 extends _i1.SmartFake implements _i6.Alerta {
     : super(parent, parentInvocation);
 }
 
-class _FakeOrdenProduccion_5 extends _i1.SmartFake
-    implements _i7.OrdenProduccion {
-  _FakeOrdenProduccion_5(Object parent, Invocation parentInvocation)
+class _FakeCategoria_5 extends _i1.SmartFake implements _i7.Categoria {
+  _FakeCategoria_5(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeOrdenProduccion_6 extends _i1.SmartFake
+    implements _i8.OrdenProduccion {
+  _FakeOrdenProduccion_6(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
@@ -74,179 +83,185 @@ class _FakeOrdenProduccion_5 extends _i1.SmartFake
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockIArticulosRepository extends _i1.Mock
-    implements _i8.IArticulosRepository {
+    implements _i9.IArticulosRepository {
   MockIArticulosRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i9.Future<List<_i2.Articulo>> getArticulos() =>
+  _i10.Future<List<_i2.Articulo>> getArticulos() =>
       (super.noSuchMethod(
             Invocation.method(#getArticulos, []),
-            returnValue: _i9.Future<List<_i2.Articulo>>.value(<_i2.Articulo>[]),
+            returnValue: _i10.Future<List<_i2.Articulo>>.value(
+              <_i2.Articulo>[],
+            ),
           )
-          as _i9.Future<List<_i2.Articulo>>);
+          as _i10.Future<List<_i2.Articulo>>);
 
   @override
-  _i9.Future<List<_i2.Articulo>> getInsumos() =>
+  _i10.Future<List<_i2.Articulo>> getInsumos() =>
       (super.noSuchMethod(
             Invocation.method(#getInsumos, []),
-            returnValue: _i9.Future<List<_i2.Articulo>>.value(<_i2.Articulo>[]),
+            returnValue: _i10.Future<List<_i2.Articulo>>.value(
+              <_i2.Articulo>[],
+            ),
           )
-          as _i9.Future<List<_i2.Articulo>>);
+          as _i10.Future<List<_i2.Articulo>>);
 
   @override
-  _i9.Future<List<_i2.Articulo>> getProductosFinales() =>
+  _i10.Future<List<_i2.Articulo>> getProductosFinales() =>
       (super.noSuchMethod(
             Invocation.method(#getProductosFinales, []),
-            returnValue: _i9.Future<List<_i2.Articulo>>.value(<_i2.Articulo>[]),
+            returnValue: _i10.Future<List<_i2.Articulo>>.value(
+              <_i2.Articulo>[],
+            ),
           )
-          as _i9.Future<List<_i2.Articulo>>);
+          as _i10.Future<List<_i2.Articulo>>);
 
   @override
-  _i9.Future<_i2.Articulo?> getArticuloById(String? id) =>
+  _i10.Future<_i2.Articulo?> getArticuloById(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#getArticuloById, [id]),
-            returnValue: _i9.Future<_i2.Articulo?>.value(),
+            returnValue: _i10.Future<_i2.Articulo?>.value(),
           )
-          as _i9.Future<_i2.Articulo?>);
+          as _i10.Future<_i2.Articulo?>);
 
   @override
-  _i9.Future<_i2.Articulo> createArticulo(_i2.Articulo? articulo) =>
+  _i10.Future<_i2.Articulo> createArticulo(_i2.Articulo? articulo) =>
       (super.noSuchMethod(
             Invocation.method(#createArticulo, [articulo]),
-            returnValue: _i9.Future<_i2.Articulo>.value(
+            returnValue: _i10.Future<_i2.Articulo>.value(
               _FakeArticulo_0(
                 this,
                 Invocation.method(#createArticulo, [articulo]),
               ),
             ),
           )
-          as _i9.Future<_i2.Articulo>);
+          as _i10.Future<_i2.Articulo>);
 
   @override
-  _i9.Future<_i2.Articulo> updateArticulo(_i2.Articulo? articulo) =>
+  _i10.Future<_i2.Articulo> updateArticulo(_i2.Articulo? articulo) =>
       (super.noSuchMethod(
             Invocation.method(#updateArticulo, [articulo]),
-            returnValue: _i9.Future<_i2.Articulo>.value(
+            returnValue: _i10.Future<_i2.Articulo>.value(
               _FakeArticulo_0(
                 this,
                 Invocation.method(#updateArticulo, [articulo]),
               ),
             ),
           )
-          as _i9.Future<_i2.Articulo>);
+          as _i10.Future<_i2.Articulo>);
 
   @override
-  _i9.Future<void> deleteArticulo(String? id) =>
+  _i10.Future<void> deleteArticulo(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteArticulo, [id]),
-            returnValue: _i9.Future<void>.value(),
-            returnValueForMissingStub: _i9.Future<void>.value(),
+            returnValue: _i10.Future<void>.value(),
+            returnValueForMissingStub: _i10.Future<void>.value(),
           )
-          as _i9.Future<void>);
+          as _i10.Future<void>);
 }
 
 /// A class which mocks [IRecetasRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockIRecetasRepository extends _i1.Mock
-    implements _i10.IRecetasRepository {
+    implements _i11.IRecetasRepository {
   MockIRecetasRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i9.Future<List<_i3.Receta>> getRecetas() =>
+  _i10.Future<List<_i3.Receta>> getRecetas() =>
       (super.noSuchMethod(
             Invocation.method(#getRecetas, []),
-            returnValue: _i9.Future<List<_i3.Receta>>.value(<_i3.Receta>[]),
+            returnValue: _i10.Future<List<_i3.Receta>>.value(<_i3.Receta>[]),
           )
-          as _i9.Future<List<_i3.Receta>>);
+          as _i10.Future<List<_i3.Receta>>);
 
   @override
-  _i9.Future<_i3.Receta?> getRecetaById(String? id) =>
+  _i10.Future<_i3.Receta?> getRecetaById(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#getRecetaById, [id]),
-            returnValue: _i9.Future<_i3.Receta?>.value(),
+            returnValue: _i10.Future<_i3.Receta?>.value(),
           )
-          as _i9.Future<_i3.Receta?>);
+          as _i10.Future<_i3.Receta?>);
 
   @override
-  _i9.Future<_i3.Receta?> getRecetaByProductoId(String? productoId) =>
+  _i10.Future<_i3.Receta?> getRecetaByProductoId(String? productoId) =>
       (super.noSuchMethod(
             Invocation.method(#getRecetaByProductoId, [productoId]),
-            returnValue: _i9.Future<_i3.Receta?>.value(),
+            returnValue: _i10.Future<_i3.Receta?>.value(),
           )
-          as _i9.Future<_i3.Receta?>);
+          as _i10.Future<_i3.Receta?>);
 
   @override
-  _i9.Future<_i3.Receta> createReceta(_i3.Receta? receta) =>
+  _i10.Future<_i3.Receta> createReceta(_i3.Receta? receta) =>
       (super.noSuchMethod(
             Invocation.method(#createReceta, [receta]),
-            returnValue: _i9.Future<_i3.Receta>.value(
+            returnValue: _i10.Future<_i3.Receta>.value(
               _FakeReceta_1(this, Invocation.method(#createReceta, [receta])),
             ),
           )
-          as _i9.Future<_i3.Receta>);
+          as _i10.Future<_i3.Receta>);
 
   @override
-  _i9.Future<_i3.Receta> updateReceta(_i3.Receta? receta) =>
+  _i10.Future<_i3.Receta> updateReceta(_i3.Receta? receta) =>
       (super.noSuchMethod(
             Invocation.method(#updateReceta, [receta]),
-            returnValue: _i9.Future<_i3.Receta>.value(
+            returnValue: _i10.Future<_i3.Receta>.value(
               _FakeReceta_1(this, Invocation.method(#updateReceta, [receta])),
             ),
           )
-          as _i9.Future<_i3.Receta>);
+          as _i10.Future<_i3.Receta>);
 
   @override
-  _i9.Future<void> deleteReceta(String? id) =>
+  _i10.Future<void> deleteReceta(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteReceta, [id]),
-            returnValue: _i9.Future<void>.value(),
-            returnValueForMissingStub: _i9.Future<void>.value(),
+            returnValue: _i10.Future<void>.value(),
+            returnValueForMissingStub: _i10.Future<void>.value(),
           )
-          as _i9.Future<void>);
+          as _i10.Future<void>);
 
   @override
-  _i9.Future<List<_i4.RecetaIngrediente>> getIngredientesPorReceta(
+  _i10.Future<List<_i4.RecetaIngrediente>> getIngredientesPorReceta(
     String? recetaId,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#getIngredientesPorReceta, [recetaId]),
-            returnValue: _i9.Future<List<_i4.RecetaIngrediente>>.value(
+            returnValue: _i10.Future<List<_i4.RecetaIngrediente>>.value(
               <_i4.RecetaIngrediente>[],
             ),
           )
-          as _i9.Future<List<_i4.RecetaIngrediente>>);
+          as _i10.Future<List<_i4.RecetaIngrediente>>);
 
   @override
-  _i9.Future<_i4.RecetaIngrediente> addIngrediente(
+  _i10.Future<_i4.RecetaIngrediente> addIngrediente(
     _i4.RecetaIngrediente? ingrediente,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#addIngrediente, [ingrediente]),
-            returnValue: _i9.Future<_i4.RecetaIngrediente>.value(
+            returnValue: _i10.Future<_i4.RecetaIngrediente>.value(
               _FakeRecetaIngrediente_2(
                 this,
                 Invocation.method(#addIngrediente, [ingrediente]),
               ),
             ),
           )
-          as _i9.Future<_i4.RecetaIngrediente>);
+          as _i10.Future<_i4.RecetaIngrediente>);
 
   @override
-  _i9.Future<void> deleteIngrediente(String? id) =>
+  _i10.Future<void> deleteIngrediente(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteIngrediente, [id]),
-            returnValue: _i9.Future<void>.value(),
-            returnValueForMissingStub: _i9.Future<void>.value(),
+            returnValue: _i10.Future<void>.value(),
+            returnValueForMissingStub: _i10.Future<void>.value(),
           )
-          as _i9.Future<void>);
+          as _i10.Future<void>);
 
   @override
-  _i9.Future<List<_i4.RecetaIngrediente>> reemplazarIngredientes(
+  _i10.Future<List<_i4.RecetaIngrediente>> reemplazarIngredientes(
     String? recetaId,
     List<_i4.RecetaIngrediente>? ingredientes,
   ) =>
@@ -255,351 +270,424 @@ class MockIRecetasRepository extends _i1.Mock
               recetaId,
               ingredientes,
             ]),
-            returnValue: _i9.Future<List<_i4.RecetaIngrediente>>.value(
+            returnValue: _i10.Future<List<_i4.RecetaIngrediente>>.value(
               <_i4.RecetaIngrediente>[],
             ),
           )
-          as _i9.Future<List<_i4.RecetaIngrediente>>);
+          as _i10.Future<List<_i4.RecetaIngrediente>>);
 }
 
 /// A class which mocks [IMovimientosRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockIMovimientosRepository extends _i1.Mock
-    implements _i11.IMovimientosRepository {
+    implements _i12.IMovimientosRepository {
   MockIMovimientosRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i9.Future<List<_i5.Movimiento>> getHistorialMovimientos() =>
+  _i10.Future<List<_i5.Movimiento>> getHistorialMovimientos() =>
       (super.noSuchMethod(
             Invocation.method(#getHistorialMovimientos, []),
-            returnValue: _i9.Future<List<_i5.Movimiento>>.value(
+            returnValue: _i10.Future<List<_i5.Movimiento>>.value(
               <_i5.Movimiento>[],
             ),
           )
-          as _i9.Future<List<_i5.Movimiento>>);
+          as _i10.Future<List<_i5.Movimiento>>);
 
   @override
-  _i9.Future<List<_i5.Movimiento>> getMovimientosPorArticulo(
+  _i10.Future<List<_i5.Movimiento>> getMovimientosPorArticulo(
     String? articuloId,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#getMovimientosPorArticulo, [articuloId]),
-            returnValue: _i9.Future<List<_i5.Movimiento>>.value(
+            returnValue: _i10.Future<List<_i5.Movimiento>>.value(
               <_i5.Movimiento>[],
             ),
           )
-          as _i9.Future<List<_i5.Movimiento>>);
+          as _i10.Future<List<_i5.Movimiento>>);
 
   @override
-  _i9.Future<_i5.Movimiento> registrarMovimiento(_i5.Movimiento? movimiento) =>
+  _i10.Future<_i5.Movimiento> registrarMovimiento(_i5.Movimiento? movimiento) =>
       (super.noSuchMethod(
             Invocation.method(#registrarMovimiento, [movimiento]),
-            returnValue: _i9.Future<_i5.Movimiento>.value(
+            returnValue: _i10.Future<_i5.Movimiento>.value(
               _FakeMovimiento_3(
                 this,
                 Invocation.method(#registrarMovimiento, [movimiento]),
               ),
             ),
           )
-          as _i9.Future<_i5.Movimiento>);
+          as _i10.Future<_i5.Movimiento>);
 
   @override
-  _i9.Future<void> deleteMovimiento(String? id) =>
+  _i10.Future<void> deleteMovimiento(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteMovimiento, [id]),
-            returnValue: _i9.Future<void>.value(),
-            returnValueForMissingStub: _i9.Future<void>.value(),
+            returnValue: _i10.Future<void>.value(),
+            returnValueForMissingStub: _i10.Future<void>.value(),
           )
-          as _i9.Future<void>);
+          as _i10.Future<void>);
 
   @override
-  _i9.Future<List<_i5.Movimiento>> getMovimientosPorRango(
+  _i10.Future<List<_i5.Movimiento>> getMovimientosPorRango(
     DateTime? inicio,
     DateTime? fin,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#getMovimientosPorRango, [inicio, fin]),
-            returnValue: _i9.Future<List<_i5.Movimiento>>.value(
+            returnValue: _i10.Future<List<_i5.Movimiento>>.value(
               <_i5.Movimiento>[],
             ),
           )
-          as _i9.Future<List<_i5.Movimiento>>);
+          as _i10.Future<List<_i5.Movimiento>>);
 }
 
 /// A class which mocks [IAlertasRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockIAlertasRepository extends _i1.Mock
-    implements _i12.IAlertasRepository {
+    implements _i13.IAlertasRepository {
   MockIAlertasRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i9.Future<List<_i6.Alerta>> getAlertasPendientes() =>
+  _i10.Future<List<_i6.Alerta>> getAlertasPendientes() =>
       (super.noSuchMethod(
             Invocation.method(#getAlertasPendientes, []),
-            returnValue: _i9.Future<List<_i6.Alerta>>.value(<_i6.Alerta>[]),
+            returnValue: _i10.Future<List<_i6.Alerta>>.value(<_i6.Alerta>[]),
           )
-          as _i9.Future<List<_i6.Alerta>>);
+          as _i10.Future<List<_i6.Alerta>>);
 
   @override
-  _i9.Future<List<_i6.Alerta>> getHistorialAlertas() =>
+  _i10.Future<List<_i6.Alerta>> getHistorialAlertas() =>
       (super.noSuchMethod(
             Invocation.method(#getHistorialAlertas, []),
-            returnValue: _i9.Future<List<_i6.Alerta>>.value(<_i6.Alerta>[]),
+            returnValue: _i10.Future<List<_i6.Alerta>>.value(<_i6.Alerta>[]),
           )
-          as _i9.Future<List<_i6.Alerta>>);
+          as _i10.Future<List<_i6.Alerta>>);
 
   @override
-  _i9.Future<_i6.Alerta> createAlerta(_i6.Alerta? alerta) =>
+  _i10.Future<_i6.Alerta> createAlerta(_i6.Alerta? alerta) =>
       (super.noSuchMethod(
             Invocation.method(#createAlerta, [alerta]),
-            returnValue: _i9.Future<_i6.Alerta>.value(
+            returnValue: _i10.Future<_i6.Alerta>.value(
               _FakeAlerta_4(this, Invocation.method(#createAlerta, [alerta])),
             ),
           )
-          as _i9.Future<_i6.Alerta>);
+          as _i10.Future<_i6.Alerta>);
 
   @override
-  _i9.Future<void> marcarComoLeida(String? id) =>
+  _i10.Future<void> marcarComoLeida(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#marcarComoLeida, [id]),
-            returnValue: _i9.Future<void>.value(),
-            returnValueForMissingStub: _i9.Future<void>.value(),
+            returnValue: _i10.Future<void>.value(),
+            returnValueForMissingStub: _i10.Future<void>.value(),
           )
-          as _i9.Future<void>);
+          as _i10.Future<void>);
 
   @override
-  _i9.Future<void> marcarTodasComoLeidas() =>
+  _i10.Future<void> marcarTodasComoLeidas() =>
       (super.noSuchMethod(
             Invocation.method(#marcarTodasComoLeidas, []),
-            returnValue: _i9.Future<void>.value(),
-            returnValueForMissingStub: _i9.Future<void>.value(),
+            returnValue: _i10.Future<void>.value(),
+            returnValueForMissingStub: _i10.Future<void>.value(),
           )
-          as _i9.Future<void>);
+          as _i10.Future<void>);
 
   @override
-  _i9.Future<void> deleteAlerta(String? id) =>
+  _i10.Future<void> deleteAlerta(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteAlerta, [id]),
-            returnValue: _i9.Future<void>.value(),
-            returnValueForMissingStub: _i9.Future<void>.value(),
+            returnValue: _i10.Future<void>.value(),
+            returnValueForMissingStub: _i10.Future<void>.value(),
           )
-          as _i9.Future<void>);
+          as _i10.Future<void>);
+}
+
+/// A class which mocks [ICategoriasRepository].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockICategoriasRepository extends _i1.Mock
+    implements _i14.ICategoriasRepository {
+  MockICategoriasRepository() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i10.Future<List<_i7.Categoria>> getCategorias() =>
+      (super.noSuchMethod(
+            Invocation.method(#getCategorias, []),
+            returnValue: _i10.Future<List<_i7.Categoria>>.value(
+              <_i7.Categoria>[],
+            ),
+          )
+          as _i10.Future<List<_i7.Categoria>>);
+
+  @override
+  _i10.Future<List<_i7.Categoria>> getCategoriasPorTipo(
+    _i15.TipoArticulo? tipo,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#getCategoriasPorTipo, [tipo]),
+            returnValue: _i10.Future<List<_i7.Categoria>>.value(
+              <_i7.Categoria>[],
+            ),
+          )
+          as _i10.Future<List<_i7.Categoria>>);
+
+  @override
+  _i10.Future<_i7.Categoria> createCategoria(_i7.Categoria? categoria) =>
+      (super.noSuchMethod(
+            Invocation.method(#createCategoria, [categoria]),
+            returnValue: _i10.Future<_i7.Categoria>.value(
+              _FakeCategoria_5(
+                this,
+                Invocation.method(#createCategoria, [categoria]),
+              ),
+            ),
+          )
+          as _i10.Future<_i7.Categoria>);
+
+  @override
+  _i10.Future<_i7.Categoria> updateCategoria(_i7.Categoria? categoria) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateCategoria, [categoria]),
+            returnValue: _i10.Future<_i7.Categoria>.value(
+              _FakeCategoria_5(
+                this,
+                Invocation.method(#updateCategoria, [categoria]),
+              ),
+            ),
+          )
+          as _i10.Future<_i7.Categoria>);
+
+  @override
+  _i10.Future<void> deleteCategoria(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#deleteCategoria, [id]),
+            returnValue: _i10.Future<void>.value(),
+            returnValueForMissingStub: _i10.Future<void>.value(),
+          )
+          as _i10.Future<void>);
 }
 
 /// A class which mocks [IOrdenesProduccionRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockIOrdenesProduccionRepository extends _i1.Mock
-    implements _i13.IOrdenesProduccionRepository {
+    implements _i16.IOrdenesProduccionRepository {
   MockIOrdenesProduccionRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i9.Future<List<_i7.OrdenProduccion>> getOrdenes() =>
+  _i10.Future<List<_i8.OrdenProduccion>> getOrdenes() =>
       (super.noSuchMethod(
             Invocation.method(#getOrdenes, []),
-            returnValue: _i9.Future<List<_i7.OrdenProduccion>>.value(
-              <_i7.OrdenProduccion>[],
+            returnValue: _i10.Future<List<_i8.OrdenProduccion>>.value(
+              <_i8.OrdenProduccion>[],
             ),
           )
-          as _i9.Future<List<_i7.OrdenProduccion>>);
+          as _i10.Future<List<_i8.OrdenProduccion>>);
 
   @override
-  _i9.Future<List<_i7.OrdenProduccion>> getOrdenesPorEstado(String? estado) =>
+  _i10.Future<List<_i8.OrdenProduccion>> getOrdenesPorEstado(String? estado) =>
       (super.noSuchMethod(
             Invocation.method(#getOrdenesPorEstado, [estado]),
-            returnValue: _i9.Future<List<_i7.OrdenProduccion>>.value(
-              <_i7.OrdenProduccion>[],
+            returnValue: _i10.Future<List<_i8.OrdenProduccion>>.value(
+              <_i8.OrdenProduccion>[],
             ),
           )
-          as _i9.Future<List<_i7.OrdenProduccion>>);
+          as _i10.Future<List<_i8.OrdenProduccion>>);
 
   @override
-  _i9.Future<_i7.OrdenProduccion?> getOrdenById(String? id) =>
+  _i10.Future<_i8.OrdenProduccion?> getOrdenById(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#getOrdenById, [id]),
-            returnValue: _i9.Future<_i7.OrdenProduccion?>.value(),
+            returnValue: _i10.Future<_i8.OrdenProduccion?>.value(),
           )
-          as _i9.Future<_i7.OrdenProduccion?>);
+          as _i10.Future<_i8.OrdenProduccion?>);
 
   @override
-  _i9.Future<_i7.OrdenProduccion> createOrden(_i7.OrdenProduccion? orden) =>
+  _i10.Future<_i8.OrdenProduccion> createOrden(_i8.OrdenProduccion? orden) =>
       (super.noSuchMethod(
             Invocation.method(#createOrden, [orden]),
-            returnValue: _i9.Future<_i7.OrdenProduccion>.value(
-              _FakeOrdenProduccion_5(
+            returnValue: _i10.Future<_i8.OrdenProduccion>.value(
+              _FakeOrdenProduccion_6(
                 this,
                 Invocation.method(#createOrden, [orden]),
               ),
             ),
           )
-          as _i9.Future<_i7.OrdenProduccion>);
+          as _i10.Future<_i8.OrdenProduccion>);
 
   @override
-  _i9.Future<_i7.OrdenProduccion> updateOrden(_i7.OrdenProduccion? orden) =>
+  _i10.Future<_i8.OrdenProduccion> updateOrden(_i8.OrdenProduccion? orden) =>
       (super.noSuchMethod(
             Invocation.method(#updateOrden, [orden]),
-            returnValue: _i9.Future<_i7.OrdenProduccion>.value(
-              _FakeOrdenProduccion_5(
+            returnValue: _i10.Future<_i8.OrdenProduccion>.value(
+              _FakeOrdenProduccion_6(
                 this,
                 Invocation.method(#updateOrden, [orden]),
               ),
             ),
           )
-          as _i9.Future<_i7.OrdenProduccion>);
+          as _i10.Future<_i8.OrdenProduccion>);
 
   @override
-  _i9.Future<void> deleteOrden(String? id) =>
+  _i10.Future<void> deleteOrden(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteOrden, [id]),
-            returnValue: _i9.Future<void>.value(),
-            returnValueForMissingStub: _i9.Future<void>.value(),
+            returnValue: _i10.Future<void>.value(),
+            returnValueForMissingStub: _i10.Future<void>.value(),
           )
-          as _i9.Future<void>);
+          as _i10.Future<void>);
 }
 
 /// A class which mocks [ArticulosRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockArticulosRepository extends _i1.Mock
-    implements _i14.ArticulosRepository {
+    implements _i17.ArticulosRepository {
   MockArticulosRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i9.Future<List<_i2.Articulo>> getArticulos() =>
+  _i10.Future<List<_i2.Articulo>> getArticulos() =>
       (super.noSuchMethod(
             Invocation.method(#getArticulos, []),
-            returnValue: _i9.Future<List<_i2.Articulo>>.value(<_i2.Articulo>[]),
+            returnValue: _i10.Future<List<_i2.Articulo>>.value(
+              <_i2.Articulo>[],
+            ),
           )
-          as _i9.Future<List<_i2.Articulo>>);
+          as _i10.Future<List<_i2.Articulo>>);
 
   @override
-  _i9.Future<List<_i2.Articulo>> getInsumos() =>
+  _i10.Future<List<_i2.Articulo>> getInsumos() =>
       (super.noSuchMethod(
             Invocation.method(#getInsumos, []),
-            returnValue: _i9.Future<List<_i2.Articulo>>.value(<_i2.Articulo>[]),
+            returnValue: _i10.Future<List<_i2.Articulo>>.value(
+              <_i2.Articulo>[],
+            ),
           )
-          as _i9.Future<List<_i2.Articulo>>);
+          as _i10.Future<List<_i2.Articulo>>);
 
   @override
-  _i9.Future<List<_i2.Articulo>> getProductosFinales() =>
+  _i10.Future<List<_i2.Articulo>> getProductosFinales() =>
       (super.noSuchMethod(
             Invocation.method(#getProductosFinales, []),
-            returnValue: _i9.Future<List<_i2.Articulo>>.value(<_i2.Articulo>[]),
+            returnValue: _i10.Future<List<_i2.Articulo>>.value(
+              <_i2.Articulo>[],
+            ),
           )
-          as _i9.Future<List<_i2.Articulo>>);
+          as _i10.Future<List<_i2.Articulo>>);
 
   @override
-  _i9.Future<_i2.Articulo?> getArticuloById(String? id) =>
+  _i10.Future<_i2.Articulo?> getArticuloById(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#getArticuloById, [id]),
-            returnValue: _i9.Future<_i2.Articulo?>.value(),
+            returnValue: _i10.Future<_i2.Articulo?>.value(),
           )
-          as _i9.Future<_i2.Articulo?>);
+          as _i10.Future<_i2.Articulo?>);
 
   @override
-  _i9.Future<_i2.Articulo> createArticulo(_i2.Articulo? articulo) =>
+  _i10.Future<_i2.Articulo> createArticulo(_i2.Articulo? articulo) =>
       (super.noSuchMethod(
             Invocation.method(#createArticulo, [articulo]),
-            returnValue: _i9.Future<_i2.Articulo>.value(
+            returnValue: _i10.Future<_i2.Articulo>.value(
               _FakeArticulo_0(
                 this,
                 Invocation.method(#createArticulo, [articulo]),
               ),
             ),
           )
-          as _i9.Future<_i2.Articulo>);
+          as _i10.Future<_i2.Articulo>);
 
   @override
-  _i9.Future<_i2.Articulo> updateArticulo(_i2.Articulo? articulo) =>
+  _i10.Future<_i2.Articulo> updateArticulo(_i2.Articulo? articulo) =>
       (super.noSuchMethod(
             Invocation.method(#updateArticulo, [articulo]),
-            returnValue: _i9.Future<_i2.Articulo>.value(
+            returnValue: _i10.Future<_i2.Articulo>.value(
               _FakeArticulo_0(
                 this,
                 Invocation.method(#updateArticulo, [articulo]),
               ),
             ),
           )
-          as _i9.Future<_i2.Articulo>);
+          as _i10.Future<_i2.Articulo>);
 
   @override
-  _i9.Future<void> deleteArticulo(String? id) =>
+  _i10.Future<void> deleteArticulo(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteArticulo, [id]),
-            returnValue: _i9.Future<void>.value(),
-            returnValueForMissingStub: _i9.Future<void>.value(),
+            returnValue: _i10.Future<void>.value(),
+            returnValueForMissingStub: _i10.Future<void>.value(),
           )
-          as _i9.Future<void>);
+          as _i10.Future<void>);
 }
 
 /// A class which mocks [AlertasRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAlertasRepository extends _i1.Mock implements _i15.AlertasRepository {
+class MockAlertasRepository extends _i1.Mock implements _i18.AlertasRepository {
   MockAlertasRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i9.Future<List<_i6.Alerta>> getAlertasPendientes() =>
+  _i10.Future<List<_i6.Alerta>> getAlertasPendientes() =>
       (super.noSuchMethod(
             Invocation.method(#getAlertasPendientes, []),
-            returnValue: _i9.Future<List<_i6.Alerta>>.value(<_i6.Alerta>[]),
+            returnValue: _i10.Future<List<_i6.Alerta>>.value(<_i6.Alerta>[]),
           )
-          as _i9.Future<List<_i6.Alerta>>);
+          as _i10.Future<List<_i6.Alerta>>);
 
   @override
-  _i9.Future<List<_i6.Alerta>> getHistorialAlertas() =>
+  _i10.Future<List<_i6.Alerta>> getHistorialAlertas() =>
       (super.noSuchMethod(
             Invocation.method(#getHistorialAlertas, []),
-            returnValue: _i9.Future<List<_i6.Alerta>>.value(<_i6.Alerta>[]),
+            returnValue: _i10.Future<List<_i6.Alerta>>.value(<_i6.Alerta>[]),
           )
-          as _i9.Future<List<_i6.Alerta>>);
+          as _i10.Future<List<_i6.Alerta>>);
 
   @override
-  _i9.Future<_i6.Alerta> createAlerta(_i6.Alerta? alerta) =>
+  _i10.Future<_i6.Alerta> createAlerta(_i6.Alerta? alerta) =>
       (super.noSuchMethod(
             Invocation.method(#createAlerta, [alerta]),
-            returnValue: _i9.Future<_i6.Alerta>.value(
+            returnValue: _i10.Future<_i6.Alerta>.value(
               _FakeAlerta_4(this, Invocation.method(#createAlerta, [alerta])),
             ),
           )
-          as _i9.Future<_i6.Alerta>);
+          as _i10.Future<_i6.Alerta>);
 
   @override
-  _i9.Future<void> marcarComoLeida(String? id) =>
+  _i10.Future<void> marcarComoLeida(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#marcarComoLeida, [id]),
-            returnValue: _i9.Future<void>.value(),
-            returnValueForMissingStub: _i9.Future<void>.value(),
+            returnValue: _i10.Future<void>.value(),
+            returnValueForMissingStub: _i10.Future<void>.value(),
           )
-          as _i9.Future<void>);
+          as _i10.Future<void>);
 
   @override
-  _i9.Future<void> marcarTodasComoLeidas() =>
+  _i10.Future<void> marcarTodasComoLeidas() =>
       (super.noSuchMethod(
             Invocation.method(#marcarTodasComoLeidas, []),
-            returnValue: _i9.Future<void>.value(),
-            returnValueForMissingStub: _i9.Future<void>.value(),
+            returnValue: _i10.Future<void>.value(),
+            returnValueForMissingStub: _i10.Future<void>.value(),
           )
-          as _i9.Future<void>);
+          as _i10.Future<void>);
 
   @override
-  _i9.Future<void> deleteAlerta(String? id) =>
+  _i10.Future<void> deleteAlerta(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteAlerta, [id]),
-            returnValue: _i9.Future<void>.value(),
-            returnValueForMissingStub: _i9.Future<void>.value(),
+            returnValue: _i10.Future<void>.value(),
+            returnValueForMissingStub: _i10.Future<void>.value(),
           )
-          as _i9.Future<void>);
+          as _i10.Future<void>);
 }

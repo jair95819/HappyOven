@@ -3,9 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/theme/theme.dart';
-
+import 'package:happy_oven/core/providers.dart';
 import 'package:happy_oven/features/registro_movimientos/presentation/viewmodels/movimientos_viewmodel.dart';
+
+final _kardexArticulosProvider = FutureProvider<Map<String, String>>((ref) async {
+  final repo = ref.watch(articulosRepositoryProvider);
+  final articulos = await repo.getArticulos();
+  return {for (final a in articulos) a.id: a.nombre};
+});
 
 class HistorialKardexView extends ConsumerWidget {
   const HistorialKardexView({super.key});
@@ -15,6 +22,7 @@ class HistorialKardexView extends ConsumerWidget {
     final colors = AppTheme.colorsOf(context);
     final font = AppTheme.fontOf(context);
     final movimientosState = ref.watch(movimientosViewModelProvider);
+    final articulosMapAsync = ref.watch(_kardexArticulosProvider);
 
     return Scaffold(
       backgroundColor: colors.bg,
@@ -30,11 +38,7 @@ class HistorialKardexView extends ConsumerWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.error_outline,
-                      color: colors.statusCritical,
-                      size: 40,
-                    ),
+                    Icon(Icons.error_outline, color: colors.statusCritical, size: 40),
                     const SizedBox(height: 12),
                     Text('Error al cargar movimientos', style: font.label),
                     const SizedBox(height: 8),
@@ -42,22 +46,26 @@ class HistorialKardexView extends ConsumerWidget {
                       onPressed: () => ref
                           .read(movimientosViewModelProvider.notifier)
                           .cargarMovimientos(),
-                      child: Text(
-                        'Reintentar',
-                        style: TextStyle(color: colors.primary),
-                      ),
+                      child: Text('Reintentar', style: TextStyle(color: colors.primary)),
                     ),
                   ],
                 ),
               ),
-              data: (movimientos) => movimientos.isEmpty
-                  ? _buildVacio(colors, font)
-                  : _buildLista(context, colors, font, movimientos),
+              data: (movimientos) => articulosMapAsync.when(
+                loading: () => Center(
+                  child: CircularProgressIndicator(color: colors.primary),
+                ),
+                error: (e, _) => Center(
+                  child: Text('Error al cargar artículos', style: font.label),
+                ),
+                data: (articulosMap) => movimientos.isEmpty
+                    ? _buildVacio(colors, font)
+                    : _buildLista(context, colors, font, movimientos, articulosMap),
+              ),
             ),
           ),
         ],
       ),
-      // FAB con acciones rápidas
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -65,11 +73,7 @@ class HistorialKardexView extends ConsumerWidget {
             heroTag: 'ocr',
             onPressed: () => context.push('/movimientos/ingreso-ocr'),
             backgroundColor: colors.primary,
-            child: Icon(
-              Icons.document_scanner_outlined,
-              color: colors.white,
-              size: 18,
-            ),
+            child: Icon(Icons.document_scanner_outlined, color: colors.white, size: 18),
           ),
           const SizedBox(height: 8),
           FloatingActionButton(
@@ -108,17 +112,11 @@ class HistorialKardexView extends ConsumerWidget {
                 children: [
                   Text('Historial Kardex', style: font.h3),
                   const SizedBox(height: 2),
-                  Text(
-                    'Todos los movimientos',
-                    style: font.caption.copyWith(color: colors.accentDark),
-                  ),
+                  Text('Todos los movimientos', style: font.caption.copyWith(color: colors.accentDark)),
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 7,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                 decoration: BoxDecoration(
                   color: colors.primaryLight,
                   borderRadius: AppTheme.radius.brSm,
@@ -126,19 +124,9 @@ class HistorialKardexView extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.format_list_numbered_rounded,
-                      color: colors.primary,
-                      size: 15,
-                    ),
+                    Icon(Icons.format_list_numbered_rounded, color: colors.primary, size: 15),
                     const SizedBox(width: 6),
-                    Text(
-                      '$total registros',
-                      style: font.label.copyWith(
-                        fontSize: 12,
-                        color: colors.primary,
-                      ),
-                    ),
+                    Text('$total registros', style: font.label.copyWith(fontSize: 12, color: colors.primary)),
                   ],
                 ),
               ),
@@ -169,8 +157,8 @@ class HistorialKardexView extends ConsumerWidget {
     AppColors colors,
     AppFont font,
     List<Movimiento> movimientos,
+    Map<String, String> articulosMap,
   ) {
-    // Agrupar por fecha
     final Map<String, List<Movimiento>> agrupados = {};
     for (final m in movimientos) {
       final ahora = DateTime.now();
@@ -215,7 +203,7 @@ class HistorialKardexView extends ConsumerWidget {
                 ...grupo.value.map(
                   (m) => Padding(
                     padding: const EdgeInsets.only(bottom: 10),
-                    child: _buildTarjeta(m, colors, font),
+                    child: _buildTarjeta(m, colors, font, articulosMap),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -236,19 +224,16 @@ class HistorialKardexView extends ConsumerWidget {
         Expanded(child: Divider(color: colors.hint, thickness: 0.5)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Text(
-            etiqueta,
-            style: font.caption.copyWith(fontWeight: FontWeight.w500),
-          ),
+          child: Text(etiqueta, style: font.caption.copyWith(fontWeight: FontWeight.w500)),
         ),
         Expanded(child: Divider(color: colors.hint, thickness: 0.5)),
       ],
     );
   }
 
-  Widget _buildTarjeta(Movimiento m, AppColors colors, AppFont font) {
+  Widget _buildTarjeta(Movimiento m, AppColors colors, AppFont font, Map<String, String> articulosMap) {
     final config = _configPorTipo(m.tipoMovimiento, colors);
-    final prefijo = m.tipoMovimiento == 'entrada' ? '+' : '−';
+    final nombreArticulo = articulosMap[m.articuloId] ?? 'Artículo #${m.articuloId.substring(0, 8)}...';
     final horaFmt = DateFormat('h:mm a', 'es').format(m.fecha);
 
     return Container(
@@ -261,8 +246,7 @@ class HistorialKardexView extends ConsumerWidget {
       child: Row(
         children: [
           Container(
-            width: 38,
-            height: 38,
+            width: 38, height: 38,
             decoration: BoxDecoration(
               color: config.colorFondo,
               borderRadius: AppTheme.radius.brSm,
@@ -279,18 +263,15 @@ class HistorialKardexView extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        m.proveedor ?? config.etiqueta,
+                        nombreArticulo,
                         style: font.label.copyWith(fontSize: 13),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Text(
-                      '$prefijo${m.cantidad.toStringAsFixed(m.cantidad % 1 == 0 ? 0 : 1)}',
-                      style: font.label.copyWith(
-                        fontSize: 13,
-                        color: config.colorPrincipal,
-                      ),
+                      '${m.tipoMovimiento == TipoMovimiento.entrada ? '+' : '−'}${m.cantidad.toStringAsFixed(m.cantidad % 1 == 0 ? 0 : 1)}',
+                      style: font.label.copyWith(fontSize: 13, color: config.colorPrincipal),
                     ),
                   ],
                 ),
@@ -298,11 +279,16 @@ class HistorialKardexView extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '${config.etiqueta}'
-                      '${m.porOcr ? ' (OCR)' : ''}'
-                      '${m.motivoSalida != null ? ' · ${m.motivoSalida}' : ''}',
-                      style: font.caption,
+                    Expanded(
+                      child: Text(
+                        '${config.etiqueta}'
+                        '${m.porOcr ? ' (OCR)' : ''}'
+                        '${m.proveedor != null ? ' · ${m.proveedor}' : ''}'
+                        '${m.motivoSalida != null ? ' · ${_labelMotivo(m.motivoSalida!)}' : ''}',
+                        style: font.caption,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     Text(horaFmt, style: font.caption),
                   ],
@@ -315,42 +301,48 @@ class HistorialKardexView extends ConsumerWidget {
     );
   }
 
-  _ConfigMovimiento _configPorTipo(String tipo, AppColors colors) {
+  String _labelMotivo(MotivoSalida motivo) {
+    switch (motivo) {
+      case MotivoSalida.venta:
+        return 'Venta';
+      case MotivoSalida.merma:
+        return 'Merma';
+      case MotivoSalida.degustacion:
+        return 'Degustación';
+      case MotivoSalida.ajuste:
+        return 'Ajuste';
+    }
+  }
+
+  _ConfigMovimiento _configPorTipo(TipoMovimiento tipo, AppColors colors) {
     switch (tipo) {
-      case 'entrada':
+      case TipoMovimiento.entrada:
         return _ConfigMovimiento(
           icono: Icons.arrow_circle_down_outlined,
           colorPrincipal: colors.statusNormal,
           colorFondo: colors.successLight,
           etiqueta: 'Entrada',
         );
-      case 'salida_produccion':
+      case TipoMovimiento.salidaProduccion:
         return _ConfigMovimiento(
           icono: Icons.arrow_circle_up_outlined,
           colorPrincipal: colors.primary,
           colorFondo: colors.primaryLight,
           etiqueta: 'Pase a producción',
         );
-      case 'merma':
+      case TipoMovimiento.merma:
         return _ConfigMovimiento(
           icono: Icons.delete_outline_rounded,
           colorPrincipal: colors.statusCritical,
           colorFondo: colors.dangerLight,
           etiqueta: 'Merma',
         );
-      case 'ajuste':
+      case TipoMovimiento.ajuste:
         return _ConfigMovimiento(
           icono: Icons.tune_rounded,
           colorPrincipal: colors.bodyText,
           colorFondo: colors.surface,
           etiqueta: 'Ajuste',
-        );
-      default:
-        return _ConfigMovimiento(
-          icono: Icons.swap_horiz_rounded,
-          colorPrincipal: colors.hint,
-          colorFondo: colors.surface,
-          etiqueta: tipo,
         );
     }
   }

@@ -117,3 +117,53 @@ enum UnidadMedida {
 
   static List<String> get valores => UnidadMedida.values.map((e) => e.dbValue).toList();
 }
+
+enum EstadoOrden {
+  pendiente,
+  enProceso,
+  completada,
+  cancelada;
+
+  String get dbValue {
+    switch (this) {
+      case EstadoOrden.enProceso:
+        return 'en_proceso';
+      default:
+        return name;
+    }
+  }
+
+  static EstadoOrden fromDb(String value) {
+    switch (value) {
+      case 'en_proceso':
+        return EstadoOrden.enProceso;
+      case 'pendiente':
+        return EstadoOrden.pendiente;
+      case 'completada':
+        return EstadoOrden.completada;
+      case 'cancelada':
+        return EstadoOrden.cancelada;
+      default:
+        return EstadoOrden.pendiente;
+    }
+  }
+}
+
+enum RolUsuario {
+  admin,
+  operador;
+
+  String get dbValue => name;
+  static RolUsuario fromDb(String value) {
+    switch (value) {
+      case 'admin':
+        return RolUsuario.admin;
+      case 'operador':
+        return RolUsuario.operador;
+      default:
+        return RolUsuario.operador;
+    }
+  }
+
+  bool get esAdmin => this == RolUsuario.admin;
+}

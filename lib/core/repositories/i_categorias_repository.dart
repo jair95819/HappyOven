@@ -1,4 +1,5 @@
 import 'package:happy_oven/core/models/categoria.dart';
+import 'package:happy_oven/core/models/enums.dart';
 
 /// Interfaz para el acceso a datos de las Categorías de artículos.
 abstract class ICategoriasRepository {
@@ -6,7 +7,7 @@ abstract class ICategoriasRepository {
   Future<List<Categoria>> getCategorias();
 
   /// Obtiene las categorías filtradas por un [tipo] específico (ej. insumo o producto).
-  Future<List<Categoria>> getCategoriasPorTipo(String tipo);
+  Future<List<Categoria>> getCategoriasPorTipo(TipoArticulo tipo);
 
   /// Crea una nueva categoría y la devuelve con su ID asignado.
   Future<Categoria> createCategoria(Categoria categoria);

@@ -61,8 +61,6 @@ class _NuevaOrdenProduccionViewState extends ConsumerState<NuevaOrdenProduccionV
       recetaId: _recetaSeleccionada!.id,
       usuarioId: usuarioId,
       cantidadLotes: lotes,
-      cantidadProducida: 0,
-      estado: 'pendiente',
       notas: _notasController.text.trim().isEmpty ? null : _notasController.text.trim(),
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),

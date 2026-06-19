@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
+import 'package:happy_oven/core/models/enums.dart';
 
 void main() {
   // ═══════════════════════════════════════════════════════
@@ -29,7 +30,7 @@ void main() {
       expect(mov.articuloId, 'a1');
       expect(mov.usuarioId, 'u1');
       expect(mov.recetaId, 'r1');
-      expect(mov.tipoMovimiento, 'entrada');
+      expect(mov.tipoMovimiento, TipoMovimiento.entrada);
       expect(mov.motivoSalida, isNull);
       expect(mov.cantidad, 50.0);
       expect(mov.precioUnitario, 5.0);
@@ -44,7 +45,7 @@ void main() {
         'id': 'm2',
         'articulo_id': 'a1',
         'usuario_id': 'u1',
-        'tipo_movimiento': 'salida',
+        'tipo_movimiento': 'salida_produccion',
         'fecha': '2025-06-15T00:00:00Z',
       };
 
@@ -66,8 +67,8 @@ void main() {
     test('incluye todos los campos', () {
       final mov = Movimiento(
         id: 'm1', articuloId: 'a1', usuarioId: 'u1',
-        recetaId: 'r1', tipoMovimiento: 'entrada',
-        motivoSalida: 'produccion', cantidad: 25,
+        recetaId: 'r1', tipoMovimiento: TipoMovimiento.entrada,
+        motivoSalida: MotivoSalida.venta, cantidad: 25,
         precioUnitario: 5.0, proveedor: 'Proveedor X',
         observacion: 'Nota', porOcr: false,
         fecha: DateTime(2025, 6, 15),
@@ -79,7 +80,7 @@ void main() {
       expect(json['usuario_id'], 'u1');
       expect(json['receta_id'], 'r1');
       expect(json['tipo_movimiento'], 'entrada');
-      expect(json['motivo_salida'], 'produccion');
+      expect(json['motivo_salida'], 'venta');
       expect(json['cantidad'], 25);
       expect(json['precio_unitario'], 5.0);
       expect(json['proveedor'], 'Proveedor X');
@@ -91,7 +92,7 @@ void main() {
     test('omite id cuando está vacío', () {
       final mov = Movimiento(
         id: '', articuloId: 'a1', usuarioId: 'u1',
-        tipoMovimiento: 'entrada', cantidad: 10,
+        tipoMovimiento: TipoMovimiento.entrada, cantidad: 10,
         porOcr: false, fecha: DateTime(2025),
       );
 
@@ -102,7 +103,7 @@ void main() {
       final fecha = DateTime(2025, 6, 15, 14, 30);
       final mov = Movimiento(
         id: 'm1', articuloId: 'a1', usuarioId: 'u1',
-        tipoMovimiento: 'entrada', cantidad: 10,
+        tipoMovimiento: TipoMovimiento.entrada, cantidad: 10,
         porOcr: false, fecha: fecha,
       );
 

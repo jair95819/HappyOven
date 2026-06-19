@@ -15,6 +15,7 @@ Receta _receta({
   return Receta(
     id: id, nombre: nombre, productoId: productoId,
     rendimiento: rendimiento, createdAt: DateTime(2025, 1),
+    updatedAt: DateTime(2025, 1),
   );
 }
 

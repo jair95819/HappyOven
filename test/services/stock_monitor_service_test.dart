@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/core/models/alerta.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/services/stock_monitor_service.dart';
 import 'package:happy_oven/core/services/notification_service.dart';
 
@@ -32,7 +33,7 @@ Articulo _art({
 }) {
   return Articulo(
     id: id, nombre: nombre, categoriaId: null,
-    tipo: 'insumo', unidad: 'kg', stockActual: stockActual,
+    tipo: TipoArticulo.insumo, unidad: UnidadMedida.kg, stockActual: stockActual,
     stockMinimo: stockMinimo, precioUnitario: 5.0, activo: true,
     createdAt: DateTime(2025, 1), updatedAt: DateTime(2025, 1),
   );
@@ -118,7 +119,7 @@ void main() {
       when(mockAlertasRepo.getAlertasPendientes())
           .thenAnswer((_) async => []);
       when(mockAlertasRepo.createAlerta(any)).thenAnswer((_) async =>
-        Alerta(id: 'al1', tipo: 'stock_bajo', titulo: 'Stock bajo',
+        Alerta(id: 'al1', tipo: TipoAlerta.stockBajo, titulo: 'Stock bajo',
                mensaje: 'test', leida: false, createdAt: DateTime.now()),
       );
 
@@ -137,7 +138,7 @@ void main() {
       when(mockAlertasRepo.getAlertasPendientes())
           .thenAnswer((_) async => []);
       when(mockAlertasRepo.createAlerta(any)).thenAnswer((_) async =>
-        Alerta(id: 'al1', tipo: 'stock_bajo', titulo: 'Stock crítico',
+        Alerta(id: 'al1', tipo: TipoAlerta.stockBajo, titulo: 'Stock crítico',
                mensaje: 'test', leida: false, createdAt: DateTime.now()),
       );
 
@@ -152,7 +153,7 @@ void main() {
         _art(stockActual: 3),
       ]);
       when(mockAlertasRepo.getAlertasPendientes()).thenAnswer((_) async => [
-        Alerta(id: 'al-existente', articuloId: 'a1', tipo: 'stock_bajo',
+        Alerta(id: 'al-existente', articuloId: 'a1', tipo: TipoAlerta.stockBajo,
                titulo: 'Stock bajo', mensaje: 'ya existe',
                leida: false, createdAt: DateTime.now()),
       ]);

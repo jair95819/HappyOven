@@ -1,8 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/features/auth/domain/entities/user.dart';
 import 'package:happy_oven/core/router/app_router.dart';
 
-User _user({required String rol}) => User(
+User _user({required RolUsuario rol}) => User(
       id: 'u1',
       nombre: 'Usuario',
       email: 'u1@happyoven.com',
@@ -14,13 +15,13 @@ User _user({required String rol}) => User(
 void main() {
   group('CP-01 / RF-002 - Autorización por rol', () {
     test('CA030 - User identifica correctamente el rol Administrador', () {
-      final admin = _user(rol: 'admin');
+      final admin = _user(rol: RolUsuario.admin);
       expect(admin.esAdmin, isTrue);
       expect(admin.rolLabel, 'Administrador');
     });
 
     test('CA031 - User identifica correctamente el rol Operario', () {
-      final operario = _user(rol: 'operador');
+      final operario = _user(rol: RolUsuario.operador);
       expect(operario.esAdmin, isFalse);
       expect(operario.rolLabel, 'Operario');
     });

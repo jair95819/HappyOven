@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/core/services/ocr_service.dart';
 import 'package:happy_oven/core/providers.dart';
@@ -34,7 +35,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
 
   final List<_ItemOCR> _items = [];
 
-  final List<String> _unidades = ['kg', 'litros', 'unidades', 'gramos', 'ml'];
+  final List<String> _unidades = UnidadMedida.valores;
 
   double get _totalBoleta => _items.fold(0, (sum, i) => sum + i.importe);
 
@@ -125,7 +126,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
     if (_items.isEmpty) {
       _mostrarError('No se encontraron ítems. Por favor, edita manualmente.');
       _items.add(
-        _ItemOCR(nombre: '', cantidad: 0, unidad: 'kg', precioUnitario: 0),
+        _ItemOCR(nombre: '', cantidad: 0, unidad: UnidadMedida.kg.dbValue, precioUnitario: 0),
       );
     }
   }
@@ -247,7 +248,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
   void _agregarItem() {
     setState(() {
       _items.add(
-        _ItemOCR(nombre: '', cantidad: 0, unidad: 'kg', precioUnitario: 0),
+        _ItemOCR(nombre: '', cantidad: 0, unidad: UnidadMedida.kg.dbValue, precioUnitario: 0),
       );
     });
   }
@@ -275,13 +276,13 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
   // ── ESTADO 1: Cámara
   Widget _buildCamara(BuildContext context) {
     if (_procesandoOcr) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(),
-            const SizedBox(height: 16),
-            const Text(
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text(
               'Procesando imagen...',
               style: TextStyle(color: Colors.white),
             ),
@@ -716,7 +717,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
               child: ListView.separated(
                 padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
                 itemCount: _items.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                separatorBuilder: (_, _) => const SizedBox(height: 8),
                 itemBuilder: (context, index) =>
                     _buildItemCard(index, colors, font),
               ),

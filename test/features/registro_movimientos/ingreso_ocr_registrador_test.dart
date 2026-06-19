@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 
 import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
 import 'package:happy_oven/features/registro_movimientos/presentation/viewmodels/ingreso_ocr_registrador.dart';
 
@@ -15,8 +16,8 @@ Articulo _articulo({
     Articulo(
       id: id,
       nombre: nombre,
-      tipo: 'insumo',
-      unidad: 'kg',
+      tipo: TipoArticulo.insumo,
+      unidad: UnidadMedida.kg,
       stockActual: stockActual,
       stockMinimo: 0,
       precioUnitario: 1,
@@ -120,7 +121,7 @@ void main() {
           .captured
           .single as Articulo;
       expect(creado.nombre, 'Chocolate amargo');
-      expect(creado.tipo, 'insumo');
+      expect(creado.tipo, TipoArticulo.insumo);
       expect(creado.stockActual, 0);
 
       // El movimiento de entrada usa el ID asignado por la BD al insumo nuevo.

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
+import 'package:happy_oven/core/models/enums.dart';
 
 import '../../helpers/test_helpers.mocks.dart';
 
@@ -8,7 +9,7 @@ import '../../helpers/test_helpers.mocks.dart';
 Movimiento _mov({
   String id = 'm1',
   String articuloId = 'a1',
-  String tipoMovimiento = 'entrada',
+  TipoMovimiento tipoMovimiento = TipoMovimiento.entrada,
   double cantidad = 50,
   DateTime? fecha,
 }) {
@@ -40,21 +41,21 @@ void main() {
       final resultado = await mockRepo.registrarMovimiento(nuevo);
 
       expect(resultado.id, 'm-nuevo');
-      expect(resultado.tipoMovimiento, 'entrada');
+      expect(resultado.tipoMovimiento, TipoMovimiento.entrada);
       expect(resultado.cantidad, 25);
       verify(mockRepo.registrarMovimiento(nuevo)).called(1);
     });
 
     test('registra salida de stock', () async {
-      final salida = _mov(id: '', tipoMovimiento: 'salida', cantidad: 10);
-      final creada = _mov(id: 'm-salida', tipoMovimiento: 'salida', cantidad: 10);
+      final salida = _mov(id: '', tipoMovimiento: TipoMovimiento.salidaProduccion, cantidad: 10);
+      final creada = _mov(id: 'm-salida', tipoMovimiento: TipoMovimiento.salidaProduccion, cantidad: 10);
 
       when(mockRepo.registrarMovimiento(salida))
           .thenAnswer((_) async => creada);
 
       final resultado = await mockRepo.registrarMovimiento(salida);
 
-      expect(resultado.tipoMovimiento, 'salida');
+      expect(resultado.tipoMovimiento, TipoMovimiento.salidaProduccion);
     });
   });
 
@@ -93,7 +94,7 @@ void main() {
     test('retorna solo movimientos del artículo indicado', () async {
       when(mockRepo.getMovimientosPorArticulo('a1')).thenAnswer((_) async => [
         _mov(articuloId: 'a1'),
-        _mov(id: 'm2', tipoMovimiento: 'salida', cantidad: 10),
+        _mov(id: 'm2', tipoMovimiento: TipoMovimiento.salidaProduccion, cantidad: 10),
       ]);
 
       final resultado = await mockRepo.getMovimientosPorArticulo('a1');

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockito/mockito.dart';
 
 import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/providers.dart';
 import 'package:happy_oven/features/registro_movimientos/presentation/views/salida_almacen_view.dart';
 import 'package:happy_oven/features/registro_movimientos/presentation/views/ingreso_almacen_view.dart';
@@ -11,11 +12,11 @@ import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmo
 
 import '../../helpers/test_helpers.mocks.dart';
 
-Articulo _articulo({required String tipo}) => Articulo(
+Articulo _articulo({required TipoArticulo tipo}) => Articulo(
       id: 'art-1',
       nombre: 'Harina',
       tipo: tipo,
-      unidad: 'kg',
+      unidad: UnidadMedida.kg,
       stockActual: 10,
       stockMinimo: 0,
       precioUnitario: 2,
@@ -52,7 +53,7 @@ void main() {
         (tester) async {
       usarPantallaAlta(tester);
       when(repo.getArticulos())
-          .thenAnswer((_) async => [_articulo(tipo: 'producto_final')]);
+          .thenAnswer((_) async => [_articulo(tipo: TipoArticulo.productoFinal)]);
 
       await tester.pumpWidget(_wrap(const SalidaAlmacenView(), repo));
       await tester.pumpAndSettle(); // carga catálogo + auto-selección de producto
@@ -74,7 +75,7 @@ void main() {
         'CA036 - INGRESO: bloquea el registro y exige justificación cuando está vacía',
         (tester) async {
       usarPantallaAlta(tester);
-      when(repo.getArticulos()).thenAnswer((_) async => [_articulo(tipo: 'insumo')]);
+      when(repo.getArticulos()).thenAnswer((_) async => [_articulo(tipo: TipoArticulo.insumo)]);
 
       await tester.pumpWidget(_wrap(const IngresoAlmacenView(), repo));
       await tester.pumpAndSettle();

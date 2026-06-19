@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/repositories/articulos_repository.dart';
 import 'package:happy_oven/core/repositories/movimientos_repository.dart';
 import 'package:happy_oven/core/providers.dart';
@@ -86,7 +87,7 @@ List<ConsumoDiaData> calcularConsumoSemanal(
   final mapa = {for (final d in dias) d: 0.0};
 
   for (final m in movimientos) {
-    if (m.tipoMovimiento == 'salida_produccion' || m.tipoMovimiento == 'merma') {
+    if (m.tipoMovimiento == TipoMovimiento.salidaProduccion || m.tipoMovimiento == TipoMovimiento.merma) {
       final d = DateTime(m.fecha.year, m.fecha.month, m.fecha.day);
       if (mapa.containsKey(d)) {
         mapa[d] = mapa[d]! + (m.cantidad as num).toDouble();
@@ -111,7 +112,7 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
   }
 
   Future<void> cargarDatos() async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true);
 
     try {
       final insumos = await _articulosRepository.getInsumos();
@@ -137,8 +138,8 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
             .where(
               (m) =>
                   m.articuloId == insumo.id &&
-                  (m.tipoMovimiento == 'salida_produccion' ||
-                      m.tipoMovimiento == 'merma') &&
+                  (m.tipoMovimiento == TipoMovimiento.salidaProduccion ||
+                      m.tipoMovimiento == TipoMovimiento.merma) &&
                   m.fecha.isAfter(hace30Dias),
             )
             .toList();

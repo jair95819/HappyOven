@@ -1,5 +1,6 @@
 import 'package:happy_oven/core/services/supabase_service.dart';
 import 'package:happy_oven/core/models/categoria.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/repositories/i_categorias_repository.dart';
 
 /// Implementación de [ICategoriasRepository] utilizando la tabla `categorias` de Supabase.
@@ -20,13 +21,12 @@ class CategoriasRepository implements ICategoriasRepository {
     return (response as List).map((json) => Categoria.fromJson(json)).toList();
   }
 
-  /// Realiza un select a Supabase filtrando por la columna `tipo`.
   @override
-  Future<List<Categoria>> getCategoriasPorTipo(String tipo) async {
+  Future<List<Categoria>> getCategoriasPorTipo(TipoArticulo tipo) async {
     final response = await _supabaseService.client
         .from('categorias')
         .select()
-        .eq('tipo', tipo)
+        .eq('tipo', tipo.dbValue)
         .order('orden', ascending: true);
 
     return (response as List).map((json) => Categoria.fromJson(json)).toList();

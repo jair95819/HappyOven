@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/viewmodels/create_recipe_form_viewmodel.dart';
 import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/enums.dart';
 
 void main() {
   test('CreateRecipeFormNotifier basic flow', () {
@@ -25,9 +26,8 @@ void main() {
     final art = Articulo(
       id: 'a1',
       nombre: 'Harina',
-      categoriaId: null,
-      tipo: 'insumo',
-      unidad: 'kg',
+      tipo: TipoArticulo.insumo,
+      unidad: UnidadMedida.kg,
       stockActual: 100,
       stockMinimo: 1,
       precioUnitario: 5.0,

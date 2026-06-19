@@ -4,6 +4,7 @@ import '../../domain/entities/auth_request.dart';
 import '../../domain/entities/auth_response.dart';
 import 'package:happy_oven/core/services/supabase_service.dart';
 import 'package:happy_oven/core/services/local_storage_service.dart';
+import 'package:happy_oven/core/models/enums.dart';
 
 class AuthRepository implements IAuthRepository {
   final SupabaseService _supabaseService;
@@ -56,7 +57,7 @@ class AuthRepository implements IAuthRepository {
             userProfile?['nombre_completo'] ?? response.user!.email ?? 'Usuario',
         email: response.user!.email ?? '',
         fotoPerfil: userProfile?['avatar_url'],
-        rol: userProfile?['rol'] ?? 'operador',
+        rol: RolUsuario.fromDb(userProfile?['rol'] ?? 'operador'),
         createdAt: DateTime.parse(response.user!.createdAt),
         activo: true,
       );
@@ -121,14 +122,13 @@ class AuthRepository implements IAuthRepository {
       // Crear el perfil asociado en la tabla `perfiles` con rol por defecto.
       await _supabaseService.updateUserProfile(response.user!.id, {
         'nombre_completo': request.nombre,
-        'rol': 'operador',
+        'rol': RolUsuario.operador.dbValue,
       });
 
       final usuario = User(
         id: response.user!.id,
         nombre: request.nombre,
         email: response.user!.email ?? '',
-        rol: 'operador',
         createdAt: DateTime.parse(response.user!.createdAt),
         activo: true,
       );
@@ -189,7 +189,7 @@ class AuthRepository implements IAuthRepository {
         nombre: userProfile?['nombre_completo'] ?? user.email ?? 'Usuario',
         email: user.email ?? '',
         fotoPerfil: userProfile?['avatar_url'],
-        rol: userProfile?['rol'] ?? 'operador',
+        rol: RolUsuario.fromDb(userProfile?['rol'] ?? 'operador'),
         createdAt: DateTime.parse(user.createdAt),
         activo: true,
       );

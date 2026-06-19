@@ -4,6 +4,7 @@ import 'package:happy_oven/features/recetas_costeo/presentation/viewmodels/recet
 import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/enums.dart';
 
 class CostBreakdownSheet extends ConsumerWidget {
   final String recetaId;
@@ -28,9 +29,8 @@ class CostBreakdownSheet extends ConsumerWidget {
               orElse: () => Articulo(
                 id: '',
                 nombre: '---',
-                categoriaId: null,
-                tipo: 'insumo',
-                unidad: '',
+                tipo: TipoArticulo.insumo,
+                unidad: UnidadMedida.unidades,
                 stockActual: 0,
                 stockMinimo: 0,
                 precioUnitario: 0,
@@ -75,7 +75,7 @@ class CostBreakdownSheet extends ConsumerWidget {
           );
         },
         loading: () => SizedBox(height: 120, child: Center(child: CircularProgressIndicator(color: colors.primary))),
-        error: (_, __) => SizedBox(height: 120, child: Center(child: Text('Error al cargar desglose', style: font.caption.copyWith(color: colors.statusCritical)))),
+        error: (_, _) => SizedBox(height: 120, child: Center(child: Text('Error al cargar desglose', style: font.caption.copyWith(color: colors.statusCritical)))),
       ),
     );
   }

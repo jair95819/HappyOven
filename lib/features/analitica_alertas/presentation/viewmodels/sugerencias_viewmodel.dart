@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
 import 'package:happy_oven/core/providers.dart';
 
@@ -54,8 +55,8 @@ List<SugerenciaCompra> calcularSugerenciasCompra(
   for (final insumo in insumos) {
     final consumos = movimientos.where((m) =>
         m.articuloId == insumo.id &&
-        (m.tipoMovimiento == 'salida_produccion' ||
-            m.tipoMovimiento == 'merma') &&
+        (m.tipoMovimiento == TipoMovimiento.salidaProduccion ||
+            m.tipoMovimiento == TipoMovimiento.merma) &&
         m.fecha.isAfter(desde));
 
     final muestras = consumos.length;
@@ -66,7 +67,7 @@ List<SugerenciaCompra> calcularSugerenciasCompra(
       resultado.add(SugerenciaCompra(
         insumoId: insumo.id,
         nombre: insumo.nombre,
-        unidad: insumo.unidad,
+        unidad: insumo.unidad.dbValue,
         stockActual: insumo.stockActual,
         consumoDiario: 0,
         diasRestantes: -1,
@@ -88,7 +89,7 @@ List<SugerenciaCompra> calcularSugerenciasCompra(
     resultado.add(SugerenciaCompra(
       insumoId: insumo.id,
       nombre: insumo.nombre,
-      unidad: insumo.unidad,
+      unidad: insumo.unidad.dbValue,
       stockActual: insumo.stockActual,
       consumoDiario: consumoDiario,
       diasRestantes: diasRestantes,

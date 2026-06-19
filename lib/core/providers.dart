@@ -54,9 +54,11 @@ final ocrServiceProvider = Provider<OcrService>((ref) {
 });
 
 final stockMonitorServiceProvider = Provider<StockMonitorService>((ref) {
-  return StockMonitorService(
+  final service = StockMonitorService(
     articulosRepo: ref.watch(articulosRepositoryProvider),
     alertasRepo: ref.watch(alertasRepositoryProvider),
     notificationService: ref.watch(notificationServiceProvider),
   );
+  ref.onDispose(service.stopMonitoring);
+  return service;
 });

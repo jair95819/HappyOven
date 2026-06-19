@@ -1,7 +1,9 @@
+import 'package:happy_oven/core/models/enums.dart';
+
 class Perfil {
   final String id;
   final String nombreCompleto;
-  final String rol;
+  final RolUsuario rol;
   final String? avatarUrl;
   final DateTime createdAt;
 
@@ -17,7 +19,7 @@ class Perfil {
     return Perfil(
       id: json['id'] as String,
       nombreCompleto: json['nombre_completo'] as String,
-      rol: json['rol'] as String,
+      rol: RolUsuario.fromDb(json['rol'] as String? ?? 'operador'),
       avatarUrl: json['avatar_url'] as String?,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
@@ -27,12 +29,10 @@ class Perfil {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      if (id.isNotEmpty) 'id': id,
       'nombre_completo': nombreCompleto,
-      'rol': rol,
+      'rol': rol.dbValue,
       'avatar_url': avatarUrl,
-      // created_at is usually not sent on update, but included here for completeness
-      'created_at': createdAt.toIso8601String(),
     };
   }
 }

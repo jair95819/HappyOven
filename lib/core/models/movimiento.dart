@@ -1,11 +1,13 @@
+import 'package:happy_oven/core/models/enums.dart';
+
 class Movimiento {
   final String id;
   final String articuloId;
   final String usuarioId;
   final String? recetaId;
   final String? ordenProduccionId;
-  final String tipoMovimiento;
-  final String? motivoSalida;
+  final TipoMovimiento tipoMovimiento;
+  final MotivoSalida? motivoSalida;
   final double cantidad;
   final double? precioUnitario;
   final String? proveedor;
@@ -36,8 +38,10 @@ class Movimiento {
       usuarioId: json['usuario_id'] as String,
       recetaId: json['receta_id'] as String?,
       ordenProduccionId: json['orden_produccion_id'] as String?,
-      tipoMovimiento: json['tipo_movimiento'] as String,
-      motivoSalida: json['motivo_salida'] as String?,
+      tipoMovimiento: TipoMovimiento.fromDb(json['tipo_movimiento'] as String? ?? 'entrada'),
+      motivoSalida: json['motivo_salida'] != null
+          ? MotivoSalida.fromDb(json['motivo_salida'] as String)
+          : null,
       cantidad: (json['cantidad'] as num?)?.toDouble() ?? 0.0,
       precioUnitario: (json['precio_unitario'] as num?)?.toDouble(),
       proveedor: json['proveedor'] as String?,
@@ -54,15 +58,13 @@ class Movimiento {
       'usuario_id': usuarioId,
       'receta_id': recetaId,
       'orden_produccion_id': ordenProduccionId,
-      'tipo_movimiento': tipoMovimiento,
-      'motivo_salida': motivoSalida,
+      'tipo_movimiento': tipoMovimiento.dbValue,
+      'motivo_salida': motivoSalida?.dbValue,
       'cantidad': cantidad,
       'precio_unitario': precioUnitario,
       'proveedor': proveedor,
       'observacion': observacion,
       'por_ocr': porOcr,
-      // la base de datos normalmente genera la fecha por defecto si no se manda,
-      // pero si es un registro manual con fecha específica, se envía
       'fecha': fecha.toIso8601String(),
     };
   }

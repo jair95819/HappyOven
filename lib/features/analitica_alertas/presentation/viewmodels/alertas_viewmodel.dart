@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/models/alerta.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/repositories/alertas_repository.dart';
 import 'package:happy_oven/core/providers.dart';
 
@@ -67,7 +68,7 @@ class AlertasViewModel extends StateNotifier<AsyncValue<List<Alerta>>> {
       final alerta = Alerta(
         id: '',
         articuloId: articuloId,
-        tipo: 'stock_bajo',
+        tipo: TipoAlerta.stockBajo,
         titulo: 'Stock bajo',
         mensaje: 'Stock de $nombreArticulo por debajo del mínimo ($stockActual unidades restantes).',
         leida: false,

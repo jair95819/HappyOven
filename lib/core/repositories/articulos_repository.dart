@@ -1,5 +1,6 @@
 import 'package:happy_oven/core/services/supabase_service.dart';
 import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/repositories/i_articulos_repository.dart';
 
 /// Implementación concreta de [IArticulosRepository] comunicándose con la tabla `articulos` de Supabase.
@@ -20,25 +21,23 @@ class ArticulosRepository implements IArticulosRepository {
     return (response as List).map((json) => Articulo.fromJson(json)).toList();
   }
 
-  /// Filtra en Supabase los artículos cuya columna `tipo` es igual a 'insumo'.
   @override
   Future<List<Articulo>> getInsumos() async {
     final response = await _supabaseService.client
         .from('articulos')
         .select()
-        .eq('tipo', 'insumo')
+        .eq('tipo', TipoArticulo.insumo.dbValue)
         .order('nombre', ascending: true);
 
     return (response as List).map((json) => Articulo.fromJson(json)).toList();
   }
 
-  /// Filtra en Supabase los artículos cuya columna `tipo` es igual a 'producto_final'.
   @override
   Future<List<Articulo>> getProductosFinales() async {
     final response = await _supabaseService.client
         .from('articulos')
         .select()
-        .eq('tipo', 'producto_final')
+        .eq('tipo', TipoArticulo.productoFinal.dbValue)
         .order('nombre', ascending: true);
 
     return (response as List).map((json) => Articulo.fromJson(json)).toList();

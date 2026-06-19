@@ -3,9 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/models/articulo.dart';
-import 'package:happy_oven/core/repositories/movimientos_repository.dart';
-import 'package:happy_oven/core/repositories/articulos_repository.dart';
 import 'package:happy_oven/core/providers.dart';
 
 final historialArticuloProvider = FutureProvider.family<List<Movimiento>, String>((ref, articuloId) async {
@@ -37,7 +36,7 @@ class HistorialArticuloView extends ConsumerWidget {
         title: articuloAsync.when(
           data: (a) => Text(a?.nombre ?? 'Historial', style: font.h3),
           loading: () => Text('Cargando...', style: font.h3),
-          error: (_, __) => Text('Historial', style: font.h3),
+          error: (_, _) => Text('Historial', style: font.h3),
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, color: colors.titleText),
@@ -74,7 +73,7 @@ class HistorialArticuloView extends ConsumerWidget {
 
   Widget _buildTarjeta(Movimiento m, AppColors colors, AppFont font) {
     final config = _configPorTipo(m.tipoMovimiento, colors);
-    final prefijo = m.tipoMovimiento == 'entrada' ? '+' : '−';
+    final prefijo = m.tipoMovimiento == TipoMovimiento.entrada ? '+' : '−';
     final fmt = DateFormat('dd MMM yyyy h:mm a', 'es');
 
     return Padding(
@@ -116,7 +115,13 @@ class HistorialArticuloView extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '${m.proveedor ?? ''}${m.observacion != null ? ' · ${m.observacion}' : ''}',
+                        [
+                          config.etiqueta,
+                          if (m.porOcr) 'OCR',
+                          if (m.proveedor != null) m.proveedor,
+                          if (m.motivoSalida != null) _labelMotivo(m.motivoSalida!),
+                          if (m.observacion != null) m.observacion,
+                        ].join(' · '),
                         style: font.caption,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -133,18 +138,30 @@ class HistorialArticuloView extends ConsumerWidget {
     );
   }
 
-  _ConfigMov _configPorTipo(String tipo, AppColors colors) {
+  String _labelMotivo(MotivoSalida motivo) {
+    switch (motivo) {
+      case MotivoSalida.venta:
+        return 'Venta';
+      case MotivoSalida.merma:
+        return 'Merma';
+      case MotivoSalida.degustacion:
+        return 'Degustación';
+      case MotivoSalida.ajuste:
+        return 'Ajuste';
+    }
+  }
+
+  _ConfigMov _configPorTipo(TipoMovimiento tipo, AppColors colors) {
     switch (tipo) {
-      case 'entrada':
+      case TipoMovimiento.entrada:
         return _ConfigMov(Icons.arrow_circle_down_outlined, colors.statusNormal, colors.successLight, 'Entrada');
-      case 'salida_produccion':
+      case TipoMovimiento.salidaProduccion:
         return _ConfigMov(Icons.arrow_circle_up_outlined, colors.primary, colors.primaryLight, 'Salida');
-      case 'merma':
+      case TipoMovimiento.merma:
         return _ConfigMov(Icons.delete_outline_rounded, colors.statusCritical, colors.dangerLight, 'Merma');
-      case 'ajuste':
+      case TipoMovimiento.ajuste:
         return _ConfigMov(Icons.tune_rounded, colors.bodyText, colors.surface, 'Ajuste');
-      default:
-        return _ConfigMov(Icons.swap_horiz_rounded, colors.hint, colors.surface, tipo);
+
     }
   }
 }

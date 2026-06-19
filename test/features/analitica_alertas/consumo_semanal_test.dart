@@ -1,10 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
 import 'package:happy_oven/features/analitica_alertas/presentation/viewmodels/dashboard_viewmodel.dart';
 
 Movimiento _mov({
-  required String tipo,
+  required TipoMovimiento tipo,
   required double cantidad,
   required DateTime fecha,
 }) {
@@ -33,10 +34,10 @@ void main() {
 
     test('CA044 - suma salidas y mermas por día; ignora entradas', () {
       final serie = calcularConsumoSemanal([
-        _mov(tipo: 'salida_produccion', cantidad: 8, fecha: DateTime(2026, 6, 13, 9)),
-        _mov(tipo: 'merma', cantidad: 2, fecha: DateTime(2026, 6, 13, 18)),
-        _mov(tipo: 'entrada', cantidad: 100, fecha: DateTime(2026, 6, 13, 10)),
-        _mov(tipo: 'salida_produccion', cantidad: 5, fecha: DateTime(2026, 6, 10, 12)),
+        _mov(tipo: TipoMovimiento.salidaProduccion, cantidad: 8, fecha: DateTime(2026, 6, 13, 9)),
+        _mov(tipo: TipoMovimiento.merma, cantidad: 2, fecha: DateTime(2026, 6, 13, 18)),
+        _mov(tipo: TipoMovimiento.entrada, cantidad: 100, fecha: DateTime(2026, 6, 13, 10)),
+        _mov(tipo: TipoMovimiento.salidaProduccion, cantidad: 5, fecha: DateTime(2026, 6, 10, 12)),
       ], hoy: hoy);
 
       expect(serie.last.cantidad, 10); // 8 + 2 (entrada ignorada)
@@ -46,7 +47,7 @@ void main() {
 
     test('CA045 - ignora movimientos fuera de la ventana de 7 días', () {
       final serie = calcularConsumoSemanal([
-        _mov(tipo: 'salida_produccion', cantidad: 99, fecha: DateTime(2026, 6, 1)),
+        _mov(tipo: TipoMovimiento.salidaProduccion, cantidad: 99, fecha: DateTime(2026, 6, 1)),
       ], hoy: hoy);
       expect(serie.fold<double>(0, (s, d) => s + d.cantidad), 0);
     });

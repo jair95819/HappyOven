@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
 import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/models/receta.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/viewmodels/recetas_viewmodel.dart';
@@ -27,14 +28,14 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
   List<Articulo> get _insumosFiltrados => _todosArticulos
       .where(
         (a) =>
-            a.tipo == 'insumo' &&
+            a.tipo == TipoArticulo.insumo &&
             a.nombre.toLowerCase().contains(_query.toLowerCase()),
       )
       .toList();
   List<Articulo> get _productosFiltrados => _todosArticulos
       .where(
         (a) =>
-            a.tipo == 'producto_final' &&
+            a.tipo == TipoArticulo.productoFinal &&
             a.nombre.toLowerCase().contains(_query.toLowerCase()),
       )
       .toList();
@@ -236,11 +237,11 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
       );
     }
     final esProductos =
-        articulos.isNotEmpty && articulos.first.tipo == 'producto_final';
+        articulos.isNotEmpty && articulos.first.tipo == TipoArticulo.productoFinal;
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(14, 20, 14, 8),
       itemCount: articulos.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
         final art = articulos[index];
         if (esProductos) {
@@ -288,22 +289,21 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
       final exito = await ref
           .read(catalogoViewModelProvider.notifier)
           .eliminarArticulo(id);
-      if (mounted) {
-        if (exito) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Artículo eliminado'),
-              backgroundColor: AppTheme.colorsOf(context).statusCritical,
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Error al eliminar'),
-              backgroundColor: AppTheme.colorsOf(context).statusCritical,
-            ),
-          );
-        }
+      if (!context.mounted) return;
+      if (exito) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Artículo eliminado'),
+            backgroundColor: AppTheme.colorsOf(context).statusCritical,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Error al eliminar'),
+            backgroundColor: AppTheme.colorsOf(context).statusCritical,
+          ),
+        );
       }
     }
   }
@@ -315,7 +315,7 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
     final colors = AppTheme.colorsOf(context);
 
     // Icono basado en el tipo
-    final icono = articulo.tipo == 'insumo'
+    final icono = articulo.tipo == TipoArticulo.insumo
         ? Icons.inventory_2_outlined
         : Icons.breakfast_dining_outlined;
 
@@ -347,11 +347,17 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      articulo.nombre,
-                      style: font.label.copyWith(fontSize: 13),
+                    Expanded(
+                      child: Text(
+                        articulo.nombre,
+                        style: font.label.copyWith(fontSize: 13),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
+                    const SizedBox(width: 8),
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -446,26 +452,14 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    RichText(
-                      text: TextSpan(
+                    Expanded(
+                      child: Text(
+                        'Stock: ${articulo.stockActual} / mín. ${articulo.stockMinimo} ${articulo.unidad.dbValue}',
                         style: font.caption,
-                        children: [
-                          const TextSpan(text: 'Stock: '),
-                          TextSpan(
-                            text: '${articulo.stockActual} ${articulo.unidad}',
-                            style: TextStyle(
-                              color: config.colorPrincipal,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          TextSpan(
-                            text:
-                                ' / mín. ${articulo.stockMinimo} ${articulo.unidad}',
-                          ),
-                        ],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    Text(articulo.unidad, style: font.caption),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -554,7 +548,7 @@ class _ProductoFinalCardState extends ConsumerState<_ProductoFinalCard> {
     final colors = AppTheme.colorsOf(context);
     final art = widget.articulo;
     final config = widget.config;
-    final icono = Icons.breakfast_dining_outlined;
+    const icono = Icons.breakfast_dining_outlined;
     final ratio = (art.stockActual / art.stockMinimo).clamp(0.0, 1.0);
 
     final recetaAsync = ref.watch(recetaPorProductoProvider(art.id));
@@ -588,11 +582,17 @@ class _ProductoFinalCardState extends ConsumerState<_ProductoFinalCard> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          art.nombre,
-                          style: font.label.copyWith(fontSize: 13),
+                        Expanded(
+                          child: Text(
+                            art.nombre,
+                            style: font.label.copyWith(fontSize: 13),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
+                        const SizedBox(width: 8),
                         Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -686,26 +686,14 @@ class _ProductoFinalCardState extends ConsumerState<_ProductoFinalCard> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        RichText(
-                          text: TextSpan(
+                        Expanded(
+                          child: Text(
+                            'Stock: ${art.stockActual} / mín. ${art.stockMinimo} ${art.unidad.dbValue}',
                             style: font.caption,
-                            children: [
-                              const TextSpan(text: 'Stock: '),
-                              TextSpan(
-                                text: '${art.stockActual} ${art.unidad}',
-                                style: TextStyle(
-                                  color: config.colorPrincipal,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              TextSpan(
-                                text:
-                                    ' / mín. ${art.stockMinimo} ${art.unidad}',
-                              ),
-                            ],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        Text(art.unidad, style: font.caption),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -757,7 +745,7 @@ class _ProductoFinalCardState extends ConsumerState<_ProductoFinalCard> {
                 ],
               ),
             ),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
           ),
         ],
       ),
@@ -874,7 +862,7 @@ class _RecetaSection extends ConsumerWidget {
                                     ),
                                   ),
                                   Text(
-                                    '${ing.cantidadRequerida} ${insumo?.unidad ?? ''}',
+                                    '${ing.cantidadRequerida} ${insumo?.unidad.dbValue ?? ''}',
                                     style: font.label.copyWith(fontSize: 11),
                                   ),
                                   const SizedBox(width: 8),
@@ -916,7 +904,7 @@ class _RecetaSection extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  error: (_, __) => Padding(
+                  error: (_, _) => Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
                       'Error al cargar ingredientes',

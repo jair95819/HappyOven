@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/enums.dart';
 
 void main() {
   // ═══════════════════════════════════════════════════════
@@ -27,8 +28,8 @@ void main() {
       expect(articulo.id, 'a1');
       expect(articulo.nombre, 'Harina de trigo');
       expect(articulo.categoriaId, 'cat-01');
-      expect(articulo.tipo, 'insumo');
-      expect(articulo.unidad, 'kg');
+      expect(articulo.tipo, TipoArticulo.insumo);
+      expect(articulo.unidad, UnidadMedida.kg);
       expect(articulo.stockActual, 50.0);
       expect(articulo.stockMinimo, 5.0);
       expect(articulo.precioUnitario, 3.50);
@@ -44,7 +45,7 @@ void main() {
 
       final articulo = Articulo.fromJson(json);
 
-      expect(articulo.unidad, 'unidades');
+      expect(articulo.unidad, UnidadMedida.unidades);
       expect(articulo.stockActual, 0.0);
       expect(articulo.stockMinimo, 0.0);
       expect(articulo.precioUnitario, 0.0);
@@ -98,7 +99,7 @@ void main() {
     test('incluye todos los campos esperados', () {
       final articulo = Articulo(
         id: 'a1', nombre: 'Harina', categoriaId: 'cat-01',
-        tipo: 'insumo', unidad: 'kg', stockActual: 50,
+        tipo: TipoArticulo.insumo, unidad: UnidadMedida.kg, stockActual: 50,
         stockMinimo: 5, precioUnitario: 3.5, activo: true,
         createdAt: DateTime(2025), updatedAt: DateTime(2025),
       );
@@ -118,8 +119,8 @@ void main() {
 
     test('omite id cuando está vacío', () {
       final articulo = Articulo(
-        id: '', nombre: 'Test', categoriaId: null,
-        tipo: 'insumo', unidad: 'kg', stockActual: 0,
+        id: '', nombre: 'Test',
+        tipo: TipoArticulo.insumo, unidad: UnidadMedida.kg, stockActual: 0,
         stockMinimo: 0, precioUnitario: 0, activo: true,
         createdAt: DateTime(2025), updatedAt: DateTime(2025),
       );
@@ -129,8 +130,8 @@ void main() {
 
     test('incluye id cuando no está vacío', () {
       final articulo = Articulo(
-        id: 'abc-123', nombre: 'Test', categoriaId: null,
-        tipo: 'insumo', unidad: 'kg', stockActual: 0,
+        id: 'abc-123', nombre: 'Test',
+        tipo: TipoArticulo.insumo, unidad: UnidadMedida.kg, stockActual: 0,
         stockMinimo: 0, precioUnitario: 0, activo: true,
         createdAt: DateTime(2025), updatedAt: DateTime(2025),
       );

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/models/orden_produccion.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
 import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/models/receta_ingrediente.dart';
 import 'package:happy_oven/core/repositories/ordenes_produccion_repository.dart';
 import 'package:happy_oven/core/repositories/i_ordenes_produccion_repository.dart';
@@ -118,7 +119,7 @@ class EjecutarProduccion {
       }
 
       // Marcar como en_proceso
-      await _ordenesRepo.updateOrden(orden.copyWith(estado: 'en_proceso'));
+      await _ordenesRepo.updateOrden(orden.copyWith(estado: EstadoOrden.enProceso));
 
       // 1. Descontar insumos
       for (final ing in ingredientes) {
@@ -134,11 +135,9 @@ class EjecutarProduccion {
           usuarioId: usuarioId,
           recetaId: orden.recetaId,
           ordenProduccionId: orden.id,
-          tipoMovimiento: 'salida_produccion',
-          motivoSalida: null,
+          tipoMovimiento: TipoMovimiento.salidaProduccion,
           cantidad: cantidadConsumir,
           precioUnitario: insumo.precioUnitario,
-          proveedor: null,
           observacion: 'Consumo por producción: ${orden.cantidadLotes} lote(s)',
           porOcr: false,
           fecha: DateTime.now(),
@@ -172,11 +171,9 @@ class EjecutarProduccion {
           usuarioId: usuarioId,
           recetaId: orden.recetaId,
           ordenProduccionId: orden.id,
-          tipoMovimiento: 'entrada',
-          motivoSalida: null,
+          tipoMovimiento: TipoMovimiento.entrada,
           cantidad: cantidadProducida.toDouble(),
           precioUnitario: producto.precioUnitario,
-          proveedor: null,
           observacion: 'Producción completada: ${orden.cantidadLotes} lote(s)',
           porOcr: false,
           fecha: DateTime.now(),
@@ -205,7 +202,7 @@ class EjecutarProduccion {
           usuarioId: orden.usuarioId,
           cantidadLotes: orden.cantidadLotes,
           cantidadProducida: unidadesProducidas,
-          estado: 'completada',
+          estado: EstadoOrden.completada,
           fechaProgramada: orden.fechaProgramada,
           fechaInicio: orden.fechaInicio ?? DateTime.now(),
           fechaFin: DateTime.now(),
@@ -219,7 +216,7 @@ class EjecutarProduccion {
     } catch (e) {
       // Revertir a pendiente si falla
       try {
-        await _ordenesRepo.updateOrden(orden.copyWith(estado: 'pendiente'));
+        await _ordenesRepo.updateOrden(orden.copyWith(estado: EstadoOrden.pendiente));
       } catch (_) {}
       return e.toString();
     }
@@ -258,7 +255,7 @@ class EjecutarProduccion {
 }
 
 extension _OrdenProduccionCopyWith on OrdenProduccion {
-  OrdenProduccion copyWith({String? estado}) {
+  OrdenProduccion copyWith({EstadoOrden? estado}) {
     return OrdenProduccion(
       id: id,
       recetaId: recetaId,

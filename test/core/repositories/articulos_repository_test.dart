@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/enums.dart';
 
 import '../../helpers/test_helpers.mocks.dart';
 
@@ -8,8 +9,8 @@ import '../../helpers/test_helpers.mocks.dart';
 Articulo _art({
   String id = 'a1',
   String nombre = 'Harina',
-  String tipo = 'insumo',
-  String unidad = 'kg',
+  TipoArticulo tipo = TipoArticulo.insumo,
+  UnidadMedida unidad = UnidadMedida.kg,
   double stockActual = 100,
   double stockMinimo = 10,
   double precio = 5.0,
@@ -73,7 +74,7 @@ void main() {
 
       expect(resultado.length, 2);
       for (final art in resultado) {
-        expect(art.tipo, 'insumo');
+        expect(art.tipo, TipoArticulo.insumo);
       }
       verify(mockRepo.getInsumos()).called(1);
     });
@@ -85,8 +86,8 @@ void main() {
   group('CA003 - getProductosFinales()', () {
     test('retorna solo artículos de tipo producto_final', () async {
       final productosFake = [
-        _art(id: 'p1', nombre: 'Pan francés', tipo: 'producto_final'),
-        _art(id: 'p2', nombre: 'Torta', tipo: 'producto_final'),
+        _art(id: 'p1', nombre: 'Pan francés', tipo: TipoArticulo.productoFinal),
+        _art(id: 'p2', nombre: 'Torta', tipo: TipoArticulo.productoFinal),
       ];
       when(mockRepo.getProductosFinales()).thenAnswer((_) async => productosFake);
 
@@ -94,7 +95,7 @@ void main() {
 
       expect(resultado.length, 2);
       for (final art in resultado) {
-        expect(art.tipo, 'producto_final');
+        expect(art.tipo, TipoArticulo.productoFinal);
       }
       verify(mockRepo.getProductosFinales()).called(1);
     });
@@ -151,7 +152,7 @@ void main() {
     test('actualiza artículo y retorna con datos actualizados', () async {
       final articuloActualizado = Articulo(
         id: 'a1', nombre: 'Harina Integral', categoriaId: null,
-        tipo: 'insumo', unidad: 'kg', stockActual: 80,
+        tipo: TipoArticulo.insumo, unidad: UnidadMedida.kg, stockActual: 80,
         stockMinimo: 10, precioUnitario: 6.0, activo: true,
         createdAt: DateTime(2025, 1),
         updatedAt: DateTime(2025, 6, 15),

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/models/receta.dart';
 import 'package:happy_oven/core/models/receta_ingrediente.dart';
@@ -104,6 +103,7 @@ class CreateRecipeFormNotifier extends StateNotifier<CreateRecipeFormState> {
       instrucciones: state.instrucciones,
       rendimiento: state.rendimiento,
       createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
     );
   }
 

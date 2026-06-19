@@ -1,4 +1,5 @@
 import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
 import 'package:happy_oven/core/repositories/i_articulos_repository.dart';
 import 'package:happy_oven/core/repositories/i_movimientos_repository.dart';
@@ -84,8 +85,8 @@ Future<ResultadoIngresoOcr> registrarIngresoOcr({
           Articulo(
             id: '',
             nombre: item.nombre.trim(),
-            tipo: 'insumo',
-            unidad: item.unidad,
+            tipo: TipoArticulo.insumo,
+            unidad: UnidadMedida.fromDb(item.unidad),
             stockActual: 0,
             stockMinimo: 0,
             precioUnitario: item.precioUnitario,
@@ -110,7 +111,7 @@ Future<ResultadoIngresoOcr> registrarIngresoOcr({
           id: '',
           articuloId: articulo.id,
           usuarioId: usuarioId,
-          tipoMovimiento: 'entrada',
+          tipoMovimiento: TipoMovimiento.entrada,
           cantidad: item.cantidad,
           precioUnitario: item.precioUnitario,
           proveedor: (proveedorLimpio == null || proveedorLimpio.isEmpty)

@@ -1,15 +1,15 @@
 import 'package:happy_oven/core/models/articulo.dart';
 
 /// Interfaz que define el contrato para el manejo de Artículos en el inventario.
-/// Un artículo puede ser un 'insumo' (ej. harina) o un 'producto_final' (ej. torta).
+/// Un artículo puede ser un [TipoArticulo.insumo] (ej. harina) o un [TipoArticulo.productoFinal] (ej. torta).
 abstract class IArticulosRepository {
   /// Obtiene todos los artículos registrados en el catálogo.
   Future<List<Articulo>> getArticulos();
 
-  /// Obtiene únicamente los artículos que son de tipo 'insumo'.
+  /// Obtiene únicamente los artículos que son de tipo [TipoArticulo.insumo].
   Future<List<Articulo>> getInsumos();
 
-  /// Obtiene únicamente los artículos que son de tipo 'producto_final'.
+  /// Obtiene únicamente los artículos que son de tipo [TipoArticulo.productoFinal].
   Future<List<Articulo>> getProductosFinales();
 
   /// Busca un artículo específico por su [id]. Retorna null si no existe.
