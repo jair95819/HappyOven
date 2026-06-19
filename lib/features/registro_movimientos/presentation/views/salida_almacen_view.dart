@@ -517,6 +517,7 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
                   setState(() {
                     _productoSeleccionado = p;
                     _cantidad = 1;
+                    _cantidadController.text = '1';
                   });
                   Navigator.pop(context);
                 },
