@@ -283,11 +283,21 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              _buildLabel('Tipo de artículo', colors, font),
+              const SizedBox(height: 8),
+              _buildSelectorTipo(colors, font),
+              const SizedBox(height: 20),
               _buildLabel('Motivo de salida', colors, font),
               const SizedBox(height: 8),
               _buildSelectorMotivo(colors, font),
               const SizedBox(height: 20),
-              _buildLabel('Producto final', colors, font),
+              _buildLabel(
+                _tipoSeleccionado == TipoArticulo.productoFinal
+                    ? 'Producto final'
+                    : 'Materia prima',
+                colors,
+                font,
+              ),
               const SizedBox(height: 6),
               _buildSelectorProducto(context, colors, font, productos),
               const SizedBox(height: 20),
