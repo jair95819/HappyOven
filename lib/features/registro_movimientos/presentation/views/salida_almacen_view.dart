@@ -331,6 +331,59 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
     );
   }
 
+  Widget _buildSelectorTipo(AppColors colors, AppFont font) {
+    Widget chip(TipoArticulo tipo, String etiqueta, IconData icono) {
+      final activo = _tipoSeleccionado == tipo;
+      return Expanded(
+        child: GestureDetector(
+          onTap: () => _cambiarTipo(tipo),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 11),
+            decoration: BoxDecoration(
+              color: activo ? colors.titleText : colors.surface,
+              borderRadius: AppTheme.radius.brSm,
+              border: Border.all(
+                color: activo ? colors.titleText : colors.border,
+                width: 0.5,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icono,
+                  color: activo ? colors.accent : colors.hint,
+                  size: 16,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  etiqueta,
+                  style: font.label.copyWith(
+                    fontSize: 12,
+                    fontWeight: activo ? FontWeight.w500 : FontWeight.normal,
+                    color: activo ? colors.white : colors.hint,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Row(
+      children: [
+        chip(
+          TipoArticulo.productoFinal,
+          'Producto final',
+          Icons.breakfast_dining_outlined,
+        ),
+        const SizedBox(width: 8),
+        chip(TipoArticulo.insumo, 'Materia prima', Icons.egg_alt_outlined),
+      ],
+    );
+  }
+
   Widget _buildSelectorMotivo(AppColors colors, AppFont font) {
     return GridView.count(
       crossAxisCount: 2,
