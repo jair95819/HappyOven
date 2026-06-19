@@ -573,16 +573,27 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
         children: [
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.remove_circle_outline,
-                    color: colors.brownMid,
-                    size: 16,
+                  Expanded(
+                    child: TextField(
+                      controller: _cantidadController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                      ],
+                      onChanged: _onCantidadChanged,
+                      style: font.h3.copyWith(fontSize: 16),
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(vertical: 13),
+                      ),
+                    ),
                   ),
-                  const SizedBox(width: 10),
-                  Text('$_cantidad', style: font.h3.copyWith(fontSize: 16)),
                   const SizedBox(width: 6),
                   Text(
                     _productoSeleccionado?.unidad.dbValue ?? '',
@@ -689,7 +700,7 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
                 text: TextSpan(
                   children: [
                     TextSpan(
-                      text: '$_stockResultante ',
+                      text: '${_fmt(_stockResultante)} ',
                       style: font.h3.copyWith(fontSize: 18, color: colorStock),
                     ),
                     TextSpan(
@@ -744,6 +755,21 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
               ),
       ),
     );
+  }
+}
+
+/// Traduce el motivo de salida al tipo de movimiento de kardex correspondiente,
+/// para que mermas y ajustes (p. ej. materia prima podrida) queden bien
+/// clasificados en el historial y la analítica, no como salida de producción.
+TipoMovimiento _tipoMovimientoDeMotivo(MotivoSalida motivo) {
+  switch (motivo) {
+    case MotivoSalida.merma:
+      return TipoMovimiento.merma;
+    case MotivoSalida.ajuste:
+      return TipoMovimiento.ajuste;
+    case MotivoSalida.venta:
+    case MotivoSalida.degustacion:
+      return TipoMovimiento.salidaProduccion;
   }
 }
 
