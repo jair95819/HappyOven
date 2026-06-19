@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:happy_oven/core/widgets/app_shell.dart';
@@ -21,6 +22,8 @@ import 'package:happy_oven/features/recetas_costeo/presentation/views/costeo_din
 import 'package:happy_oven/features/produccion/presentation/views/ordenes_produccion_list_view.dart';
 import 'package:happy_oven/features/produccion/presentation/views/nueva_orden_produccion_view.dart';
 import 'package:happy_oven/features/configuracion/presentation/views/perfil_ajustes_view.dart';
+import 'package:happy_oven/features/configuracion/presentation/views/editar_perfil_view.dart';
+import 'package:happy_oven/features/configuracion/presentation/views/cambiar_password_view.dart';
 import 'package:happy_oven/features/configuracion/presentation/views/gestion_categorias_view.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/views/historial_articulo_view.dart';
 
@@ -37,13 +40,25 @@ bool esRutaSoloAdmin(String location) {
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authViewModelProvider);
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/splash',
     errorBuilder: (context, state) => const LoginView(),
     redirect: (context, state) {
+      final enSplash = state.matchedLocation == '/splash';
+
+      // Mientras se restaura la sesión persistida, permanecer en el splash.
+      if (authState.inicializando) {
+        return enSplash ? null : '/splash';
+      }
+
       final autenticado = authState.autenticado;
       final enLogin =
           state.matchedLocation == '/login' ||
           state.matchedLocation == '/recuperar-password';
+
+      // Terminada la restauración: salir del splash hacia el destino correcto.
+      if (enSplash) {
+        return autenticado ? '/dashboard' : '/login';
+      }
 
       if (!autenticado && !enLogin) return '/login';
       if (autenticado && enLogin) return '/dashboard';
@@ -58,6 +73,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (c, s) => const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        ),
+      ),
       GoRoute(path: '/login', builder: (c, s) => const LoginView()),
       GoRoute(
         path: '/recuperar-password',
@@ -181,6 +202,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/perfil',
                 builder: (c, s) => const PerfilAjustesView(),
+                routes: [
+                  GoRoute(
+                    path: 'editar',
+                    builder: (c, s) => const EditarPerfilView(),
+                  ),
+                  GoRoute(
+                    path: 'password',
+                    builder: (c, s) => const CambiarPasswordView(),
+                  ),
+                ],
               ),
               GoRoute(
                 path: '/categorias',
