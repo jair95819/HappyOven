@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:happy_oven/core/models/articulo.dart';
@@ -18,31 +19,88 @@ class SalidaAlmacenView extends ConsumerStatefulWidget {
 
 class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
   MotivoSalida _motivoSeleccionado = MotivoSalida.venta;
+  TipoArticulo _tipoSeleccionado = TipoArticulo.productoFinal;
   Articulo? _productoSeleccionado;
-  int _cantidad = 1;
+  double _cantidad = 1;
+  final _cantidadController = TextEditingController(text: '1');
   final _observacionController = TextEditingController();
   bool _guardando = false;
 
   @override
   void dispose() {
+    _cantidadController.dispose();
     _observacionController.dispose();
     super.dispose();
   }
 
-  int get _stockResultante =>
+  double get _stockResultante =>
       ((_productoSeleccionado?.stockActual ?? 0) - _cantidad)
           .clamp(0, 99999)
-          .toInt();
+          .toDouble();
 
-  void _incrementar() {
-    if (_productoSeleccionado == null) return;
-    if (_cantidad < _productoSeleccionado!.stockActual) {
-      setState(() => _cantidad++);
+  /// Paso de incremento/decremento adecuado a la unidad de medida del artículo:
+  /// unidades enteras de a 1, pesos/volúmenes en fracciones más finas.
+  double get _paso {
+    switch (_productoSeleccionado?.unidad) {
+      case UnidadMedida.gramos:
+      case UnidadMedida.ml:
+        return 50;
+      case UnidadMedida.kg:
+      case UnidadMedida.litros:
+        return 0.5;
+      case UnidadMedida.unidades:
+      case null:
+        return 1;
     }
   }
 
+  /// Formatea una cantidad eliminando decimales sobrantes (1.0 → "1", 0.50 → "0.5").
+  String _fmt(double v) {
+    if (v == v.roundToDouble()) return v.toInt().toString();
+    return v
+        .toStringAsFixed(2)
+        .replaceAll(RegExp(r'0+$'), '')
+        .replaceAll(RegExp(r'\.$'), '');
+  }
+
+  void _setCantidad(double v) {
+    setState(() {
+      _cantidad = v;
+      _cantidadController.text = _fmt(v);
+      _cantidadController.selection = TextSelection.collapsed(
+        offset: _cantidadController.text.length,
+      );
+    });
+  }
+
+  void _onCantidadChanged(String value) {
+    final parsed = double.tryParse(value.replaceAll(',', '.'));
+    setState(() => _cantidad = parsed ?? 0);
+  }
+
+  void _cambiarTipo(TipoArticulo tipo) {
+    if (_tipoSeleccionado == tipo) return;
+    setState(() {
+      _tipoSeleccionado = tipo;
+      _productoSeleccionado = null;
+      _cantidad = 1;
+      _cantidadController.text = '1';
+    });
+  }
+
+  void _incrementar() {
+    if (_productoSeleccionado == null) return;
+    final nuevo = _cantidad + _paso;
+    _setCantidad(
+      nuevo > _productoSeleccionado!.stockActual
+          ? _productoSeleccionado!.stockActual
+          : nuevo,
+    );
+  }
+
   void _decrementar() {
-    if (_cantidad > 1) setState(() => _cantidad--);
+    final nuevo = _cantidad - _paso;
+    _setCantidad(nuevo < 0 ? 0 : nuevo);
   }
 
   Future<void> _registrar() async {
@@ -72,9 +130,9 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
       id: '',
       articuloId: _productoSeleccionado!.id,
       usuarioId: usuarioId,
-      tipoMovimiento: TipoMovimiento.salidaProduccion,
+      tipoMovimiento: _tipoMovimientoDeMotivo(_motivoSeleccionado),
       motivoSalida: _motivoSeleccionado,
-      cantidad: _cantidad.toDouble(),
+      cantidad: _cantidad,
       observacion: _observacionController.text.trim().isEmpty
           ? null
           : _observacionController.text.trim(),
@@ -96,8 +154,8 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Salida registrada: $_cantidad '
-            '${_productoSeleccionado!.unidad} '
+            'Salida registrada: ${_fmt(_cantidad)} '
+            '${_productoSeleccionado!.unidad.dbValue} '
             'de ${_productoSeleccionado!.nombre}',
           ),
           backgroundColor: AppTheme.colorsOf(context).statusNormal,
@@ -127,11 +185,12 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
     final colors = AppTheme.colorsOf(context);
     final font = AppTheme.fontOf(context);
 
-    // Carga productos finales reales desde Supabase
+    // Carga los artículos reales desde Supabase, filtrados por el tipo elegido
+    // (producto final o materia prima).
     final catalogoState = ref.watch(catalogoViewModelProvider);
     final productos = catalogoState.maybeWhen(
       data: (lista) =>
-          lista.where((a) => a.tipo == TipoArticulo.productoFinal && a.activo).toList(),
+          lista.where((a) => a.tipo == _tipoSeleccionado && a.activo).toList(),
       orElse: () => <Articulo>[],
     );
 
@@ -185,7 +244,9 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
                   Text('Registrar salida', style: font.h3),
                   const SizedBox(height: 2),
                   Text(
-                    'Descuento de productos finales',
+                    _tipoSeleccionado == TipoArticulo.productoFinal
+                        ? 'Descuento de productos finales'
+                        : 'Descuento de materia prima',
                     style: font.caption.copyWith(color: colors.accentDark),
                   ),
                 ],
