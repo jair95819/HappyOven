@@ -115,7 +115,7 @@ class SugerenciasCompraView extends ConsumerWidget {
                     'el agotamiento y sugiere cuánto reabastecer (cobertura de 30 días).',
                     style: font.caption.copyWith(color: colors.hint),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: AppTheme.spacing.lg),
                   if (conProyeccion.isEmpty)
                     _infoBox(
                       colors,
@@ -125,12 +125,12 @@ class SugerenciasCompraView extends ConsumerWidget {
                   else ...[
                     _sectionTitle(font, 'Reabastecimiento sugerido',
                         '${conProyeccion.length}'),
-                    const SizedBox(height: 10),
+                    SizedBox(height: AppTheme.spacing.md),
                     ...conProyeccion
                         .map((s) => _buildSugerenciaCard(colors, font, s)),
                   ],
                   if (sinDatos.isNotEmpty) ...[
-                    const SizedBox(height: 20),
+                    SizedBox(height: AppTheme.spacing.lg),
                     _sectionTitle(
                         font, 'Sin datos suficientes', '${sinDatos.length}'),
                     const SizedBox(height: 6),
@@ -138,7 +138,7 @@ class SugerenciasCompraView extends ConsumerWidget {
                       'No tienen historial confiable; la predicción se omite (RF-021).',
                       style: font.caption.copyWith(fontSize: 10, color: colors.hint),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: AppTheme.spacing.md),
                     ...sinDatos.map((s) => _buildSinDatosCard(colors, font, s)),
                   ],
                 ],
@@ -160,7 +160,7 @@ class SugerenciasCompraView extends ConsumerWidget {
   Widget _infoBox(AppColors colors, AppFont font, String texto) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(AppTheme.spacing.md),
       decoration: BoxDecoration(
         color: colors.surface,
         borderRadius: AppTheme.radius.brMd,
@@ -177,13 +177,14 @@ class SugerenciasCompraView extends ConsumerWidget {
         : (s.diasRestantes <= 30 ? colors.statusLow : colors.statusNormal);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: AppTheme.spacing.md),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: EdgeInsets.all(AppTheme.spacing.md),
         decoration: BoxDecoration(
           color: colors.card,
           borderRadius: BorderRadius.circular(AppTheme.radius.lg),
           border: Border.all(color: colors.border, width: 0.5),
+          boxShadow: AppTheme.shadows.cardSm,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -267,13 +268,14 @@ class SugerenciasCompraView extends ConsumerWidget {
   Widget _buildSinDatosCard(
       AppColors colors, AppFont font, SugerenciaCompra s) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.only(bottom: AppTheme.spacing.sm),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(AppTheme.spacing.md),
         decoration: BoxDecoration(
           color: colors.surface,
           borderRadius: BorderRadius.circular(AppTheme.radius.md),
           border: Border.all(color: colors.border, width: 0.5),
+          boxShadow: AppTheme.shadows.cardSm,
         ),
         child: Row(
           children: [

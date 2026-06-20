@@ -111,7 +111,7 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Catálogo', style: font.h3),
-                      const SizedBox(height: 2),
+                      SizedBox(height: AppTheme.spacing.xs),
                       Text(
                         'Maestro de artículos',
                         style: font.caption.copyWith(color: colors.accentDark),
@@ -239,9 +239,14 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
     final esProductos =
         articulos.isNotEmpty && articulos.first.tipo == TipoArticulo.productoFinal;
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(14, 20, 14, 8),
+      padding: EdgeInsets.fromLTRB(
+        AppTheme.spacing.md,
+        AppTheme.spacing.lg,
+        AppTheme.spacing.md,
+        AppTheme.spacing.sm,
+      ),
       itemCount: articulos.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 10),
+      separatorBuilder: (_, _) => SizedBox(height: AppTheme.spacing.md),
       itemBuilder: (context, index) {
         final art = articulos[index];
         if (esProductos) {
@@ -322,13 +327,15 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
     final ratio = (articulo.stockActual / articulo.stockMinimo).clamp(0.0, 1.0);
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(AppTheme.spacing.md),
       decoration: BoxDecoration(
         color: colors.card,
         borderRadius: BorderRadius.circular(AppTheme.radius.lg),
         border: Border.all(color: colors.border, width: 0.5),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 44,
@@ -339,7 +346,7 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
             ),
             child: Icon(icono, color: config.colorPrincipal, size: 22),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: AppTheme.spacing.sm + 4),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -355,14 +362,14 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: AppTheme.spacing.sm),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
+                            horizontal: 10,
+                            vertical: 4,
                           ),
                           decoration: BoxDecoration(
                             color: config.colorFondo,
@@ -371,7 +378,7 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
                           child: Text(
                             config.etiqueta,
                             style: font.caption.copyWith(
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w600,
                               color: config.colorPrincipal,
                             ),
                           ),
@@ -554,11 +561,12 @@ class _ProductoFinalCardState extends ConsumerState<_ProductoFinalCard> {
     final recetaAsync = ref.watch(recetaPorProductoProvider(art.id));
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(AppTheme.spacing.md),
       decoration: BoxDecoration(
         color: colors.card,
         borderRadius: BorderRadius.circular(AppTheme.radius.lg),
         border: Border.all(color: colors.border, width: 0.5),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -574,7 +582,7 @@ class _ProductoFinalCardState extends ConsumerState<_ProductoFinalCard> {
                 ),
                 child: Icon(icono, color: config.colorPrincipal, size: 22),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: AppTheme.spacing.sm + 4),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -590,14 +598,14 @@ class _ProductoFinalCardState extends ConsumerState<_ProductoFinalCard> {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: AppTheme.spacing.sm),
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
+                                horizontal: 10,
+                                vertical: 4,
                               ),
                               decoration: BoxDecoration(
                                 color: config.colorFondo,
@@ -606,7 +614,7 @@ class _ProductoFinalCardState extends ConsumerState<_ProductoFinalCard> {
                               child: Text(
                                 config.etiqueta,
                                 style: font.caption.copyWith(
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w600,
                                   color: config.colorPrincipal,
                                 ),
                               ),

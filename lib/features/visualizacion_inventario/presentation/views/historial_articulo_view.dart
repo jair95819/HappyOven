@@ -53,16 +53,16 @@ class HistorialArticuloView extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.swap_horiz_rounded, color: colors.hint, size: 48),
-                  const SizedBox(height: 12),
+                  SizedBox(height: AppTheme.spacing.md),
                   Text('Sin movimientos', style: font.label),
-                  const SizedBox(height: 4),
+                  SizedBox(height: AppTheme.spacing.xs),
                   Text('Este artículo no tiene movimientos registrados', style: font.caption),
                 ],
               ),
             );
           }
           return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(14, 16, 14, 8),
+            padding: EdgeInsets.fromLTRB(AppTheme.spacing.md, AppTheme.spacing.md, AppTheme.spacing.md, AppTheme.spacing.sm),
             itemCount: movimientos.length,
             itemBuilder: (_, i) => _buildTarjeta(movimientos[i], colors, font),
           );
@@ -77,13 +77,14 @@ class HistorialArticuloView extends ConsumerWidget {
     final fmt = DateFormat('dd MMM yyyy h:mm a', 'es');
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.only(bottom: AppTheme.spacing.sm),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: EdgeInsets.all(AppTheme.spacing.md),
         decoration: BoxDecoration(
           color: colors.card,
           borderRadius: AppTheme.radius.brSm,
           border: Border.all(color: colors.border, width: 0.5),
+          boxShadow: AppTheme.shadows.cardSm,
         ),
         child: Row(
           children: [
@@ -95,7 +96,7 @@ class HistorialArticuloView extends ConsumerWidget {
               ),
               child: Icon(config.icono, color: config.colorPrincipal, size: 18),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: AppTheme.spacing.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,7 +111,7 @@ class HistorialArticuloView extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 3),
+                  SizedBox(height: AppTheme.spacing.xs),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

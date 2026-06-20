@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   // --- INSTANCIAS CONSTANTES ---
+  static const shadows = _Shadows();
   static const _lightColors = AppColors(
     bg: Color(0xFFFAF8F5),
     card: Color(0xFFFFFFFF),
@@ -58,7 +59,7 @@ class AppTheme {
     black: Color(0xFF000000),
   );
 
-  static const spacing = _Spacing();
+  static const spacing = SpacingValues();
   static const radius = _Radius();
 
   // --- ACCESO CON CONTEXTO (PARA MODO OSCURO) ---
@@ -147,8 +148,8 @@ class AppColors {
   });
 }
 
-class _Spacing {
-  const _Spacing();
+class SpacingValues {
+  const SpacingValues();
   final double xs = 4.0;
   final double sm = 8.0;
   final double md = 16.0;
@@ -169,6 +170,25 @@ class _Radius {
   BorderRadius get brMd => BorderRadius.circular(md);
   BorderRadius get brLg => BorderRadius.circular(lg);
   BorderRadius get brXl => BorderRadius.circular(xl);
+}
+
+class _Shadows {
+  const _Shadows();
+
+  List<BoxShadow> get cardSm => [
+    BoxShadow(
+      offset: const Offset(0, 1),
+      blurRadius: 3,
+      color: const Color(0xFF000000).withValues(alpha: 0.06),
+    ),
+  ];
+  List<BoxShadow> get cardMd => [
+    BoxShadow(
+      offset: const Offset(0, 2),
+      blurRadius: 8,
+      color: const Color(0xFF000000).withValues(alpha: 0.09),
+    ),
+  ];
 }
 
 class AppFont {

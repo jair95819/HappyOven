@@ -446,14 +446,13 @@ class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionLis
           topRight: Radius.circular(AppTheme.radius.xl),
         ),
       ),
-      transform: Matrix4.translationValues(0, -16, 0),
       child: ClipRRect(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(AppTheme.radius.xl),
           topRight: Radius.circular(AppTheme.radius.xl),
         ),
         child: ListView.builder(
-          padding: const EdgeInsets.fromLTRB(14, 20, 14, 8),
+          padding: EdgeInsets.fromLTRB(AppTheme.spacing.md, AppTheme.spacing.lg, AppTheme.spacing.md, AppTheme.spacing.sm),
           itemCount: recetas.length,
           itemBuilder: (_, i) => _buildTarjetaReceta(recetas[i], ordenes, colors, font),
         ),
@@ -474,13 +473,14 @@ class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionLis
         .toList();
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: AppTheme.spacing.md),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: EdgeInsets.all(AppTheme.spacing.md),
         decoration: BoxDecoration(
           color: colors.card,
           borderRadius: BorderRadius.circular(AppTheme.radius.lg),
           border: Border.all(color: colors.border, width: 0.5),
+          boxShadow: AppTheme.shadows.cardSm,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -533,7 +533,7 @@ class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionLis
               ],
             ),
             if (receta.instrucciones != null && receta.instrucciones!.isNotEmpty) ...[
-              const SizedBox(height: 10),
+              SizedBox(height: AppTheme.spacing.md),
               Text(
                 receta.instrucciones!,
                 maxLines: 2,
@@ -590,14 +590,13 @@ class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionLis
           topRight: Radius.circular(AppTheme.radius.xl),
         ),
       ),
-      transform: Matrix4.translationValues(0, -16, 0),
       child: ClipRRect(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(AppTheme.radius.xl),
           topRight: Radius.circular(AppTheme.radius.xl),
         ),
         child: ListView.builder(
-          padding: const EdgeInsets.fromLTRB(14, 20, 14, 8),
+          padding: EdgeInsets.fromLTRB(AppTheme.spacing.md, AppTheme.spacing.lg, AppTheme.spacing.md, AppTheme.spacing.sm),
           itemCount: ordenes.length,
           itemBuilder: (_, i) => _buildTarjeta(ordenes[i], recetas, colors, font),
         ),
@@ -621,13 +620,14 @@ class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionLis
     final dateTimeFmt = DateFormat('dd MMM yyyy, hh:mm a', 'es');
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: AppTheme.spacing.md),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: EdgeInsets.all(AppTheme.spacing.md),
         decoration: BoxDecoration(
           color: colors.card,
           borderRadius: BorderRadius.circular(AppTheme.radius.lg),
           border: Border.all(color: colors.border, width: 0.5),
+          boxShadow: AppTheme.shadows.cardSm,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -678,7 +678,7 @@ class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionLis
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: AppTheme.spacing.md),
             // Dates section
             () {
               if (orden.estado == EstadoOrden.pendiente) {

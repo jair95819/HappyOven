@@ -218,7 +218,7 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
+          padding: EdgeInsets.fromLTRB(AppTheme.spacing.lg, AppTheme.spacing.sm + 6, AppTheme.spacing.lg, AppTheme.spacing.lg + 4),
           child: Row(
             children: [
               GestureDetector(
@@ -279,18 +279,18 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
           topRight: Radius.circular(AppTheme.radius.xl),
         ),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 26, 20, 32),
+          padding: EdgeInsets.fromLTRB(AppTheme.spacing.lg, AppTheme.spacing.lg + 2, AppTheme.spacing.lg, AppTheme.spacing.xl),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildLabel('Tipo de artículo', colors, font),
-              const SizedBox(height: 8),
+              SizedBox(height: AppTheme.spacing.sm),
               _buildSelectorTipo(colors, font),
-              const SizedBox(height: 20),
+              SizedBox(height: AppTheme.spacing.lg),
               _buildLabel('Motivo de salida', colors, font),
-              const SizedBox(height: 8),
+              SizedBox(height: AppTheme.spacing.sm),
               _buildSelectorMotivo(colors, font),
-              const SizedBox(height: 20),
+              SizedBox(height: AppTheme.spacing.lg),
               _buildLabel(
                 _tipoSeleccionado == TipoArticulo.productoFinal
                     ? 'Producto final'
@@ -298,19 +298,19 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
                 colors,
                 font,
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: AppTheme.spacing.sm),
               _buildSelectorProducto(context, colors, font, productos),
-              const SizedBox(height: 20),
+              SizedBox(height: AppTheme.spacing.lg),
               _buildLabel('Cantidad a descontar', colors, font),
-              const SizedBox(height: 6),
+              SizedBox(height: AppTheme.spacing.sm),
               _buildControlCantidad(colors, font),
-              const SizedBox(height: 20),
+              SizedBox(height: AppTheme.spacing.lg),
               _buildLabel('Justificación (obligatoria)', colors, font),
-              const SizedBox(height: 6),
+              SizedBox(height: AppTheme.spacing.sm),
               _buildCampoObservacion(colors, font),
-              const SizedBox(height: 20),
+              SizedBox(height: AppTheme.spacing.lg),
               _buildResumen(colors, font),
-              const SizedBox(height: 24),
+              SizedBox(height: AppTheme.spacing.lg),
               _buildBotonRegistrar(colors, font),
             ],
           ),
@@ -338,7 +338,7 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
         child: GestureDetector(
           onTap: () => _cambiarTipo(tipo),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 11),
+            padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.sm + 3),
             decoration: BoxDecoration(
               color: activo ? colors.titleText : colors.surface,
               borderRadius: AppTheme.radius.brSm,
@@ -346,6 +346,7 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
                 color: activo ? colors.titleText : colors.border,
                 width: 0.5,
               ),
+              boxShadow: AppTheme.shadows.cardSm,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -404,6 +405,7 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
                 color: activo ? colors.titleText : colors.border,
                 width: 0.5,
               ),
+              boxShadow: AppTheme.shadows.cardSm,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -439,11 +441,12 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
     return GestureDetector(
       onTap: () => _mostrarSelectorProducto(context, colors, font, productos),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md, vertical: AppTheme.spacing.sm + 4),
         decoration: BoxDecoration(
           color: colors.primaryLight,
           borderRadius: AppTheme.radius.brSm,
           border: Border.all(color: colors.primaryBorder, width: 0.5),
+          boxShadow: AppTheme.shadows.cardSm,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -503,13 +506,13 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
         ),
       ),
       builder: (_) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+        padding: EdgeInsets.fromLTRB(AppTheme.spacing.lg, AppTheme.spacing.lg, AppTheme.spacing.lg, AppTheme.spacing.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Seleccionar producto', style: font.h3.copyWith(fontSize: 15)),
-            const SizedBox(height: 16),
+            SizedBox(height: AppTheme.spacing.md),
             ...productos.map((p) {
               final activo = _productoSeleccionado?.id == p.id;
               return GestureDetector(
@@ -523,9 +526,9 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
                 },
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacing.md,
+                    vertical: AppTheme.spacing.sm + 4,
                   ),
                   decoration: BoxDecoration(
                     color: activo ? colors.primaryLight : colors.surface,
@@ -534,6 +537,7 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
                       color: activo ? colors.primaryBorder : colors.border,
                       width: 0.5,
                     ),
+                    boxShadow: AppTheme.shadows.cardSm,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -568,12 +572,13 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
         color: colors.primaryLight,
         borderRadius: AppTheme.radius.brSm,
         border: Border.all(color: colors.primaryBorder, width: 0.5),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: Row(
         children: [
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md),
               child: Row(
                 children: [
                   Expanded(
@@ -657,6 +662,7 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
         color: colors.primaryLight,
         borderRadius: AppTheme.radius.brSm,
         border: Border.all(color: colors.primaryBorder, width: 0.5),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: TextField(
         controller: _observacionController,
@@ -666,7 +672,7 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
           hintText: 'Ej. Venta del turno mañana...',
           hintStyle: font.hint,
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(14),
+          contentPadding: EdgeInsets.all(AppTheme.spacing.md),
         ),
       ),
     );
@@ -683,10 +689,11 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md, vertical: AppTheme.spacing.md),
       decoration: BoxDecoration(
         color: colors.surface,
         borderRadius: AppTheme.radius.brSm,
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -732,7 +739,7 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
     return GestureDetector(
       onTap: _guardando ? null : _registrar,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 15),
+        padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.md),
         decoration: BoxDecoration(
           color: _guardando ? colors.hint : colors.primary,
           borderRadius: AppTheme.radius.brSm,

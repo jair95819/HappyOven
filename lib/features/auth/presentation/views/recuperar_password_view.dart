@@ -58,7 +58,7 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
   Widget _buildHero(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      padding: EdgeInsets.fromLTRB(AppTheme.spacing.lg, AppTheme.spacing.md, AppTheme.spacing.lg, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -71,6 +71,7 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
               decoration: BoxDecoration(
                 borderRadius: AppTheme.radius.brSm,
                 border: Border.all(color: AppTheme.colors.border, width: 0.5),
+                boxShadow: AppTheme.shadows.cardSm,
               ),
               child: Icon(
                 Icons.arrow_back_rounded,
@@ -89,6 +90,7 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
               color: AppTheme.colors.primaryLight,
               borderRadius: BorderRadius.circular(AppTheme.radius.xl),
               border: Border.all(color: AppTheme.colors.border, width: 0.5),
+              boxShadow: AppTheme.shadows.cardSm,
             ),
             child: Icon(
               Icons.forward_to_inbox_outlined,
@@ -96,10 +98,10 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
               size: 32,
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: AppTheme.spacing.lg),
 
           Text('Recuperar contraseña', style: AppTheme.font.h3),
-          const SizedBox(height: 8),
+          SizedBox(height: AppTheme.spacing.sm),
           Text(
             'Ingresa tu correo y te enviaremos un enlace\npara restablecer tu contraseña.',
             style: AppTheme.font.bodySmall.copyWith(height: 1.6),
@@ -125,21 +127,23 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
         border: Border(
           top: BorderSide(color: AppTheme.colors.border, width: 0.5),
         ),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(28, 32, 28, 24),
+        padding: EdgeInsets.fromLTRB(AppTheme.spacing.xl, AppTheme.spacing.xl, AppTheme.spacing.xl, AppTheme.spacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (_emailEnviado)
               Container(
-                padding: const EdgeInsets.all(14),
+                padding: EdgeInsets.all(AppTheme.spacing.md),
                 decoration: BoxDecoration(
                   color: AppTheme.colors.successLight,
                   borderRadius: AppTheme.radius.brSm,
                   border: Border.all(
                     color: AppTheme.colors.successBorder,
                   ),
+                  boxShadow: AppTheme.shadows.cardSm,
                 ),
                 child: Row(
                   children: [
@@ -148,7 +152,7 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
                       color: AppTheme.colors.statusNormal,
                       size: 20,
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: AppTheme.spacing.md),
                     Expanded(
                       child: Text(
                         'Email enviado correctamente.\nRevisa tu bandeja de entrada.',
@@ -170,7 +174,7 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
                   letterSpacing: 0.5,
                 ),
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: AppTheme.spacing.sm),
 
               Container(
                 decoration: BoxDecoration(
@@ -180,6 +184,7 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
                     color: AppTheme.colors.border,
                     width: 0.5,
                   ),
+                  boxShadow: AppTheme.shadows.cardSm,
                 ),
                 child: TextField(
                   controller: _emailController,
@@ -197,14 +202,14 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
                       size: 18,
                     ),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 14,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacing.md,
+                      vertical: AppTheme.spacing.md,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 28),
+              SizedBox(height: AppTheme.spacing.xl),
 
               // Botón enviar
               GestureDetector(
@@ -219,7 +224,7 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
                         }
                       },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.md),
                   decoration: BoxDecoration(
                     color: authState.cargando
                         ? AppTheme.colors.hint
@@ -249,7 +254,7 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
                 ),
               ),
             ],
-            const SizedBox(height: 20),
+            SizedBox(height: AppTheme.spacing.lg),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.center,

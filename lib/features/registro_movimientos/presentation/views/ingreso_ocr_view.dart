@@ -313,6 +313,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                           color: const Color(0xFF444444),
                           width: 0.5,
                         ),
+                        boxShadow: AppTheme.shadows.cardSm,
                       ),
                       child: const Icon(
                         Icons.arrow_back_rounded,
@@ -432,6 +433,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                     color: const Color(0xFF444444),
                     width: 0.5,
                   ),
+                  boxShadow: AppTheme.shadows.cardSm,
                 ),
                 child: Icon(
                   Icons.photo_library_outlined,
@@ -472,6 +474,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                     color: const Color(0xFF444444),
                     width: 0.5,
                   ),
+                  boxShadow: AppTheme.shadows.cardSm,
                 ),
                 child: Icon(
                   Icons.bolt_outlined,
@@ -537,7 +540,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
+          padding: EdgeInsets.fromLTRB(20, AppTheme.spacing.md, 20, 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -554,6 +557,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                           color: colors.accentDark,
                           width: 0.5,
                         ),
+                        boxShadow: AppTheme.shadows.cardSm,
                       ),
                       child: Icon(
                         Icons.arrow_back_rounded,
@@ -562,7 +566,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 14),
+                  SizedBox(width: AppTheme.spacing.md),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -575,16 +579,17 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: AppTheme.spacing.lg),
               // Info proveedor
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacing.md,
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
                   color: colors.card,
                   borderRadius: AppTheme.radius.brSm,
+                  boxShadow: AppTheme.shadows.cardSm,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -607,7 +612,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: AppTheme.spacing.md),
               // Badge OCR
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -625,6 +630,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                         : colors.dangerBorder,
                     width: 0.5,
                   ),
+                  boxShadow: AppTheme.shadows.cardSm,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -714,17 +720,17 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
               ),
             ),
             Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
+              child:               ListView.separated(
+                padding: EdgeInsets.fromLTRB(AppTheme.spacing.md, 0, AppTheme.spacing.md, AppTheme.spacing.sm),
                 itemCount: _items.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 8),
+                separatorBuilder: (_, _) => SizedBox(height: AppTheme.spacing.sm),
                 itemBuilder: (context, index) =>
                     _buildItemCard(index, colors, font),
               ),
             ),
             // Total y botones
             Container(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
+              padding: EdgeInsets.fromLTRB(AppTheme.spacing.md, 12, AppTheme.spacing.md, 24),
               decoration: BoxDecoration(
                 color: colors.card,
                 border: Border(
@@ -734,8 +740,8 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
               child: Column(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacing.md,
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
@@ -759,7 +765,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: AppTheme.spacing.lg),
                   Row(
                     children: [
                       Expanded(
@@ -767,13 +773,14 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                           onTap: () =>
                               setState(() => _mostrandoConfirmacion = false),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.md),
                             decoration: BoxDecoration(
                               borderRadius: AppTheme.radius.brSm,
                               border: Border.all(
                                 color: colors.border,
                                 width: 0.5,
                               ),
+                              boxShadow: AppTheme.shadows.cardSm,
                             ),
                             child: Text(
                               'Volver a escanear',
@@ -791,7 +798,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                         child: GestureDetector(
                           onTap: _guardando ? null : _confirmarTodo,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.md),
                             decoration: BoxDecoration(
                               color: _guardando ? colors.hint : colors.primary,
                               borderRadius: AppTheme.radius.brSm,
@@ -836,6 +843,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
       decoration: BoxDecoration(
         border: Border.all(color: colors.border, width: 0.5),
         borderRadius: AppTheme.radius.brSm,
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -947,6 +955,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
         color: colors.primaryLight,
         borderRadius: AppTheme.radius.brSm,
         border: Border.all(color: colors.primaryBorder, width: 0.5),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -990,6 +999,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
           color: colors.primaryLight,
           borderRadius: AppTheme.radius.brSm,
           border: Border.all(color: colors.primaryBorder, width: 0.5),
+          boxShadow: AppTheme.shadows.cardSm,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1050,9 +1060,9 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                     Navigator.pop(context);
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
+                    padding: EdgeInsets.symmetric(
                       horizontal: 16,
-                      vertical: 8,
+                      vertical: AppTheme.spacing.sm,
                     ),
                     decoration: BoxDecoration(
                       color: activo ? colors.titleText : colors.surface,
@@ -1061,6 +1071,7 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
                         color: activo ? colors.titleText : colors.border,
                         width: 0.5,
                       ),
+                      boxShadow: AppTheme.shadows.cardSm,
                     ),
                     child: Text(
                       u,

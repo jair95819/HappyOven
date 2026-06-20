@@ -276,12 +276,13 @@ class _TarjetaProductoConRecetaState
     final tieneReceta = receta != null;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: AppTheme.spacing.md),
       child: Container(
         decoration: BoxDecoration(
           color: colors.card,
           borderRadius: BorderRadius.circular(AppTheme.radius.lg),
           border: Border.all(color: colors.border, width: 0.5),
+          boxShadow: AppTheme.shadows.cardSm,
         ),
         clipBehavior: Clip.hardEdge,
         child: Column(
@@ -360,7 +361,12 @@ class _TarjetaProductoConRecetaState
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+              padding: EdgeInsets.fromLTRB(
+                AppTheme.spacing.md,
+                AppTheme.spacing.sm + 4,
+                AppTheme.spacing.md,
+                AppTheme.spacing.md,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -628,7 +634,7 @@ class _TarjetaProductoConRecetaState
                 )
               : const SizedBox.shrink(),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: AppTheme.spacing.sm + 2),
         // ── Botones Producir / Editar / Eliminar ──
         Row(
           children: [
@@ -637,16 +643,17 @@ class _TarjetaProductoConRecetaState
               child: GestureDetector(
                 onTap: () => context.push('/produccion/nueva', extra: receta),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
                     color: colors.successLight,
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: colors.successBorder, width: 0.5),
+                    boxShadow: AppTheme.shadows.cardSm,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.play_arrow_rounded, color: colors.statusNormal, size: 13),
+                      Icon(Icons.play_arrow_rounded, color: colors.statusNormal, size: 14),
                       const SizedBox(width: 6),
                       Text(
                         'Producir',
@@ -660,21 +667,22 @@ class _TarjetaProductoConRecetaState
                 ),
               ),
             ),
-            const SizedBox(width: 6),
+            SizedBox(width: AppTheme.spacing.sm),
             Expanded(
               child: GestureDetector(
                 onTap: () => context.push('/recetas/editar', extra: receta),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
                     color: colors.primaryLight,
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: colors.primaryBorder, width: 0.5),
+                    boxShadow: AppTheme.shadows.cardSm,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.edit_outlined, color: colors.primary, size: 13),
+                      Icon(Icons.edit_outlined, color: colors.primary, size: 14),
                       const SizedBox(width: 6),
                       Text(
                         'Editar',
@@ -688,15 +696,16 @@ class _TarjetaProductoConRecetaState
                 ),
               ),
             ),
-            const SizedBox(width: 6),
+            SizedBox(width: AppTheme.spacing.sm),
             GestureDetector(
               onTap: () => _confirmarEliminar(context, receta, colors, font),
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
                 decoration: BoxDecoration(
                   color: colors.dangerLight,
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: colors.statusCritical.withValues(alpha: 0.2), width: 0.5),
+                  boxShadow: AppTheme.shadows.cardSm,
                 ),
                 child: Icon(
                   Icons.delete_outline_rounded,

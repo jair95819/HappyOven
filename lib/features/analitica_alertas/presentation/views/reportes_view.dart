@@ -315,9 +315,9 @@ class _ReportesViewState extends ConsumerState<ReportesView> {
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                      children: [
                       Text('Reportes', style: AppTheme.font.h3),
-                      const SizedBox(height: 2),
+                      SizedBox(height: AppTheme.spacing.sm),
                       Text('Genera y exporta tu resumen',
                           style: AppTheme.font.caption
                               .copyWith(color: AppTheme.colors.accentDark)),
@@ -344,7 +344,7 @@ class _ReportesViewState extends ConsumerState<ReportesView> {
               GestureDetector(
                 onTap: _seleccionarRango,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md, vertical: AppTheme.spacing.sm),
                   decoration: BoxDecoration(
                     color: AppTheme.colors.card,
                     borderRadius: AppTheme.radius.brMd,
@@ -357,13 +357,13 @@ class _ReportesViewState extends ConsumerState<ReportesView> {
                           Icon(Icons.calendar_today_outlined,
                               color: AppTheme.colors.brownMid, size: 16),
                           const SizedBox(width: 10),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Rango seleccionado',
-                                  style: AppTheme.font.caption),
-                              const SizedBox(height: 2),
-                              Text(_rangoFormateado,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Rango seleccionado',
+                              style: AppTheme.font.caption),
+                          SizedBox(height: AppTheme.spacing.sm),
+                          Text(_rangoFormateado,
                                   style: AppTheme.font.label.copyWith(fontSize: 13)),
                             ],
                           ),
@@ -435,16 +435,16 @@ class _ReportesViewState extends ConsumerState<ReportesView> {
             ),
           ),
           data: (data) => SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(14, 20, 14, 8),
+            padding: EdgeInsets.fromLTRB(AppTheme.spacing.md, AppTheme.spacing.lg, AppTheme.spacing.md, AppTheme.spacing.sm),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildKpiGrid(data),
-                const SizedBox(height: 16),
+                SizedBox(height: AppTheme.spacing.lg),
                 _buildTendenciaConsumo(data),
-                const SizedBox(height: 16),
+                SizedBox(height: AppTheme.spacing.lg),
                 _buildInsumosConsumo(data),
-                const SizedBox(height: 16),
+                SizedBox(height: AppTheme.spacing.lg),
               ],
             ),
           ),
@@ -484,20 +484,21 @@ class _ReportesViewState extends ConsumerState<ReportesView> {
     required Color colorFondo, required Color colorBorde, required Color colorIcono,
   }) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(AppTheme.spacing.md),
       decoration: BoxDecoration(
         color: colorFondo,
         borderRadius: BorderRadius.circular(AppTheme.radius.lg),
         border: Border.all(color: colorBorde, width: 0.5),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icono, color: colorIcono, size: 20),
-          const SizedBox(height: 8),
+          SizedBox(height: AppTheme.spacing.md),
           Text(valor, style: AppTheme.font.h3.copyWith(fontSize: 18, color: colorIcono)),
-          const SizedBox(height: 2),
+          SizedBox(height: AppTheme.spacing.sm),
           Text(etiqueta, style: AppTheme.font.caption.copyWith(
             color: colorIcono.withValues(alpha: 0.8), height: 1.3)),
         ],
@@ -515,20 +516,21 @@ class _ReportesViewState extends ConsumerState<ReportesView> {
     final fmtDia = DateFormat('d MMM', 'es');
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(AppTheme.spacing.md),
       decoration: BoxDecoration(
         color: AppTheme.colors.card,
         borderRadius: BorderRadius.circular(AppTheme.radius.lg),
         border: Border.all(color: AppTheme.colors.border, width: 0.5),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Tendencia de consumo', style: AppTheme.font.label.copyWith(fontSize: 13)),
-          const SizedBox(height: 2),
+          SizedBox(height: AppTheme.spacing.sm),
           Text('Consumo de insumos por día. Toca un punto para ver el valor.',
               style: AppTheme.font.caption.copyWith(fontSize: 10, color: AppTheme.colors.hint)),
-          const SizedBox(height: 16),
+          SizedBox(height: AppTheme.spacing.md),
           if (!hayConsumo)
             SizedBox(
               height: 140,
@@ -630,20 +632,21 @@ class _ReportesViewState extends ConsumerState<ReportesView> {
         : 10.0;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(AppTheme.spacing.md),
       decoration: BoxDecoration(
         color: AppTheme.colors.card,
         borderRadius: BorderRadius.circular(AppTheme.radius.lg),
         border: Border.all(color: AppTheme.colors.border, width: 0.5),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Insumos más consumidos', style: AppTheme.font.label.copyWith(fontSize: 13)),
-          const SizedBox(height: 2),
+          SizedBox(height: AppTheme.spacing.sm),
           Text('Toca una barra para ver el insumo y su consumo.',
               style: AppTheme.font.caption.copyWith(fontSize: 10, color: AppTheme.colors.hint)),
-          const SizedBox(height: 16),
+          SizedBox(height: AppTheme.spacing.md),
           if (insumos.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20),
@@ -722,7 +725,7 @@ class _ReportesViewState extends ConsumerState<ReportesView> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: AppTheme.spacing.sm),
             // Leyenda con valores exactos (refuerza qué datos se muestran).
             ...insumos.map((i) => Padding(
                   padding: const EdgeInsets.only(bottom: 6),

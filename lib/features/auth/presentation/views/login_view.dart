@@ -106,6 +106,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
         border: Border(
           top: BorderSide(color: AppTheme.colors.border, width: 0.5),
         ),
+        boxShadow: AppTheme.shadows.cardMd,
       ),
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(28, 32, 28, 24),
@@ -118,10 +119,10 @@ class _LoginViewState extends ConsumerState<LoginView> {
               'Ingresa tus credenciales para continuar',
               style: AppTheme.font.bodySmall,
             ),
-            const SizedBox(height: 28),
+            SizedBox(height: AppTheme.spacing.lg + 4),
 
             _buildLabel('Correo electrónico'),
-            const SizedBox(height: 6),
+            SizedBox(height: AppTheme.spacing.sm),
             _buildTextField(
               controller: _emailController,
               hint: 'usuario@gmail.com',
@@ -129,12 +130,12 @@ class _LoginViewState extends ConsumerState<LoginView> {
               keyboardType: TextInputType.emailAddress,
               enabled: !authState.cargando,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: AppTheme.spacing.lg),
 
             _buildLabel('Contraseña'),
-            const SizedBox(height: 6),
+            SizedBox(height: AppTheme.spacing.sm),
             _buildPasswordField(authState.cargando),
-            const SizedBox(height: 10),
+            SizedBox(height: AppTheme.spacing.sm + 2),
 
             Align(
               alignment: Alignment.centerRight,
@@ -149,7 +150,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
                 ),
               ),
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: AppTheme.spacing.xl),
 
             _buildPrimaryButton(authState, () async {
               final exito = await authViewModel.login(
@@ -274,6 +275,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
               ? AppTheme.colors.hint
               : AppTheme.colors.primary,
           borderRadius: AppTheme.radius.brMd,
+          boxShadow: authState.cargando ? null : AppTheme.shadows.cardSm,
         ),
         child: authState.cargando
             ? const SizedBox(

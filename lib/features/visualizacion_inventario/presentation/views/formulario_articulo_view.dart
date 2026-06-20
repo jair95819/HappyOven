@@ -134,6 +134,7 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
                   decoration: BoxDecoration(
                     borderRadius: AppTheme.radius.brSm,
                     border: Border.all(color: AppTheme.colors.accentDark, width: 0.5),
+                    boxShadow: AppTheme.shadows.cardSm,
                   ),
                   child: Icon(Icons.arrow_back_rounded, color: AppTheme.colors.titleText, size: 18),
                 ),
@@ -178,23 +179,23 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildLabel('Tipo de artículo'),
-                const SizedBox(height: 8),
+                SizedBox(height: AppTheme.spacing.md),
                 _buildSelectorTipo(),
-                const SizedBox(height: 20),
+                SizedBox(height: AppTheme.spacing.lg),
                 _buildLabel('Nombre'),
-                const SizedBox(height: 6),
+                SizedBox(height: AppTheme.spacing.md),
                 _buildCampoTexto(
                   controller: _nombreController, hint: 'Ej. Harina de trigo',
                   icono: Icons.label_outline_rounded,
                   validator: (v) => (v == null || v.trim().isEmpty) ? 'El nombre es obligatorio' : null,
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: AppTheme.spacing.lg),
                 _buildLabel('Unidad de medida'),
-                const SizedBox(height: 8),
+                SizedBox(height: AppTheme.spacing.md),
                 _buildSelectorUnidades(),
-                const SizedBox(height: 20),
+                SizedBox(height: AppTheme.spacing.lg),
                 _buildLabel('Stock mínimo de seguridad'),
-                const SizedBox(height: 6),
+                SizedBox(height: AppTheme.spacing.md),
                 _buildCampoNumerico(
                   controller: _stockMinimoController, hint: 'Ej. 20',
                   icono: Icons.warning_amber_rounded,
@@ -204,9 +205,9 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: AppTheme.spacing.lg),
                 _buildLabel('Stock inicial'),
-                const SizedBox(height: 6),
+                SizedBox(height: AppTheme.spacing.md),
                 _buildCampoNumerico(
                   controller: _stockInicialController, hint: 'Ej. 50',
                   icono: Icons.inventory_2_outlined,
@@ -216,9 +217,9 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: AppTheme.spacing.lg),
                 _buildLabel('Precio unitario (S/)'),
-                const SizedBox(height: 6),
+                SizedBox(height: AppTheme.spacing.md),
                 _buildCampoNumerico(
                   controller: _precioController, hint: 'Ej. 12.50',
                   icono: Icons.attach_money_rounded,
@@ -263,7 +264,7 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
         return Expanded(
           child: GestureDetector(
             onTap: () => setState(() => _tipoSeleccionado = tipo),
-            child: Container(
+                child: Container(
               margin: EdgeInsets.only(right: tipo == TipoArticulo.insumo ? 8 : 0),
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
@@ -271,6 +272,7 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
                 borderRadius: AppTheme.radius.brSm,
                 border: Border.all(
                   color: activo ? AppTheme.colors.titleText : AppTheme.colors.border, width: 0.5),
+                boxShadow: AppTheme.shadows.cardSm,
               ),
               child: Column(
                 children: [
@@ -302,12 +304,13 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
         return GestureDetector(
           onTap: () => setState(() => _unidadSeleccionada = unidad),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: AppTheme.spacing.sm),
             decoration: BoxDecoration(
               color: activo ? AppTheme.colors.titleText : AppTheme.colors.surface,
               borderRadius: BorderRadius.circular(AppTheme.radius.full),
               border: Border.all(
                 color: activo ? AppTheme.colors.titleText : AppTheme.colors.border, width: 0.5),
+              boxShadow: AppTheme.shadows.cardSm,
             ),
             child: Text(unidad.dbValue, style: AppTheme.font.bodySmall.copyWith(fontSize: 12,
               fontWeight: activo ? FontWeight.w500 : FontWeight.normal,
@@ -327,6 +330,7 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
         color: AppTheme.colors.primaryLight,
         borderRadius: AppTheme.radius.brSm,
         border: Border.all(color: AppTheme.colors.border, width: 0.5),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: TextFormField(
         controller: controller, validator: validator,
@@ -335,7 +339,7 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
           hintText: hint, hintStyle: AppTheme.font.hint,
           prefixIcon: Icon(icono, color: AppTheme.colors.brownMid, size: 18),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          contentPadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md, vertical: AppTheme.spacing.md),
           errorStyle: TextStyle(fontSize: 11, color: AppTheme.colors.statusCritical),
         ),
       ),
@@ -351,6 +355,7 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
         color: AppTheme.colors.primaryLight,
         borderRadius: AppTheme.radius.brSm,
         border: Border.all(color: AppTheme.colors.border, width: 0.5),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: TextFormField(
         controller: controller, validator: validator,
@@ -361,7 +366,7 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
           hintText: hint, hintStyle: AppTheme.font.hint,
           prefixIcon: Icon(icono, color: AppTheme.colors.brownMid, size: 18),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          contentPadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md, vertical: AppTheme.spacing.md),
           errorStyle: TextStyle(fontSize: 11, color: AppTheme.colors.statusCritical),
         ),
       ),

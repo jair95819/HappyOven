@@ -189,18 +189,19 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
               initialChildSize: 0.6,
               expand: false,
               builder: (context, scrollController) => Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                padding: EdgeInsets.fromLTRB(AppTheme.spacing.lg, AppTheme.spacing.lg, AppTheme.spacing.lg, AppTheme.spacing.lg),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Seleccionar insumo', style: font.h3.copyWith(fontSize: 15)),
-                    const SizedBox(height: 12),
+                    SizedBox(height: AppTheme.spacing.md),
                     // ── Campo de búsqueda
                     Container(
                       decoration: BoxDecoration(
                         color: colors.surface,
                         borderRadius: AppTheme.radius.brSm,
                         border: Border.all(color: colors.border),
+                        boxShadow: AppTheme.shadows.cardSm,
                       ),
                       child: TextField(
                         autofocus: true,
@@ -217,7 +218,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                                 )
                               : null,
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          contentPadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm + 4, vertical: AppTheme.spacing.sm + 2),
                         ),
                       ),
                     ),
@@ -345,7 +346,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
         minChildSize: 0.3,
         expand: false,
         builder: (context, scrollController) => Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+          padding: EdgeInsets.fromLTRB(AppTheme.spacing.lg, AppTheme.spacing.lg, AppTheme.spacing.lg, AppTheme.spacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -353,7 +354,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                 'Seleccionar producto final',
                 style: font.h3.copyWith(fontSize: 15),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: AppTheme.spacing.md),
               Expanded(
                 child: ListView.builder(
                   controller: scrollController,
@@ -518,7 +519,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
+          padding: EdgeInsets.fromLTRB(AppTheme.spacing.lg, AppTheme.spacing.md, AppTheme.spacing.lg, AppTheme.spacing.sm + 6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -539,7 +540,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
               GestureDetector(
                 onTap: () => context.pop(),
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(AppTheme.spacing.sm),
                   decoration: BoxDecoration(
                     color: colors.titleText,
                     borderRadius: AppTheme.radius.brSm,
@@ -574,12 +575,12 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
           topRight: Radius.circular(AppTheme.radius.xl),
         ),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
+          padding: EdgeInsets.fromLTRB(AppTheme.spacing.md, AppTheme.spacing.lg, AppTheme.spacing.md, AppTheme.spacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildSectionTitle('Información Básica', font),
-              const SizedBox(height: 12),
+              SizedBox(height: AppTheme.spacing.md),
               _buildTextField(
                 controller: _nombreController,
                 label: 'Nombre de la Receta',
@@ -587,7 +588,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                 colors: colors,
                 font: font,
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: AppTheme.spacing.md),
               _buildTextField(
                 controller: _rendimientoController,
                 label: 'Rendimiento (unidades por lote)',
@@ -596,7 +597,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                 font: font,
                 onChanged: () => setState(() {}),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: AppTheme.spacing.md),
               _buildTextField(
                 controller: _instruccionesController,
                 label: 'Instrucciones (opcional)',
@@ -605,22 +606,22 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                 font: font,
                 maxLines: 3,
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: AppTheme.spacing.lg),
 
               _buildSectionTitle('Producto final', font),
-              const SizedBox(height: 12),
+              SizedBox(height: AppTheme.spacing.md),
               _buildSelectorProductoFinal(colors, font),
-              const SizedBox(height: 20),
+              SizedBox(height: AppTheme.spacing.lg),
 
               _buildSectionTitle('Ingredientes', font),
-              const SizedBox(height: 12),
+              SizedBox(height: AppTheme.spacing.md),
               _buildIngredientesList(colors, font),
-              const SizedBox(height: 12),
+              SizedBox(height: AppTheme.spacing.md),
               _buildAgregarIngredienteBtn(colors, font),
-              const SizedBox(height: 20),
+              SizedBox(height: AppTheme.spacing.lg),
 
               _buildSectionTitle('Costos Adicionales (por lote)', font),
-              const SizedBox(height: 12),
+              SizedBox(height: AppTheme.spacing.md),
               _buildTextField(
                 controller: _manoObraController,
                 label: 'Mano de obra (S/)',
@@ -629,7 +630,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                 font: font,
                 onChanged: () => setState(() {}),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: AppTheme.spacing.md),
               _buildTextField(
                 controller: _empaqueController,
                 label: 'Empaque por unidad (S/)',
@@ -638,7 +639,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                 font: font,
                 onChanged: () => setState(() {}),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: AppTheme.spacing.md),
               _buildTextField(
                 controller: _gastosGeneralesController,
                 label: 'Gastos generales (S/)',
@@ -647,10 +648,10 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                 font: font,
                 onChanged: () => setState(() {}),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: AppTheme.spacing.lg),
 
               _buildSectionTitle('Análisis de Costos', font),
-              const SizedBox(height: 12),
+              SizedBox(height: AppTheme.spacing.md),
               if (_tieneInsumosSinPrecio)
                 GestureDetector(
                   onTap: () {
@@ -658,7 +659,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                   },
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(12),
+                    padding: EdgeInsets.all(AppTheme.spacing.md),
                     decoration: BoxDecoration(
                       color: colors.dangerLight,
                       borderRadius: AppTheme.radius.brSm,
@@ -681,10 +682,10 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                   ),
                 ),
               _buildCostoResumen(colors, font),
-              const SizedBox(height: 16),
+              SizedBox(height: AppTheme.spacing.md),
 
               _buildSectionTitle('Simulador de Precio', font),
-              const SizedBox(height: 12),
+              SizedBox(height: AppTheme.spacing.md),
               _buildTextField(
                 controller: _precioVentaController,
                 label: 'Precio de Venta por unidad (S/)',
@@ -693,12 +694,12 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                 font: font,
                 onChanged: () => setState(() {}),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: AppTheme.spacing.md),
               _buildRentabilidadCard(colors, font),
-              const SizedBox(height: 24),
+              SizedBox(height: AppTheme.spacing.lg),
 
               _buildBotonGuardar(colors, font),
-              const SizedBox(height: 12),
+              SizedBox(height: AppTheme.spacing.md),
             ],
           ),
         ),
@@ -727,6 +728,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
         color: colors.card,
         borderRadius: AppTheme.radius.brSm,
         border: Border.all(color: colors.border),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: TextField(
         controller: controller,
@@ -752,11 +754,12 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
       onTap: _seleccionarProductoFinal,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md, vertical: AppTheme.spacing.sm + 4),
         decoration: BoxDecoration(
           color: colors.card,
           borderRadius: AppTheme.radius.brSm,
           border: Border.all(color: colors.border),
+          boxShadow: AppTheme.shadows.cardSm,
         ),
         child: Row(
           children: [
@@ -802,10 +805,11 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
   Widget _buildIngredientesList(AppColors colors, AppFont font) {
     if (_ingredientes.isEmpty) {
       return Container(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(AppTheme.spacing.lg),
         decoration: BoxDecoration(
           color: colors.surface,
           borderRadius: AppTheme.radius.brMd,
+          boxShadow: AppTheme.shadows.cardSm,
         ),
         child: Center(
           child: Text(
@@ -831,9 +835,10 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
               color: colors.card,
               borderRadius: AppTheme.radius.brSm,
               border: Border.all(color: colors.border),
+              boxShadow: AppTheme.shadows.cardSm,
             ),
             child: Padding(
-              padding: const EdgeInsets.all(10),
+              padding: EdgeInsets.all(AppTheme.spacing.sm + 2),
               child: Column(
                 children: [
                   Row(
@@ -843,9 +848,9 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                         child: GestureDetector(
                           onTap: () => _seleccionarArticulo(idx),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 6,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppTheme.spacing.sm,
+                              vertical: AppTheme.spacing.xs + 2,
                             ),
                             decoration: BoxDecoration(
                               color: colors.surface,
@@ -1056,11 +1061,12 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
       onTap: _agregarIngrediente,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.sm + 4),
         decoration: BoxDecoration(
           color: colors.primaryLight,
           borderRadius: AppTheme.radius.brSm,
           border: Border.all(color: colors.primaryBorder),
+          boxShadow: AppTheme.shadows.cardSm,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1083,9 +1089,10 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
         color: colors.card,
         borderRadius: AppTheme.radius.brSm,
         border: Border.all(color: colors.border),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: EdgeInsets.all(AppTheme.spacing.md),
         child: Column(
           children: [
             _costoRow('Insumos', _costoInsumos, colors, font),
@@ -1155,9 +1162,10 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
         color: colors.card,
         borderRadius: AppTheme.radius.brSm,
         border: Border.all(color: colors.border),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: EdgeInsets.all(AppTheme.spacing.md),
         child: Column(
           children: [
             Row(
@@ -1177,9 +1185,9 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: AppTheme.spacing.sm),
             Divider(color: colors.border, height: 1),
-            const SizedBox(height: 8),
+            SizedBox(height: AppTheme.spacing.sm),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -1188,9 +1196,9 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                   style: font.caption.copyWith(fontSize: 12),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacing.sm + 2,
+                    vertical: AppTheme.spacing.xs,
                   ),
                   decoration: BoxDecoration(
                     color: colorRent.withValues(alpha: 0.1),
@@ -1218,7 +1226,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
       onTap: _isSaving ? null : _guardarReceta,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.md),
         decoration: BoxDecoration(
           color: _isSaving ? colors.hint : colors.accent,
           borderRadius: AppTheme.radius.brSm,

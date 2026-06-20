@@ -47,12 +47,12 @@ class _IngresoAlmacenViewState extends ConsumerState<IngresoAlmacenView> {
         minChildSize: 0.3,
         expand: false,
         builder: (context, scrollController) => Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+          padding: EdgeInsets.fromLTRB(AppTheme.spacing.lg, AppTheme.spacing.lg, AppTheme.spacing.lg, AppTheme.spacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Seleccionar artículo', style: font.h3.copyWith(fontSize: 15)),
-              const SizedBox(height: 16),
+              SizedBox(height: AppTheme.spacing.md),
               Expanded(
                 child: ListView.builder(
                   controller: scrollController,
@@ -171,43 +171,43 @@ class _IngresoAlmacenViewState extends ConsumerState<IngresoAlmacenView> {
                   topRight: Radius.circular(AppTheme.radius.xl),
                 ),
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
+                  padding: EdgeInsets.fromLTRB(AppTheme.spacing.md, AppTheme.spacing.lg, AppTheme.spacing.md, AppTheme.spacing.lg),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildSectionTitle('Artículo', font),
-                      const SizedBox(height: 12),
+                      SizedBox(height: AppTheme.spacing.md),
                       _buildSelectorArticulo(colors, font),
-                      const SizedBox(height: 20),
+                      SizedBox(height: AppTheme.spacing.lg),
                       _buildSectionTitle('Cantidad', font),
-                      const SizedBox(height: 12),
+                      SizedBox(height: AppTheme.spacing.md),
                       _buildTextField(
                         controller: _cantidadController,
                         label: 'Cantidad a ingresar',
                         icon: Icons.add_circle_outline,
                         colors: colors, font: font,
                       ),
-                      const SizedBox(height: 20),
+                      SizedBox(height: AppTheme.spacing.lg),
                       _buildSectionTitle('Precio unitario (opcional)', font),
-                      const SizedBox(height: 12),
+                      SizedBox(height: AppTheme.spacing.md),
                       _buildTextField(
                         controller: _precioController,
                         label: 'S/ Precio por unidad',
                         icon: Icons.attach_money_rounded,
                         colors: colors, font: font,
                       ),
-                      const SizedBox(height: 20),
+                      SizedBox(height: AppTheme.spacing.lg),
                       _buildSectionTitle('Proveedor (opcional)', font),
-                      const SizedBox(height: 12),
+                      SizedBox(height: AppTheme.spacing.md),
                       _buildTextField(
                         controller: _proveedorController,
                         label: 'Nombre del proveedor',
                         icon: Icons.business_outlined,
                         colors: colors, font: font,
                       ),
-                      const SizedBox(height: 20),
+                      SizedBox(height: AppTheme.spacing.lg),
                       _buildSectionTitle('Justificación (obligatoria)', font),
-                      const SizedBox(height: 12),
+                      SizedBox(height: AppTheme.spacing.md),
                       _buildTextField(
                         controller: _observacionController,
                         label: 'Motivo del ingreso (ej. compra a proveedor)',
@@ -215,7 +215,7 @@ class _IngresoAlmacenViewState extends ConsumerState<IngresoAlmacenView> {
                         colors: colors, font: font,
                         maxLines: 2,
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: AppTheme.spacing.lg),
                       _buildBotonGuardar(colors, font),
                     ],
                   ),
@@ -234,7 +234,7 @@ class _IngresoAlmacenViewState extends ConsumerState<IngresoAlmacenView> {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
+          padding: EdgeInsets.fromLTRB(AppTheme.spacing.lg, AppTheme.spacing.md, AppTheme.spacing.lg, AppTheme.spacing.sm + 6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -249,7 +249,7 @@ class _IngresoAlmacenViewState extends ConsumerState<IngresoAlmacenView> {
               GestureDetector(
                 onTap: () => context.pop(),
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(AppTheme.spacing.sm),
                   decoration: BoxDecoration(
                     color: colors.titleText,
                     borderRadius: AppTheme.radius.brSm,
@@ -281,6 +281,7 @@ class _IngresoAlmacenViewState extends ConsumerState<IngresoAlmacenView> {
         color: colors.card,
         borderRadius: AppTheme.radius.brSm,
         border: Border.all(color: colors.border),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: TextField(
         controller: controller,
@@ -303,11 +304,12 @@ class _IngresoAlmacenViewState extends ConsumerState<IngresoAlmacenView> {
       onTap: _seleccionarArticulo,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md, vertical: AppTheme.spacing.sm + 4),
         decoration: BoxDecoration(
           color: colors.card,
           borderRadius: AppTheme.radius.brSm,
           border: Border.all(color: colors.border),
+          boxShadow: AppTheme.shadows.cardSm,
         ),
         child: Row(
           children: [
@@ -354,7 +356,7 @@ class _IngresoAlmacenViewState extends ConsumerState<IngresoAlmacenView> {
       onTap: _isSaving ? null : _guardar,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.md),
         decoration: BoxDecoration(
           color: _isSaving ? colors.hint : colors.accent,
           borderRadius: AppTheme.radius.brSm,

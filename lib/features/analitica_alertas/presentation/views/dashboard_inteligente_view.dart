@@ -120,11 +120,11 @@ class DashboardInteligenteView extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildKpiRow(context, state),
-              const SizedBox(height: 16),
+              SizedBox(height: AppTheme.spacing.lg),
               _buildConsumoSemanal(context, state),
-              const SizedBox(height: 14),
+              SizedBox(height: AppTheme.spacing.lg),
               _buildProyeccionIA(context, state),
-              const SizedBox(height: 16),
+              SizedBox(height: AppTheme.spacing.lg),
             ],
           ),
         ),
@@ -157,7 +157,7 @@ class DashboardInteligenteView extends ConsumerWidget {
             },
           ),
         ),
-        const SizedBox(width: 10),
+        SizedBox(width: AppTheme.spacing.md),
         Expanded(
           child: _buildKpiCard(
             context: context,
@@ -191,6 +191,7 @@ class DashboardInteligenteView extends ConsumerWidget {
           color: colorFondo,
           borderRadius: BorderRadius.circular(AppTheme.radius.lg),
           border: Border.all(color: colorBorde, width: 0.5),
+          boxShadow: AppTheme.shadows.cardSm,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,6 +286,7 @@ class DashboardInteligenteView extends ConsumerWidget {
         color: colors.card,
         borderRadius: BorderRadius.circular(AppTheme.radius.lg),
         border: Border.all(color: colors.border, width: 0.5),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -304,7 +306,7 @@ class DashboardInteligenteView extends ConsumerWidget {
             'Salidas y mermas por día. Toca una barra para ver el detalle.',
             style: font.caption.copyWith(fontSize: 10, color: colors.hint),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: AppTheme.spacing.md),
           if (!hayDatos)
             SizedBox(
               height: 120,
@@ -436,6 +438,7 @@ class DashboardInteligenteView extends ConsumerWidget {
         color: colors.card,
         borderRadius: BorderRadius.circular(AppTheme.radius.lg),
         border: Border.all(color: colors.border, width: 0.5),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -476,7 +479,7 @@ class DashboardInteligenteView extends ConsumerWidget {
             ...state.proyecciones.map(
               (i) => _buildInsumoProyeccion(context, i),
             ),
-          const SizedBox(height: 8),
+          SizedBox(height: AppTheme.spacing.md),
           GestureDetector(
             onTap: () => context.push('/dashboard/sugerencias'),
             child: Container(
@@ -486,6 +489,7 @@ class DashboardInteligenteView extends ConsumerWidget {
                 color: colors.primaryLight,
                 borderRadius: AppTheme.radius.brSm,
                 border: Border.all(color: colors.primaryBorder),
+                boxShadow: AppTheme.shadows.cardSm,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -525,7 +529,7 @@ class DashboardInteligenteView extends ConsumerWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: EdgeInsets.only(bottom: AppTheme.spacing.md),
       child: Column(
         children: [
           Row(

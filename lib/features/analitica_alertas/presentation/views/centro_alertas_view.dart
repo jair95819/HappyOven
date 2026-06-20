@@ -172,7 +172,7 @@ class _CentroAlertasViewState extends ConsumerState<CentroAlertasView> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: AppTheme.spacing.lg),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -232,9 +232,9 @@ class _CentroAlertasViewState extends ConsumerState<CentroAlertasView> {
                 ),
               )
             : ListView.separated(
-                padding: const EdgeInsets.fromLTRB(14, 20, 14, 8),
+                padding: EdgeInsets.fromLTRB(AppTheme.spacing.md, AppTheme.spacing.lg, AppTheme.spacing.md, AppTheme.spacing.sm),
                 itemCount: alertas.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 10),
+                separatorBuilder: (_, _) => SizedBox(height: AppTheme.spacing.md),
                 itemBuilder: (context, index) => _buildAlertaCard(alertas[index], colors, font),
               ),
       ),
@@ -268,7 +268,7 @@ class _CentroAlertasViewState extends ConsumerState<CentroAlertasView> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeInOut,
-            padding: const EdgeInsets.all(14),
+            padding: EdgeInsets.all(AppTheme.spacing.md),
             decoration: BoxDecoration(
               color: alerta.leida ? colors.card : config.colorFondo,
               borderRadius: BorderRadius.circular(AppTheme.radius.lg),
@@ -278,6 +278,7 @@ class _CentroAlertasViewState extends ConsumerState<CentroAlertasView> {
                     : (alerta.leida ? colors.border : config.colorBorde),
                 width: isExpanded ? 1.0 : 0.5,
               ),
+              boxShadow: AppTheme.shadows.cardSm,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -389,11 +390,12 @@ class _CentroAlertasViewState extends ConsumerState<CentroAlertasView> {
       return Padding(
         padding: const EdgeInsets.only(top: 12),
         child: Container(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.all(AppTheme.spacing.md),
           decoration: BoxDecoration(
             color: colors.card,
             borderRadius: BorderRadius.circular(AppTheme.radius.md),
             border: Border.all(color: colors.border, width: 0.5),
+            boxShadow: AppTheme.shadows.cardSm,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -401,7 +403,7 @@ class _CentroAlertasViewState extends ConsumerState<CentroAlertasView> {
               Row(
                 children: [
                   Icon(Icons.inventory_2_outlined, size: 16, color: config.colorIcono),
-                  const SizedBox(width: 6),
+                  SizedBox(width: AppTheme.spacing.sm),
                   Expanded(
                     child: Text(articulo.nombre,
                         style: font.label.copyWith(fontSize: 13, color: colors.titleText)),
@@ -425,7 +427,7 @@ class _CentroAlertasViewState extends ConsumerState<CentroAlertasView> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: AppTheme.spacing.md),
               // Barra de progreso visual
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
@@ -438,7 +440,7 @@ class _CentroAlertasViewState extends ConsumerState<CentroAlertasView> {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: AppTheme.spacing.md),
               Row(
                 children: [
                   Expanded(

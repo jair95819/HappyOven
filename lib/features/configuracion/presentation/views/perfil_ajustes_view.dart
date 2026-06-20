@@ -30,11 +30,11 @@ class PerfilAjustesView extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 28),
+                          SizedBox(height: AppTheme.spacing.lg),
                           _buildStatsRow(),
-                          const SizedBox(height: 28),
+                          SizedBox(height: AppTheme.spacing.lg),
                           _buildSectionLabel('CUENTA'),
-                          const SizedBox(height: 10),
+                          SizedBox(height: AppTheme.spacing.sm),
                           _buildSettingsGroup([
                             _SettingItem(
                               icon: Icons.person_outline_rounded,
@@ -49,9 +49,9 @@ class PerfilAjustesView extends ConsumerWidget {
                               onTap: () => context.push('/perfil/password'),
                             ),
                           ]),
-                          const SizedBox(height: 22 ),
+                          SizedBox(height: AppTheme.spacing.lg),
                           _buildSectionLabel('ATAJOS'),
-                          const SizedBox(height: 10),
+                          SizedBox(height: AppTheme.spacing.sm),
                           _buildSettingsGroup([
                             _SettingItem(
                               icon: Icons.insert_chart_outlined_rounded,
@@ -69,9 +69,9 @@ class PerfilAjustesView extends ConsumerWidget {
                               onTap: () => context.push('/catalogo/nuevo'),
                             ),
                           ]),
-                          const SizedBox(height: 22),
+                          SizedBox(height: AppTheme.spacing.lg),
                           _buildSectionLabel('PREFERENCIAS'),
-                          const SizedBox(height: 10),
+                          SizedBox(height: AppTheme.spacing.sm),
                           _buildSettingsGroup([
                             _SettingItem(
                               icon: Icons.dark_mode_outlined,
@@ -110,9 +110,9 @@ class PerfilAjustesView extends ConsumerWidget {
                               ),
                             ),
                           ]),
-                          const SizedBox(height: 32),
+                          SizedBox(height: AppTheme.spacing.xl),
                           _buildLogoutButton(context, ref),
-                          const SizedBox(height: 20),
+                          SizedBox(height: AppTheme.spacing.lg),
                           Center(
                             child: Text(
                               'Happy Oven v1.0.0',
@@ -181,7 +181,7 @@ class PerfilAjustesView extends ConsumerWidget {
               ),
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: AppTheme.spacing.sm),
           Text(
             nombre,
             style: AppTheme.font.h3.copyWith(
@@ -189,17 +189,17 @@ class PerfilAjustesView extends ConsumerWidget {
               letterSpacing: -0.3,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: AppTheme.spacing.xs),
           Text(
             email,
             style: AppTheme.font.bodySmall.copyWith(
               color: Colors.white.withValues(alpha: 0.75),
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: AppTheme.spacing.sm),
           // Badge de rol
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+            padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md, vertical: 5),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(AppTheme.radius.full),
@@ -248,16 +248,17 @@ class PerfilAjustesView extends ConsumerWidget {
   Widget _buildStatChip(IconData icon, String value, String label) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.md),
         decoration: BoxDecoration(
           color: AppTheme.colors.card,
           borderRadius: BorderRadius.circular(AppTheme.radius.md),
           border: Border.all(color: AppTheme.colors.border),
+          boxShadow: AppTheme.shadows.cardSm,
         ),
         child: Column(
           children: [
             Icon(icon, color: AppTheme.colors.primary, size: 20),
-            const SizedBox(height: 6),
+            SizedBox(height: AppTheme.spacing.sm),
             Text(
               value,
               style: AppTheme.font.h3.copyWith(fontSize: 18),
@@ -294,6 +295,7 @@ class PerfilAjustesView extends ConsumerWidget {
         color: AppTheme.colors.card,
         borderRadius: BorderRadius.circular(AppTheme.radius.lg),
         border: Border.all(color: AppTheme.colors.border),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: Column(
         children: List.generate(items.length, (i) {
@@ -314,9 +316,9 @@ class PerfilAjustesView extends ConsumerWidget {
                         : Radius.zero,
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacing.md,
+                      vertical: AppTheme.spacing.md,
                     ),
                     child: Row(
                       children: [
@@ -334,7 +336,7 @@ class PerfilAjustesView extends ConsumerWidget {
                             size: 20,
                           ),
                         ),
-                        const SizedBox(width: 14),
+                        SizedBox(width: AppTheme.spacing.md),
                         // Textos
                         Expanded(
                           child: Column(
@@ -394,12 +396,13 @@ class PerfilAjustesView extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppTheme.radius.md),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 15),
+          padding: EdgeInsets.symmetric(vertical: 15),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppTheme.radius.md),
             border: Border.all(
               color: AppTheme.colors.statusCritical.withValues(alpha: 0.3),
             ),
+            boxShadow: AppTheme.shadows.cardSm,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,

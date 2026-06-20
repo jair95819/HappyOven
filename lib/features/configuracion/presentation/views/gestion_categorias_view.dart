@@ -95,7 +95,7 @@ class _GestionCategoriasViewState extends ConsumerState<GestionCategoriasView> {
             hintText: 'Nombre de la categoría',
             hintStyle: font.hint,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            contentPadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm, vertical: AppTheme.spacing.sm),
           ),
         ),
         actions: [
@@ -140,22 +140,22 @@ class _GestionCategoriasViewState extends ConsumerState<GestionCategoriasView> {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
+                padding: EdgeInsets.fromLTRB(AppTheme.spacing.lg, AppTheme.spacing.md, AppTheme.spacing.lg, AppTheme.spacing.md),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Categorías', style: font.h3),
-                        const SizedBox(height: 2),
-                        Text('${cats.length} categorías', style: font.caption.copyWith(color: colors.accentDark)),
+                        children: [
+                         Text('Categorías', style: font.h3),
+                          SizedBox(height: AppTheme.spacing.sm),
+                          Text('${cats.length} categorías', style: font.caption.copyWith(color: colors.accentDark)),
                       ],
                     ),
                     GestureDetector(
                       onTap: () => _mostrarDialogo(),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                        padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md, vertical: AppTheme.spacing.sm),
                         decoration: BoxDecoration(
                           color: colors.titleText,
                           borderRadius: AppTheme.radius.brSm,
@@ -163,7 +163,7 @@ class _GestionCategoriasViewState extends ConsumerState<GestionCategoriasView> {
                         child: Row(
                           children: [
                             Icon(Icons.add_rounded, color: colors.accent, size: 16),
-                            const SizedBox(width: 6),
+                            SizedBox(width: AppTheme.spacing.sm),
                             Text('Nueva', style: font.label.copyWith(color: colors.accent, fontSize: 13)),
                           ],
                         ),
@@ -193,9 +193,9 @@ class _GestionCategoriasViewState extends ConsumerState<GestionCategoriasView> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.category_outlined, color: colors.hint, size: 48),
-                          const SizedBox(height: 12),
+                          SizedBox(height: AppTheme.spacing.sm),
                           Text('Sin categorías', style: font.label),
-                          const SizedBox(height: 4),
+                          SizedBox(height: AppTheme.spacing.xs),
                           Text('Agrega una categoría nueva', style: font.caption),
                         ],
                       ),
@@ -215,16 +215,17 @@ class _GestionCategoriasViewState extends ConsumerState<GestionCategoriasView> {
                           topRight: Radius.circular(AppTheme.radius.xl),
                         ),
                         child: ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(14, 20, 14, 8),
+                          padding: EdgeInsets.fromLTRB(AppTheme.spacing.md, AppTheme.spacing.lg, AppTheme.spacing.md, AppTheme.spacing.sm),
                           itemCount: filtradas.length,
                           itemBuilder: (_, i) => Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
+                            padding: EdgeInsets.only(bottom: AppTheme.spacing.sm),
                             child: Container(
-                              padding: const EdgeInsets.all(14),
+                              padding: EdgeInsets.all(AppTheme.spacing.md),
                               decoration: BoxDecoration(
                                 color: colors.card,
                                 borderRadius: BorderRadius.circular(AppTheme.radius.lg),
                                 border: Border.all(color: colors.border, width: 0.5),
+                                boxShadow: AppTheme.shadows.cardSm,
                               ),
                               child: Row(
                                 children: [
@@ -236,13 +237,13 @@ class _GestionCategoriasViewState extends ConsumerState<GestionCategoriasView> {
                                     ),
                                     child: Icon(Icons.category_outlined, color: colors.primary, size: 20),
                                   ),
-                                  const SizedBox(width: 12),
+                                  SizedBox(width: AppTheme.spacing.sm),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(filtradas[i].nombre, style: font.label.copyWith(fontSize: 13)),
-                                        const SizedBox(height: 2),
+                                        SizedBox(height: AppTheme.spacing.xs),
                                         Text('Orden: ${filtradas[i].orden}', style: font.caption),
                                       ],
                                     ),
@@ -260,12 +261,12 @@ class _GestionCategoriasViewState extends ConsumerState<GestionCategoriasView> {
                                     itemBuilder: (_) => [
                                       PopupMenuItem(value: 'editar', child: Row(children: [
                                         Icon(Icons.edit_outlined, size: 18, color: colors.primary),
-                                        const SizedBox(width: 8),
+                                        SizedBox(width: AppTheme.spacing.sm),
                                         Text('Editar', style: font.bodySmall),
                                       ])),
                                       PopupMenuItem(value: 'eliminar', child: Row(children: [
                                         Icon(Icons.delete_outline, size: 18, color: colors.statusCritical),
-                                        const SizedBox(width: 8),
+                                        SizedBox(width: AppTheme.spacing.sm),
                                         Text('Eliminar', style: font.bodySmall.copyWith(color: colors.statusCritical)),
                                       ])),
                                     ],
@@ -291,7 +292,7 @@ class _GestionCategoriasViewState extends ConsumerState<GestionCategoriasView> {
       child: GestureDetector(
         onTap: () => setState(() => _tab = tipo),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(

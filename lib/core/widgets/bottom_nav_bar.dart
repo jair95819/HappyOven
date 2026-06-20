@@ -85,16 +85,17 @@ class BottomNavBar extends ConsumerWidget {
             children: [
               activo
                   ? Container(
-                      width: 32,
-                      height: 32,
+                      width: 34,
+                      height: 34,
                       decoration: BoxDecoration(
                         color: AppTheme.colors.primary,
                         borderRadius: BorderRadius.circular(AppTheme.radius.sm),
+                        boxShadow: AppTheme.shadows.cardSm,
                       ),
-                      child: Icon(icono, color: AppTheme.colors.white, size: 16),
+                      child: Icon(icono, color: AppTheme.colors.white, size: 18),
                     )
                   : Icon(icono, color: AppTheme.colors.hint, size: 22),
-              const SizedBox(height: 3),
+              const SizedBox(height: 4),
               Text(
                 etiqueta,
                 style: TextStyle(

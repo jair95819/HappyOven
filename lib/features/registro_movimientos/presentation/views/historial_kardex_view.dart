@@ -39,9 +39,9 @@ class HistorialKardexView extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.error_outline, color: colors.statusCritical, size: 40),
-                    const SizedBox(height: 12),
+                    SizedBox(height: AppTheme.spacing.md),
                     Text('Error al cargar movimientos', style: font.label),
-                    const SizedBox(height: 8),
+                    SizedBox(height: AppTheme.spacing.sm),
                     TextButton(
                       onPressed: () => ref
                           .read(movimientosViewModelProvider.notifier)
@@ -75,7 +75,7 @@ class HistorialKardexView extends ConsumerWidget {
             backgroundColor: colors.primary,
             child: Icon(Icons.document_scanner_outlined, color: colors.white, size: 18),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: AppTheme.spacing.sm),
           FloatingActionButton(
             heroTag: 'salida',
             onPressed: () => context.push('/movimientos/salida'),
@@ -111,7 +111,7 @@ class HistorialKardexView extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Historial Kardex', style: font.h3),
-                  const SizedBox(height: 2),
+                  SizedBox(height: AppTheme.spacing.sm),
                   Text('Todos los movimientos', style: font.caption.copyWith(color: colors.accentDark)),
                 ],
               ),
@@ -121,11 +121,12 @@ class HistorialKardexView extends ConsumerWidget {
                   color: colors.primaryLight,
                   borderRadius: AppTheme.radius.brSm,
                   border: Border.all(color: colors.primaryBorder, width: 0.5),
+                  boxShadow: AppTheme.shadows.cardSm,
                 ),
                 child: Row(
                   children: [
                     Icon(Icons.format_list_numbered_rounded, color: colors.primary, size: 15),
-                    const SizedBox(width: 6),
+                    SizedBox(width: AppTheme.spacing.sm),
                     Text('$total registros', style: font.label.copyWith(fontSize: 12, color: colors.primary)),
                   ],
                 ),
@@ -143,9 +144,9 @@ class HistorialKardexView extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.swap_horiz_rounded, color: colors.hint, size: 48),
-          const SizedBox(height: 12),
+          SizedBox(height: AppTheme.spacing.md),
           Text('Sin movimientos registrados', style: font.label),
-          const SizedBox(height: 4),
+          SizedBox(height: AppTheme.spacing.sm),
           Text('Los ingresos y salidas aparecerán aquí', style: font.caption),
         ],
       ),
@@ -191,7 +192,7 @@ class HistorialKardexView extends ConsumerWidget {
           topRight: Radius.circular(AppTheme.radius.xl),
         ),
         child: ListView.builder(
-          padding: const EdgeInsets.fromLTRB(14, 20, 14, 80),
+          padding: EdgeInsets.fromLTRB(AppTheme.spacing.md, AppTheme.spacing.lg, AppTheme.spacing.md, 80),
           itemCount: grupos.length,
           itemBuilder: (context, index) {
             final grupo = grupos[index];
@@ -199,14 +200,14 @@ class HistorialKardexView extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildSeparadorFecha(grupo.key, colors, font),
-                const SizedBox(height: 10),
+                SizedBox(height: AppTheme.spacing.sm),
                 ...grupo.value.map(
                   (m) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
+                    padding: EdgeInsets.only(bottom: AppTheme.spacing.sm),
                     child: _buildTarjeta(m, colors, font, articulosMap),
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: AppTheme.spacing.sm),
               ],
             );
           },
@@ -237,11 +238,12 @@ class HistorialKardexView extends ConsumerWidget {
     final horaFmt = DateFormat('h:mm a', 'es').format(m.fecha);
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(AppTheme.spacing.md),
       decoration: BoxDecoration(
         color: colors.card,
         borderRadius: AppTheme.radius.brSm,
         border: Border.all(color: colors.border, width: 0.5),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: Row(
         children: [
@@ -253,7 +255,7 @@ class HistorialKardexView extends ConsumerWidget {
             ),
             child: Icon(config.icono, color: config.colorPrincipal, size: 18),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: AppTheme.spacing.sm),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -275,7 +277,7 @@ class HistorialKardexView extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 3),
+                SizedBox(height: AppTheme.spacing.xs),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [

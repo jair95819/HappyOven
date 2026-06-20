@@ -49,22 +49,22 @@ class _EditarPerfilViewState extends ConsumerState<EditarPerfilView> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(28.0),
+          padding: EdgeInsets.all(AppTheme.spacing.xl),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildLabel('Nombre completo'),
-              const SizedBox(height: 6),
+              SizedBox(height: AppTheme.spacing.sm),
               _buildTextField(
                 controller: _nombreController,
                 hint: 'Juan Pérez',
                 icon: Icons.person_outline_rounded,
                 enabled: !authState.cargando,
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: AppTheme.spacing.lg),
 
               _buildLabel('Correo electrónico'),
-              const SizedBox(height: 6),
+              SizedBox(height: AppTheme.spacing.sm),
               _buildTextField(
                 controller: _emailController,
                 hint: 'usuario@gmail.com',
@@ -72,7 +72,7 @@ class _EditarPerfilViewState extends ConsumerState<EditarPerfilView> {
                 keyboardType: TextInputType.emailAddress,
                 enabled: !authState.cargando,
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: AppTheme.spacing.xxl),
 
               _buildPrimaryButton(authState, () async {
                 final exito = await authViewModel.updateProfile(
@@ -126,6 +126,7 @@ class _EditarPerfilViewState extends ConsumerState<EditarPerfilView> {
         color: AppTheme.colors.primaryLight,
         borderRadius: AppTheme.radius.brSm,
         border: Border.all(color: AppTheme.colors.border, width: 0.5),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: TextField(
         controller: controller,
@@ -143,9 +144,9 @@ class _EditarPerfilViewState extends ConsumerState<EditarPerfilView> {
             size: 18,
           ),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 14,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacing.md,
+            vertical: AppTheme.spacing.md,
           ),
         ),
       ),
@@ -156,7 +157,7 @@ class _EditarPerfilViewState extends ConsumerState<EditarPerfilView> {
     return GestureDetector(
       onTap: authState.cargando ? null : onPressed,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.md),
         decoration: BoxDecoration(
           color: authState.cargando
               ? AppTheme.colors.hint

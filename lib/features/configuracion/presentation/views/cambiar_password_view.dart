@@ -47,39 +47,39 @@ class _CambiarPasswordViewState extends ConsumerState<CambiarPasswordView> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(28.0),
+          padding: EdgeInsets.all(AppTheme.spacing.xl),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildLabel('Contraseña actual'),
-              const SizedBox(height: 6),
+              SizedBox(height: AppTheme.spacing.sm),
               _buildPasswordField(
                 controller: _currentPasswordController,
                 hidePassword: _hideCurrentPassword,
                 onVisibilityChanged: () => setState(() => _hideCurrentPassword = !_hideCurrentPassword),
                 enabled: !authState.cargando,
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: AppTheme.spacing.lg),
 
               _buildLabel('Nueva contraseña'),
-              const SizedBox(height: 6),
+              SizedBox(height: AppTheme.spacing.sm),
               _buildPasswordField(
                 controller: _newPasswordController,
                 hidePassword: _hideNewPassword,
                 onVisibilityChanged: () => setState(() => _hideNewPassword = !_hideNewPassword),
                 enabled: !authState.cargando,
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: AppTheme.spacing.lg),
 
               _buildLabel('Confirmar nueva contraseña'),
-              const SizedBox(height: 6),
+              SizedBox(height: AppTheme.spacing.sm),
               _buildPasswordField(
                 controller: _confirmPasswordController,
                 hidePassword: _hideConfirmPassword,
                 onVisibilityChanged: () => setState(() => _hideConfirmPassword = !_hideConfirmPassword),
                 enabled: !authState.cargando,
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: AppTheme.spacing.xxl),
 
               _buildPrimaryButton(authState, () async {
                 if (_newPasswordController.text != _confirmPasswordController.text) {
@@ -143,6 +143,7 @@ class _CambiarPasswordViewState extends ConsumerState<CambiarPasswordView> {
         color: AppTheme.colors.primaryLight,
         borderRadius: AppTheme.radius.brSm,
         border: Border.all(color: AppTheme.colors.border, width: 0.5),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: TextField(
         controller: controller,
@@ -170,9 +171,9 @@ class _CambiarPasswordViewState extends ConsumerState<CambiarPasswordView> {
             onPressed: onVisibilityChanged,
           ),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 14,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacing.md,
+            vertical: AppTheme.spacing.md,
           ),
         ),
       ),
@@ -183,7 +184,7 @@ class _CambiarPasswordViewState extends ConsumerState<CambiarPasswordView> {
     return GestureDetector(
       onTap: authState.cargando ? null : onPressed,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.md),
         decoration: BoxDecoration(
           color: authState.cargando
               ? AppTheme.colors.hint

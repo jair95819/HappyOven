@@ -168,16 +168,16 @@ class _NuevaOrdenProduccionViewState extends ConsumerState<NuevaOrdenProduccionV
                   topRight: Radius.circular(AppTheme.radius.xl),
                 ),
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
+                  padding: EdgeInsets.fromLTRB(AppTheme.spacing.md, 20, AppTheme.spacing.md, 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildSectionTitle('Receta a producir', font),
-                      const SizedBox(height: 12),
+                      SizedBox(height: AppTheme.spacing.md),
                       _buildSelectorReceta(colors, font),
-                      const SizedBox(height: 20),
+                      SizedBox(height: AppTheme.spacing.lg),
                       _buildSectionTitle('Cantidad de lotes', font),
-                      const SizedBox(height: 12),
+                      SizedBox(height: AppTheme.spacing.md),
                       _buildTextField(
                         controller: _lotesController,
                         label: 'Número de lotes',
@@ -186,17 +186,18 @@ class _NuevaOrdenProduccionViewState extends ConsumerState<NuevaOrdenProduccionV
                         font: font,
                       ),
                       if (_recetaSeleccionada != null) ...[
-                        const SizedBox(height: 8),
+                        SizedBox(height: AppTheme.spacing.md),
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: EdgeInsets.all(AppTheme.spacing.md),
                           decoration: BoxDecoration(
                             color: colors.primaryLight,
                             borderRadius: AppTheme.radius.brSm,
+                            boxShadow: AppTheme.shadows.cardSm,
                           ),
                           child: Row(
                             children: [
                               Icon(Icons.info_outline, size: 14, color: colors.primary),
-                              const SizedBox(width: 8),
+                              SizedBox(width: AppTheme.spacing.sm),
                               Expanded(
                                 child: Text(
                                   'Cada lote rinde ${_recetaSeleccionada!.rendimiento.toInt()} unidades. '
@@ -208,9 +209,9 @@ class _NuevaOrdenProduccionViewState extends ConsumerState<NuevaOrdenProduccionV
                           ),
                         ),
                       ],
-                      const SizedBox(height: 20),
+                      SizedBox(height: AppTheme.spacing.lg),
                       _buildSectionTitle('Notas (opcional)', font),
-                      const SizedBox(height: 12),
+                      SizedBox(height: AppTheme.spacing.md),
                       _buildTextField(
                         controller: _notasController,
                         label: 'Notas para la orden',
@@ -219,7 +220,7 @@ class _NuevaOrdenProduccionViewState extends ConsumerState<NuevaOrdenProduccionV
                         font: font,
                         maxLines: 3,
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: AppTheme.spacing.lg),
                       _buildBotonGuardar(colors, font),
                     ],
                   ),
@@ -238,7 +239,7 @@ class _NuevaOrdenProduccionViewState extends ConsumerState<NuevaOrdenProduccionV
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
+          padding: EdgeInsets.fromLTRB(20, AppTheme.spacing.md, 20, AppTheme.spacing.md),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -253,10 +254,11 @@ class _NuevaOrdenProduccionViewState extends ConsumerState<NuevaOrdenProduccionV
               GestureDetector(
                 onTap: () => context.pop(),
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(AppTheme.spacing.sm),
                   decoration: BoxDecoration(
                     color: colors.titleText,
                     borderRadius: AppTheme.radius.brSm,
+                    boxShadow: AppTheme.shadows.cardSm,
                   ),
                   child: Icon(Icons.close_rounded, color: colors.accent, size: 18),
                 ),
@@ -285,6 +287,7 @@ class _NuevaOrdenProduccionViewState extends ConsumerState<NuevaOrdenProduccionV
         color: colors.card,
         borderRadius: AppTheme.radius.brSm,
         border: Border.all(color: colors.border),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: TextField(
         controller: controller,
@@ -312,6 +315,7 @@ class _NuevaOrdenProduccionViewState extends ConsumerState<NuevaOrdenProduccionV
           color: colors.card,
           borderRadius: AppTheme.radius.brSm,
           border: Border.all(color: colors.border),
+          boxShadow: AppTheme.shadows.cardSm,
         ),
         child: Row(
           children: [
@@ -348,10 +352,11 @@ class _NuevaOrdenProduccionViewState extends ConsumerState<NuevaOrdenProduccionV
       onTap: _isSaving ? null : _guardar,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.md),
         decoration: BoxDecoration(
           color: _isSaving ? colors.hint : colors.accent,
           borderRadius: AppTheme.radius.brSm,
+          boxShadow: AppTheme.shadows.cardSm,
         ),
         child: _isSaving
             ? SizedBox(
