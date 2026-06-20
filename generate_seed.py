@@ -69,8 +69,8 @@ def generate_sql():
     for prod in productos[:15]:
         receta_id = str(uuid.uuid4())
         rendimiento = random.randint(8, 24)
-        sql += f"INSERT INTO recetas (id, nombre, rendimiento, tiempo_produccion_min, costo_lote, instrucciones, created_at, updated_at) "
-        sql += f"VALUES ('{receta_id}', 'Receta de {prod['nombre']}', {rendimiento}, 60, 0, 'Instrucciones generadas', NOW(), NOW());\n"
+        sql += f"INSERT INTO recetas (id, nombre, producto_id, rendimiento_unidades, tiempo_produccion_min, costo_lote, instrucciones, created_at, updated_at) "
+        sql += f"VALUES ('{receta_id}', 'Receta de {prod['nombre']}', '{prod['id']}', {rendimiento}, 60, 0, 'Instrucciones generadas', NOW(), NOW());\n"
         
         num_ings = random.randint(3, 6)
         ings = random.sample(insumos, num_ings)

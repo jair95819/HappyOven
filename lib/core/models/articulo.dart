@@ -60,4 +60,33 @@ class Articulo {
       'activo': activo,
     };
   }
+
+  Articulo copyWith({
+    String? id,
+    String? nombre,
+    String? categoriaId,
+    TipoArticulo? tipo,
+    UnidadMedida? unidad,
+    double? stockActual,
+    double? stockMinimo,
+    double? precioUnitario,
+    bool? activo,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return Articulo(
+      id: id ?? this.id,
+      nombre: nombre ?? this.nombre,
+      categoriaId: categoriaId ?? this.categoriaId,
+      tipo: tipo ?? this.tipo,
+      unidad: unidad ?? this.unidad,
+      stockActual: stockActual ?? this.stockActual,
+      stockMinimo: stockMinimo ?? this.stockMinimo,
+      precioUnitario: precioUnitario ?? this.precioUnitario,
+      activo: activo ?? this.activo,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }
+

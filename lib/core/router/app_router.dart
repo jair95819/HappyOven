@@ -38,14 +38,14 @@ bool esRutaSoloAdmin(String location) {
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authViewModelProvider);
-  return GoRouter(
+  final goRouter = GoRouter(
     initialLocation: '/splash',
     errorBuilder: (context, state) => const LoginView(),
     redirect: (context, state) {
+      final authState = ref.read(authViewModelProvider);
       final enSplash = state.matchedLocation == '/splash';
 
-      // Mientras se restaura la sesión persistida, permanecer en el splash.
+      // Mientras se restaura la sesión, permanecer en el splash.
       if (authState.inicializando) {
         return enSplash ? null : '/splash';
       }
@@ -55,13 +55,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == '/login' ||
           state.matchedLocation == '/recuperar-password';
 
-      // Terminada la restauración: salir del splash hacia el destino correcto.
-      if (enSplash) {
-        return autenticado ? '/dashboard' : '/login';
-      }
+      // Terminada la restauración: ir al login siempre.
+      // Nunca redirigimos del splash al dashboard: el usuario debe
+      // iniciar sesión explícitamente.
+      if (enSplash) return '/login';
 
       if (!autenticado && !enLogin) return '/login';
-      if (autenticado && enLogin) return '/dashboard';
 
       // Autorización por rol: bloquear módulos exclusivos de Admin.
       if (autenticado && !(authState.usuario?.esAdmin ?? false)) {
@@ -223,4 +222,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+
+  // Escuchar cambios de autenticación para refrescar el redirect,
+  // sin necesidad de recrear el GoRouter completo.
+  ref.listen(authViewModelProvider, (_, _) {
+    goRouter.refresh();
+  });
+
+  return goRouter;
 });

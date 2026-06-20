@@ -66,4 +66,34 @@ class OrdenProduccion {
       'notas': notas,
     };
   }
+
+  OrdenProduccion copyWith({
+    String? id,
+    String? recetaId,
+    String? usuarioId,
+    int? cantidadLotes,
+    int? cantidadProducida,
+    EstadoOrden? estado,
+    DateTime? fechaProgramada,
+    DateTime? fechaInicio,
+    DateTime? fechaFin,
+    String? notas,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return OrdenProduccion(
+      id: id ?? this.id,
+      recetaId: recetaId ?? this.recetaId,
+      usuarioId: usuarioId ?? this.usuarioId,
+      cantidadLotes: cantidadLotes ?? this.cantidadLotes,
+      cantidadProducida: cantidadProducida ?? this.cantidadProducida,
+      estado: estado ?? this.estado,
+      fechaProgramada: fechaProgramada ?? this.fechaProgramada,
+      fechaInicio: fechaInicio ?? this.fechaInicio,
+      fechaFin: fechaFin ?? this.fechaFin,
+      notas: notas ?? this.notas,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }

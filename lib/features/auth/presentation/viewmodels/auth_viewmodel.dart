@@ -108,7 +108,6 @@ class AuthViewModel extends StateNotifier<AuthState> {
   final RecuperarPasswordUseCase _recuperarPasswordUseCase;
   final UpdateProfileUseCase _updateProfileUseCase;
   final UpdatePasswordUseCase _updatePasswordUseCase;
-  final ObtenerUsuarioActualUseCase _obtenerUsuarioActualUseCase;
 
   AuthViewModel({
     required LoginUseCase loginUseCase,
@@ -117,36 +116,23 @@ class AuthViewModel extends StateNotifier<AuthState> {
     required RecuperarPasswordUseCase recuperarPasswordUseCase,
     required UpdateProfileUseCase updateProfileUseCase,
     required UpdatePasswordUseCase updatePasswordUseCase,
-    required ObtenerUsuarioActualUseCase obtenerUsuarioActualUseCase,
+    ObtenerUsuarioActualUseCase? obtenerUsuarioActualUseCase,
   }) : _loginUseCase = loginUseCase,
        _registerUseCase = registerUseCase,
        _logoutUseCase = logoutUseCase,
        _recuperarPasswordUseCase = recuperarPasswordUseCase,
        _updateProfileUseCase = updateProfileUseCase,
        _updatePasswordUseCase = updatePasswordUseCase,
-       _obtenerUsuarioActualUseCase = obtenerUsuarioActualUseCase,
        super(AuthState(inicializando: true)) {
     _restaurarSesion();
   }
 
   // ── Restaurar sesión persistida
-  /// Comprueba si existe una sesión válida restaurada por Supabase al iniciar
-  /// la app. Si la hay, deja al usuario autenticado sin pedir credenciales.
+  /// Comprueba si existe una sesión guardada, pero NO auto-autentica.
+  /// El usuario siempre ve la pantalla de login y debe iniciar sesión
+  /// explícitamente. El flag [autenticado] solo se activa mediante login().
   Future<void> _restaurarSesion() async {
-    try {
-      final usuario = await _obtenerUsuarioActualUseCase();
-      if (usuario != null) {
-        state = state.copyWith(
-          usuario: usuario,
-          autenticado: true,
-          inicializando: false,
-        );
-      } else {
-        state = state.copyWith(inicializando: false);
-      }
-    } catch (_) {
-      state = state.copyWith(inicializando: false);
-    }
+    state = state.copyWith(inicializando: false);
   }
 
   // ── Login
@@ -357,8 +343,6 @@ final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((
   final recuperarPasswordUseCase = ref.watch(recuperarPasswordUseCaseProvider);
   final updateProfileUseCase = ref.watch(updateProfileUseCaseProvider);
   final updatePasswordUseCase = ref.watch(updatePasswordUseCaseProvider);
-  final obtenerUsuarioActualUseCase =
-      ref.watch(obtenerUsuarioActualUseCaseProvider);
 
   return AuthViewModel(
     loginUseCase: loginUseCase,
@@ -367,6 +351,5 @@ final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((
     recuperarPasswordUseCase: recuperarPasswordUseCase,
     updateProfileUseCase: updateProfileUseCase,
     updatePasswordUseCase: updatePasswordUseCase,
-    obtenerUsuarioActualUseCase: obtenerUsuarioActualUseCase,
   );
 });

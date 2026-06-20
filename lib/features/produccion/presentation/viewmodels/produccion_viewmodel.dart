@@ -55,6 +55,24 @@ class OrdenesProduccionViewModel extends StateNotifier<AsyncValue<List<OrdenProd
     }
   }
 
+  Future<String?> iniciarOrden(OrdenProduccion orden) async {
+    final ordenActualizada = orden.copyWith(
+      estado: EstadoOrden.enProceso,
+      fechaInicio: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+    return actualizarOrden(ordenActualizada);
+  }
+
+  Future<String?> cancelarOrden(OrdenProduccion orden) async {
+    final ordenActualizada = orden.copyWith(
+      estado: EstadoOrden.cancelada,
+      fechaFin: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+    return actualizarOrden(ordenActualizada);
+  }
+
   Future<bool> eliminarOrden(String id) async {
     try {
       await _repository.deleteOrden(id);
@@ -92,139 +110,6 @@ class EjecutarProduccion {
         _articulosRepo = articulosRepo,
         _recetasRepo = recetasRepo;
 
-  /// Ejecuta una orden de producción:
-  /// 1. Descuenta insumos del stock
-  /// 2. Aumenta stock del producto terminado
-  /// 3. Registra movimientos en el Kardex
-  /// 4. Marca orden como completada
-  Future<String?> ejecutar({
-    required OrdenProduccion orden,
-    required String usuarioId,
-    required List<RecetaIngrediente> ingredientes,
-    required double rendimiento,
-    required String productoId,
-  }) async {
-    try {
-      // 0. Validar stock suficiente ANTES de aplicar cualquier cambio (RF-013).
-      //    Si algún insumo no alcanza, se aborta la operación sin tocar el stock.
-      for (final ing in ingredientes) {
-        final insumo = await _articulosRepo.getArticuloById(ing.insumoId);
-        if (insumo == null) continue;
-
-        final requerido = ing.cantidadRequerida * orden.cantidadLotes;
-        if (insumo.stockActual < requerido) {
-          return 'Stock insuficiente para procesar la orden. '
-              'Faltan unidades del insumo requerido.';
-        }
-      }
-
-      // Marcar como en_proceso
-      await _ordenesRepo.updateOrden(orden.copyWith(estado: EstadoOrden.enProceso));
-
-      // 1. Descontar insumos
-      for (final ing in ingredientes) {
-        final insumo = await _articulosRepo.getArticuloById(ing.insumoId);
-        if (insumo == null) continue;
-
-        final cantidadConsumir = ing.cantidadRequerida * orden.cantidadLotes;
-        final nuevoStock = insumo.stockActual - cantidadConsumir;
-
-        final movimiento = Movimiento(
-          id: '',
-          articuloId: ing.insumoId,
-          usuarioId: usuarioId,
-          recetaId: orden.recetaId,
-          ordenProduccionId: orden.id,
-          tipoMovimiento: TipoMovimiento.salidaProduccion,
-          cantidad: cantidadConsumir,
-          precioUnitario: insumo.precioUnitario,
-          observacion: 'Consumo por producción: ${orden.cantidadLotes} lote(s)',
-          porOcr: false,
-          fecha: DateTime.now(),
-        );
-        await _movimientosRepo.registrarMovimiento(movimiento);
-
-        await _articulosRepo.updateArticulo(Articulo(
-          id: insumo.id,
-          nombre: insumo.nombre,
-          categoriaId: insumo.categoriaId,
-          tipo: insumo.tipo,
-          unidad: insumo.unidad,
-          stockActual: nuevoStock,
-          stockMinimo: insumo.stockMinimo,
-          precioUnitario: insumo.precioUnitario,
-          activo: insumo.activo,
-          createdAt: insumo.createdAt,
-          updatedAt: DateTime.now(),
-        ));
-      }
-
-      // 2. Aumentar stock del producto terminado
-      final producto = await _articulosRepo.getArticuloById(productoId);
-      if (producto != null) {
-        final cantidadProducida = (rendimiento * orden.cantidadLotes).toInt();
-        final nuevoStock = producto.stockActual + cantidadProducida;
-
-        final movimiento = Movimiento(
-          id: '',
-          articuloId: productoId,
-          usuarioId: usuarioId,
-          recetaId: orden.recetaId,
-          ordenProduccionId: orden.id,
-          tipoMovimiento: TipoMovimiento.entrada,
-          cantidad: cantidadProducida.toDouble(),
-          precioUnitario: producto.precioUnitario,
-          observacion: 'Producción completada: ${orden.cantidadLotes} lote(s)',
-          porOcr: false,
-          fecha: DateTime.now(),
-        );
-        await _movimientosRepo.registrarMovimiento(movimiento);
-
-        await _articulosRepo.updateArticulo(Articulo(
-          id: producto.id,
-          nombre: producto.nombre,
-          categoriaId: producto.categoriaId,
-          tipo: producto.tipo,
-          unidad: producto.unidad,
-          stockActual: nuevoStock,
-          stockMinimo: producto.stockMinimo,
-          precioUnitario: producto.precioUnitario,
-          activo: producto.activo,
-          createdAt: producto.createdAt,
-          updatedAt: DateTime.now(),
-        ));
-
-        // 3. Marcar orden como completada
-        final unidadesProducidas = (rendimiento * orden.cantidadLotes).toInt();
-        await _ordenesRepo.updateOrden(OrdenProduccion(
-          id: orden.id,
-          recetaId: orden.recetaId,
-          usuarioId: orden.usuarioId,
-          cantidadLotes: orden.cantidadLotes,
-          cantidadProducida: unidadesProducidas,
-          estado: EstadoOrden.completada,
-          fechaProgramada: orden.fechaProgramada,
-          fechaInicio: orden.fechaInicio ?? DateTime.now(),
-          fechaFin: DateTime.now(),
-          notas: orden.notas,
-          createdAt: orden.createdAt,
-          updatedAt: DateTime.now(),
-        ));
-      }
-
-      return null;
-    } catch (e) {
-      // Revertir a pendiente si falla
-      try {
-        await _ordenesRepo.updateOrden(orden.copyWith(estado: EstadoOrden.pendiente));
-      } catch (_) {}
-      return e.toString();
-    }
-  }
-
-  /// Carga la receta y sus ingredientes a partir de la [orden] y ejecuta el
-  /// flujo de producción. Devuelve null si todo fue correcto, o un mensaje de
-  /// error/validación (p. ej. stock insuficiente) en caso contrario.
   Future<String?> ejecutarOrden({
     required OrdenProduccion orden,
     required String usuarioId,
@@ -252,23 +137,110 @@ class EjecutarProduccion {
       productoId: productoId,
     );
   }
-}
 
-extension _OrdenProduccionCopyWith on OrdenProduccion {
-  OrdenProduccion copyWith({EstadoOrden? estado}) {
-    return OrdenProduccion(
-      id: id,
-      recetaId: recetaId,
-      usuarioId: usuarioId,
-      cantidadLotes: cantidadLotes,
-      cantidadProducida: cantidadProducida,
-      estado: estado ?? this.estado,
-      fechaProgramada: fechaProgramada,
-      fechaInicio: fechaInicio,
-      fechaFin: fechaFin,
-      notas: notas,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-    );
+  Future<String?> ejecutar({
+    required OrdenProduccion orden,
+    required String usuarioId,
+    required List<RecetaIngrediente> ingredientes,
+    required double rendimiento,
+    required String productoId,
+  }) async {
+    try {
+      // 1. Validar stock de todos los insumos primero (para abortar si falta alguno)
+      final Map<String, Articulo> insumosModificados = {};
+      final Map<String, double> cantidadesRequeridas = {};
+
+      for (final ingrediente in ingredientes) {
+        final insumo = await _articulosRepo.getArticuloById(ingrediente.insumoId);
+        if (insumo == null) {
+          return 'No se encontró el insumo: ${ingrediente.insumoId}';
+        }
+
+        final cantidadNecesaria = ingrediente.cantidadRequerida * orden.cantidadLotes;
+        if (insumo.stockActual < cantidadNecesaria) {
+          return 'Stock insuficiente para procesar la orden. Faltan unidades del insumo requerido.';
+        }
+
+        insumosModificados[ingrediente.insumoId] = insumo;
+        cantidadesRequeridas[ingrediente.insumoId] = cantidadNecesaria;
+      }
+
+      // 2. Obtener el producto final
+      final productoFinal = await _articulosRepo.getArticuloById(productoId);
+      if (productoFinal == null) {
+        return 'No se encontró el producto final asignado a la receta.';
+      }
+
+      // 3. Modificar stock de insumos y registrar movimientos (salidas)
+      final effectiveUsuarioId = usuarioId.isNotEmpty ? usuarioId : orden.usuarioId;
+      if (effectiveUsuarioId.isEmpty) {
+        return 'Se requiere un usuario autenticado para registrar los movimientos.';
+      }
+
+      for (final ingrediente in ingredientes) {
+        final insumo = insumosModificados[ingrediente.insumoId]!;
+        final cantidadNecesaria = cantidadesRequeridas[ingrediente.insumoId]!;
+
+        final insumoActualizado = insumo.copyWith(
+          stockActual: insumo.stockActual - cantidadNecesaria,
+          updatedAt: DateTime.now(),
+        );
+
+        await _articulosRepo.updateArticulo(insumoActualizado);
+
+        final movimientoInsumo = Movimiento(
+          id: '',
+          articuloId: ingrediente.insumoId,
+          usuarioId: effectiveUsuarioId,
+          recetaId: orden.recetaId,
+          ordenProduccionId: orden.id,
+          tipoMovimiento: TipoMovimiento.salidaProduccion,
+          cantidad: cantidadNecesaria,
+          porOcr: false,
+          fecha: DateTime.now(),
+          observacion: 'Consumo por orden de producción ${orden.id}',
+        );
+
+        await _movimientosRepo.registrarMovimiento(movimientoInsumo);
+      }
+
+      // 4. Modificar stock del producto final y registrar movimiento (entrada)
+      final cantidadProducida = rendimiento * orden.cantidadLotes;
+      final productoActualizado = productoFinal.copyWith(
+        stockActual: productoFinal.stockActual + cantidadProducida,
+        updatedAt: DateTime.now(),
+      );
+
+      await _articulosRepo.updateArticulo(productoActualizado);
+
+      final movimientoProducto = Movimiento(
+        id: '',
+        articuloId: productoId,
+        usuarioId: effectiveUsuarioId,
+        recetaId: orden.recetaId,
+        ordenProduccionId: orden.id,
+        tipoMovimiento: TipoMovimiento.entrada,
+        cantidad: cantidadProducida,
+        porOcr: false,
+        fecha: DateTime.now(),
+        observacion: 'Producción de receta por orden ${orden.id}',
+      );
+
+      await _movimientosRepo.registrarMovimiento(movimientoProducto);
+
+      // 5. Actualizar orden a completada
+      final ordenCompletada = orden.copyWith(
+        estado: EstadoOrden.completada,
+        fechaFin: DateTime.now(),
+        cantidadProducida: cantidadProducida.toInt(),
+        updatedAt: DateTime.now(),
+      );
+
+      await _ordenesRepo.updateOrden(ordenCompletada);
+
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
   }
 }
