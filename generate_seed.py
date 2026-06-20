@@ -52,9 +52,10 @@ def generate_sql():
             stock = int(stock)
             minimo = int(minimo)
             
+        precio = round(random.uniform(0.5, 25.0), 2)
         insumos.append({"id": item_id, "nombre": name, "unidad": unidad})
-        sql += f"INSERT INTO articulos (id, nombre, unidad, stock_actual, stock_minimo, tipo) "
-        sql += f"VALUES ('{item_id}', '{name}', '{unidad}', {stock}, {minimo}, 'insumo');\n"
+        sql += f"INSERT INTO articulos (id, nombre, unidad, stock_actual, stock_minimo, precio_unitario, tipo) "
+        sql += f"VALUES ('{item_id}', '{name}', '{unidad}', {stock}, {minimo}, {precio}, 'insumo');\n"
 
     sql += "\n-- 2. Insertar Productos Finales\n"
     for name in productos_names:

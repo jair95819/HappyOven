@@ -111,7 +111,7 @@ class HappyOvenApp extends ConsumerWidget {
         scaffoldBackgroundColor: const Color(0xFF121212),
         colorScheme: const ColorScheme.dark(
           primary: Color(0xFFFF8C42),
-          secondary: Color(0xFFC8CA9E),
+          secondary: Color(0xFFFF8C42),
           surface: Color(0xFF2C2C2C),
         ),
       ),
