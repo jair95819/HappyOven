@@ -174,96 +174,153 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
           top: Radius.circular(AppTheme.radius.xl),
         ),
       ),
-      builder: (_) => DraggableScrollableSheet(
-        maxChildSize: 0.8,
-        minChildSize: 0.3,
-        expand: false,
-        builder: (context, scrollController) => Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Seleccionar insumo', style: font.h3.copyWith(fontSize: 15)),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  itemCount: insumos.length,
-                  itemBuilder: (context, i) {
-                    final a = insumos[i];
-                    final yaUsado = _ingredientes.any(
-                      (ing) => ing.articulo?.id == a.id,
-                    );
-                    return ListTile(
-                      leading: Icon(
-                        Icons.inventory_2_outlined,
-                        color: yaUsado ? colors.hint : colors.primary,
-                        size: 18,
+      builder: (_) {
+        String filtro = '';
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final insumosFiltrados = filtro.isEmpty
+                ? insumos
+                : insumos.where((a) =>
+                    a.nombre.toLowerCase().contains(filtro.toLowerCase())).toList();
+
+            return DraggableScrollableSheet(
+              maxChildSize: 0.85,
+              minChildSize: 0.4,
+              initialChildSize: 0.6,
+              expand: false,
+              builder: (context, scrollController) => Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Seleccionar insumo', style: font.h3.copyWith(fontSize: 15)),
+                    const SizedBox(height: 12),
+                    // ── Campo de búsqueda
+                    Container(
+                      decoration: BoxDecoration(
+                        color: colors.surface,
+                        borderRadius: AppTheme.radius.brSm,
+                        border: Border.all(color: colors.border),
                       ),
-                      title: Text(
-                        a.nombre,
-                        style: font.bodySmall.copyWith(
-                          color: yaUsado ? colors.hint : colors.titleText,
+                      child: TextField(
+                        autofocus: true,
+                        onChanged: (value) => setModalState(() => filtro = value),
+                        style: font.bodySmall.copyWith(fontSize: 13, color: colors.titleText),
+                        decoration: InputDecoration(
+                          hintText: 'Buscar insumo por nombre...',
+                          hintStyle: font.hint.copyWith(fontSize: 13),
+                          prefixIcon: Icon(Icons.search_rounded, color: colors.primary, size: 20),
+                          suffixIcon: filtro.isNotEmpty
+                              ? GestureDetector(
+                                  onTap: () => setModalState(() => filtro = ''),
+                                  child: Icon(Icons.close_rounded, color: colors.hint, size: 18),
+                                )
+                              : null,
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         ),
                       ),
-                      subtitle: Text(
-                        a.precioUnitario > 0
-                            ? 'S/ ${a.precioUnitario.toStringAsFixed(2)} / ${a.unidad}'
-                            : 'Sin precio / ${a.unidad}',
-                        style: font.caption,
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (yaUsado)
-                            Icon(
-                              Icons.check_rounded,
-                              color: colors.statusNormal,
-                              size: 16,
-                            ),
-                          IconButton(
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            icon: Icon(Icons.edit, size: 16, color: colors.primary),
-                            onPressed: () async {
-                              // Cerrar bottom sheet y abrir el formulario como ruta que retorna el Artículo editado
-                              Navigator.pop(context);
-                              final Articulo? actualizado = await Navigator.of(context).push<Articulo?>(
-                                MaterialPageRoute(builder: (_) => FormularioArticuloView(articulo: a)),
-                              );
-                              if (actualizado != null) {
-                                setState(() {
-                                  _ingredientes[index] = _IngredienteLocal(
-                                    articulo: actualizado,
-                                    cantidad: _ingredientes[index].cantidad > 0 ? _ingredientes[index].cantidad : 1,
-                                  );
-                                });
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                      onTap: yaUsado
-                          ? null
-                          : () {
-                              setState(() {
-                                _ingredientes[index] = _IngredienteLocal(
-                                  articulo: a,
-                                  cantidad: _ingredientes[index].cantidad > 0
-                                      ? _ingredientes[index].cantidad
-                                      : 1,
+                    ),
+                    const SizedBox(height: 8),
+                    // ── Contador de resultados
+                    Text(
+                      '${insumosFiltrados.length} insumo${insumosFiltrados.length != 1 ? 's' : ''}',
+                      style: font.caption.copyWith(fontSize: 11),
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: insumosFiltrados.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.search_off_rounded, color: colors.hint, size: 36),
+                                  const SizedBox(height: 8),
+                                  Text('No se encontraron insumos',
+                                      style: font.hint.copyWith(fontSize: 13)),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              controller: scrollController,
+                              itemCount: insumosFiltrados.length,
+                              itemBuilder: (context, i) {
+                                final a = insumosFiltrados[i];
+                                final yaUsado = _ingredientes.any(
+                                  (ing) => ing.articulo?.id == a.id,
                                 );
-                              });
-                              Navigator.pop(context);
-                            },
-                    );
-                  },
+                                return ListTile(
+                                  leading: Icon(
+                                    Icons.inventory_2_outlined,
+                                    color: yaUsado ? colors.hint : colors.primary,
+                                    size: 18,
+                                  ),
+                                  title: Text(
+                                    a.nombre,
+                                    style: font.bodySmall.copyWith(
+                                      color: yaUsado ? colors.hint : colors.titleText,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    a.precioUnitario > 0
+                                        ? 'S/ ${a.precioUnitario.toStringAsFixed(2)} / ${a.unidad}'
+                                        : 'Sin precio / ${a.unidad}',
+                                    style: font.caption,
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (yaUsado)
+                                        Icon(
+                                          Icons.check_rounded,
+                                          color: colors.statusNormal,
+                                          size: 16,
+                                        ),
+                                      IconButton(
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                        icon: Icon(Icons.edit, size: 16, color: colors.primary),
+                                        onPressed: () async {
+                                          Navigator.pop(context);
+                                          final Articulo? actualizado = await Navigator.of(context).push<Articulo?>(
+                                            MaterialPageRoute(builder: (_) => FormularioArticuloView(articulo: a)),
+                                          );
+                                          if (actualizado != null) {
+                                            setState(() {
+                                              _ingredientes[index] = _IngredienteLocal(
+                                                articulo: actualizado,
+                                                cantidad: _ingredientes[index].cantidad > 0 ? _ingredientes[index].cantidad : 1,
+                                              );
+                                            });
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  onTap: yaUsado
+                                      ? null
+                                      : () {
+                                          setState(() {
+                                            _ingredientes[index] = _IngredienteLocal(
+                                              articulo: a,
+                                              cantidad: _ingredientes[index].cantidad > 0
+                                                  ? _ingredientes[index].cantidad
+                                                  : 1,
+                                            );
+                                          });
+                                          Navigator.pop(context);
+                                        },
+                                );
+                              },
+                            ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
