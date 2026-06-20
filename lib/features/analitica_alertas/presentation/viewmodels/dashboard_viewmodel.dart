@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/models/enums.dart';
+import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/core/repositories/articulos_repository.dart';
 import 'package:happy_oven/core/repositories/movimientos_repository.dart';
 import 'package:happy_oven/core/providers.dart';
@@ -39,6 +40,7 @@ class DashboardState {
   final bool isLoading;
   final double valorTotalInventario;
   final int insumosConStockBajo;
+  final List<Articulo> listaInsumosConStockBajo;
   final List<InsumoProyeccionData> proyecciones;
   final List<ConsumoDiaData> consumoSemanal;
   final String? error;
@@ -47,6 +49,7 @@ class DashboardState {
     this.isLoading = true,
     this.valorTotalInventario = 0.0,
     this.insumosConStockBajo = 0,
+    this.listaInsumosConStockBajo = const [],
     this.proyecciones = const [],
     this.consumoSemanal = const [],
     this.error,
@@ -60,6 +63,7 @@ class DashboardState {
     bool? isLoading,
     double? valorTotalInventario,
     int? insumosConStockBajo,
+    List<Articulo>? listaInsumosConStockBajo,
     List<InsumoProyeccionData>? proyecciones,
     List<ConsumoDiaData>? consumoSemanal,
     String? error,
@@ -68,6 +72,7 @@ class DashboardState {
       isLoading: isLoading ?? this.isLoading,
       valorTotalInventario: valorTotalInventario ?? this.valorTotalInventario,
       insumosConStockBajo: insumosConStockBajo ?? this.insumosConStockBajo,
+      listaInsumosConStockBajo: listaInsumosConStockBajo ?? this.listaInsumosConStockBajo,
       proyecciones: proyecciones ?? this.proyecciones,
       consumoSemanal: consumoSemanal ?? this.consumoSemanal,
       error: error,
@@ -121,6 +126,7 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
 
       double valorTotal = 0.0;
       int stockBajo = 0;
+      List<Articulo> itemsStockBajo = [];
       List<InsumoProyeccionData> proyecciones = [];
 
       for (var insumo in insumos) {
@@ -128,6 +134,7 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
         valorTotal += (insumo.stockActual * insumo.precioUnitario);
         if (insumo.stockActual <= insumo.stockMinimo) {
           stockBajo++;
+          itemsStockBajo.add(insumo);
         }
 
         // 2. Calcular Proyección IA (Días restantes)
@@ -187,6 +194,7 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
         isLoading: false,
         valorTotalInventario: valorTotal,
         insumosConStockBajo: stockBajo,
+        listaInsumosConStockBajo: itemsStockBajo,
         proyecciones: proyecciones,
         consumoSemanal: consumoSemanal,
       );

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
+import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/features/analitica_alertas/presentation/viewmodels/dashboard_viewmodel.dart';
 import 'package:happy_oven/features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:intl/intl.dart';
@@ -149,6 +150,11 @@ class DashboardInteligenteView extends ConsumerWidget {
             colorFondo: colors.dangerLight,
             colorBorde: colors.dangerBorder,
             colorIcono: colors.statusCritical,
+            onTap: () {
+              if (state.listaInsumosConStockBajo.isNotEmpty) {
+                _mostrarDetalleStockBajo(context, state.listaInsumosConStockBajo);
+              }
+            },
           ),
         ),
         const SizedBox(width: 10),
@@ -175,37 +181,91 @@ class DashboardInteligenteView extends ConsumerWidget {
     required Color colorFondo,
     required Color colorBorde,
     required Color colorIcono,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: colorFondo,
-        borderRadius: BorderRadius.circular(AppTheme.radius.lg),
-        border: Border.all(color: colorBorde, width: 0.5),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: colorFondo,
+          borderRadius: BorderRadius.circular(AppTheme.radius.lg),
+          border: Border.all(color: colorBorde, width: 0.5),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: colorIcono.withValues(alpha: 0.12),
+                borderRadius: AppTheme.radius.brSm,
+              ),
+              child: Icon(icono, color: colorIcono, size: 18),
+            ),
+            const SizedBox(height: 10),
+            Text(valor, style: AppTheme.font.h2.copyWith(color: colorIcono)),
+            const SizedBox(height: 2),
+            Text(
+              etiqueta,
+              style: AppTheme.font.caption.copyWith(
+                color: colorIcono.withValues(alpha: 0.8),
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: colorIcono.withValues(alpha: 0.12),
-              borderRadius: AppTheme.radius.brSm,
-            ),
-            child: Icon(icono, color: colorIcono, size: 18),
+    );
+  }
+
+  void _mostrarDetalleStockBajo(BuildContext context, List<Articulo> items) {
+    final colors = AppTheme.colorsOf(context);
+    final font = AppTheme.fontOf(context);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colors.bg,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radius.xl))),
+      builder: (_) => DraggableScrollableSheet(
+        maxChildSize: 0.8,
+        minChildSize: 0.3,
+        expand: false,
+        builder: (context, scrollController) => Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Insumos con stock bajo', style: font.h3.copyWith(fontSize: 18)),
+              const SizedBox(height: 16),
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: items.length,
+                  itemBuilder: (_, i) {
+                    final a = items[i];
+                    final esCritico = (a.stockActual / a.stockMinimo) <= 0.5;
+                    return ListTile(
+                      leading: Icon(
+                        Icons.warning_amber_rounded,
+                        color: esCritico ? colors.statusCritical : colors.primary,
+                        size: 24,
+                      ),
+                      title: Text(a.nombre, style: font.bodySmall),
+                      subtitle: Text(
+                        'Stock actual: ${a.stockActual.toStringAsFixed(0)} ${a.unidad.dbValue}\nMínimo: ${a.stockMinimo.toStringAsFixed(0)} ${a.unidad.dbValue}',
+                        style: font.caption,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 10),
-          Text(valor, style: AppTheme.font.h2.copyWith(color: colorIcono)),
-          const SizedBox(height: 2),
-          Text(
-            etiqueta,
-            style: AppTheme.font.caption.copyWith(
-              color: colorIcono.withValues(alpha: 0.8),
-              height: 1.4,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
