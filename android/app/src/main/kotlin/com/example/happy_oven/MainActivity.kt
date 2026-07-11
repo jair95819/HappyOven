@@ -1,4 +1,4 @@
-package com.example.mi_aplicacion
+package com.example.happy_oven
 
 import io.flutter.embedding.android.FlutterActivity
 
