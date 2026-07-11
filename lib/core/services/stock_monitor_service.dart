@@ -76,16 +76,15 @@ class StockMonitorService {
         if (ratio > 1.0) continue; // Stock normal, no hacer nada
 
         final esCritico = ratio <= 0.5;
-        final severidad = esCritico ? 'critico' : 'bajo';
-
-        if (esCritico) {
-          totalCritico++;
-        } else {
-          totalBajo++;
-        }
 
         // Solo crear alerta en Supabase si no hay una pendiente para este artículo
         if (!idsConAlerta.contains(art.id)) {
+          if (esCritico) {
+            totalCritico++;
+          } else {
+            totalBajo++;
+          }
+
           try {
             final titulo = esCritico ? 'Stock crítico' : 'Stock bajo';
             final mensaje = esCritico
@@ -104,7 +103,7 @@ class StockMonitorService {
               createdAt: DateTime.now(),
             ));
 
-            debugPrint('[StockMonitor] Alerta creada para: ${art.nombre} ($severidad)');
+            debugPrint('[StockMonitor] Alerta creada para: ${art.nombre} (${esCritico ? 'critico' : 'bajo'})');
           } catch (e) {
             debugPrint('[StockMonitor] Error al crear alerta para ${art.nombre}: $e');
           }

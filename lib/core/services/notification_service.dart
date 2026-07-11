@@ -34,6 +34,21 @@ class NotificationService {
       onDidReceiveNotificationResponse: _onNotificationTap,
     );
 
+    // Crear canal de notificaciones explícitamente para Android 8+
+    final androidPlugin =
+        _plugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    if (androidPlugin != null) {
+      const channel = AndroidNotificationChannel(
+        _channelId,
+        _channelName,
+        description: _channelDesc,
+        importance: Importance.high,
+      );
+      await androidPlugin.createNotificationChannel(channel);
+      debugPrint('[NotificationService] Canal de notificaciones creado: $_channelId');
+    }
+
     _initialized = true;
     debugPrint('[NotificationService] Inicializado correctamente');
   }
