@@ -51,10 +51,14 @@ class _NuevaOrdenProduccionViewState extends ConsumerState<NuevaOrdenProduccionV
       return;
     }
 
-    setState(() => _isSaving = true);
-
     final authState = ref.read(authViewModelProvider);
-    final usuarioId = authState.usuario?.id ?? '';
+    final usuarioId = authState.usuario?.id;
+    if (usuarioId == null || usuarioId.isEmpty) {
+      _mostrarError('No se detectó usuario autenticado. Inicia sesión nuevamente.');
+      return;
+    }
+
+    setState(() => _isSaving = true);
 
     final orden = OrdenProduccion(
       id: '',

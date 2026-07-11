@@ -149,6 +149,17 @@ class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionLis
   Future<void> _ejecutarOrden(OrdenProduccion orden) async {
     final colors = AppTheme.colorsOf(context);
 
+    final usuarioId = ref.read(authViewModelProvider).usuario?.id;
+    if (usuarioId == null || usuarioId.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('No se detectó usuario autenticado. Inicia sesión nuevamente.'),
+        backgroundColor: colors.statusCritical,
+        behavior: SnackBarBehavior.floating,
+      ));
+      return;
+    }
+
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -171,7 +182,6 @@ class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionLis
     );
     if (confirmar != true) return;
 
-    final usuarioId = ref.read(authViewModelProvider).usuario?.id ?? '';
     final error = await ref
         .read(ejecutarProduccionProvider)
         .ejecutarOrden(orden: orden, usuarioId: usuarioId);
@@ -277,7 +287,15 @@ class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionLis
 
     if (lotes == null) return;
 
-    final usuarioId = ref.read(authViewModelProvider).usuario?.id ?? '';
+    final usuarioId = ref.read(authViewModelProvider).usuario?.id;
+    if (usuarioId == null || usuarioId.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('No se detectó usuario autenticado. Inicia sesión nuevamente.'),
+        backgroundColor: AppTheme.colorsOf(context).statusCritical,
+      ));
+      return;
+    }
     final orden = OrdenProduccion(
       id: '',
       recetaId: receta.id,

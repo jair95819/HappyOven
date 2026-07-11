@@ -172,8 +172,17 @@ class _RecetarioViewState extends ConsumerState<RecetarioView> {
         .where((a) => a.tipo == TipoArticulo.productoFinal)
         .toList();
 
+    // Productos vinculados a una receta
+    final idsConReceta = recetas.map((r) => r.productoId).toSet();
+
     final filtrados = productos
         .where((p) => p.nombre.toLowerCase().contains(_query.toLowerCase()))
+        .toList();
+
+    // Recetas huérfanas (sin producto vinculado)
+    final recetasHuerfanas = recetas
+        .where((r) => !idsConReceta.contains(r.productoId))
+        .where((r) => _query.isEmpty || r.nombre.toLowerCase().contains(_query.toLowerCase()))
         .toList();
 
     return Container(
@@ -190,7 +199,7 @@ class _RecetarioViewState extends ConsumerState<RecetarioView> {
           topLeft: Radius.circular(AppTheme.radius.xl),
           topRight: Radius.circular(AppTheme.radius.xl),
         ),
-        child: filtrados.isEmpty
+        child: (filtrados.isEmpty && recetasHuerfanas.isEmpty)
             ? Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -225,19 +234,29 @@ class _RecetarioViewState extends ConsumerState<RecetarioView> {
               )
             : ListView.builder(
                 padding: const EdgeInsets.fromLTRB(12, 20, 12, 8),
-                itemCount: filtrados.length,
+                itemCount: filtrados.length + recetasHuerfanas.length,
                 itemBuilder: (context, index) {
-                  final pf = filtrados[index];
-                  Receta? receta;
-                  try {
-                    receta = recetas.firstWhere((r) => r.productoId == pf.id);
-                  } catch (_) {}
-                  return _TarjetaProductoConReceta(
-                    producto: pf,
-                    receta: receta,
-                    colors: colors,
-                    font: font,
-                  );
+                  if (index < filtrados.length) {
+                    final pf = filtrados[index];
+                    Receta? receta;
+                    try {
+                      receta = recetas.firstWhere((r) => r.productoId == pf.id);
+                    } catch (_) {}
+                    return _TarjetaProductoConReceta(
+                      producto: pf,
+                      receta: receta,
+                      colors: colors,
+                      font: font,
+                    );
+                  } else {
+                    final receta = recetasHuerfanas[index - filtrados.length];
+                    return _TarjetaRecetaHuerfana(
+                      receta: receta,
+                      articulos: articulos,
+                      colors: colors,
+                      font: font,
+                    );
+                  }
                 },
               ),
       ),
@@ -782,6 +801,155 @@ class _TarjetaProductoConRecetaState
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _TarjetaRecetaHuerfana extends ConsumerWidget {
+  final Receta receta;
+  final List<Articulo> articulos;
+  final AppColors colors;
+  final AppFont font;
+
+  const _TarjetaRecetaHuerfana({
+    required this.receta,
+    required this.articulos,
+    required this.colors,
+    required this.font,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: AppTheme.spacing.md),
+      child: Container(
+        decoration: BoxDecoration(
+          color: colors.card,
+          borderRadius: BorderRadius.circular(AppTheme.radius.lg),
+          border: Border.all(
+            color: colors.statusCritical.withValues(alpha: 0.3),
+            width: 0.5,
+          ),
+          boxShadow: AppTheme.shadows.cardSm,
+        ),
+        clipBehavior: Clip.hardEdge,
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.link_off, color: colors.statusCritical, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      receta.nombre,
+                      style: font.label.copyWith(fontSize: 14),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Sin producto vinculado',
+                style: font.caption.copyWith(
+                  fontSize: 11,
+                  color: colors.statusCritical,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => context.push('/recetas/editar', extra: receta),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: colors.primaryLight,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: colors.primaryBorder,
+                            width: 0.5,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.edit_outlined,
+                              color: colors.primary,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Vincular producto',
+                              style: font.label.copyWith(
+                                fontSize: 11,
+                                color: colors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () async {
+                        final ok = await ref
+                            .read(recetasViewModelProvider.notifier)
+                            .eliminarReceta(receta.id);
+                        if (context.mounted && ok) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text('Receta eliminada'),
+                              backgroundColor: colors.statusNormal,
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: colors.dangerLight,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: colors.statusCritical.withValues(alpha: 0.2),
+                            width: 0.5,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.delete_outline_rounded,
+                              color: colors.statusCritical,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Eliminar',
+                              style: font.label.copyWith(
+                                fontSize: 11,
+                                color: colors.statusCritical,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

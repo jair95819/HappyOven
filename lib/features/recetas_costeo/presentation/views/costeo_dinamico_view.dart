@@ -421,6 +421,19 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
       return;
     }
 
+    if (_productoSeleccionado == null) {
+      _isSaving = false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Selecciona un producto final para vincular la receta',
+          ),
+          backgroundColor: AppTheme.colorsOf(context).statusCritical,
+        ),
+      );
+      return;
+    }
+
     if (_ingredientes.isEmpty || _ingredientes.any((i) => i.articulo == null)) {
       _isSaving = false;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -441,6 +454,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
             recetaId: _modoEdicion ? widget.receta!.id : '',
             insumoId: i.articulo!.id,
             cantidadRequerida: i.cantidad,
+            unidad: i.articulo!.unidad.dbValue,
           ),
         )
         .toList();
