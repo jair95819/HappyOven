@@ -153,12 +153,14 @@ class EjecutarProduccion {
       for (final ingrediente in ingredientes) {
         final insumo = await _articulosRepo.getArticuloById(ingrediente.insumoId);
         if (insumo == null) {
-          return 'No se encontró el insumo: ${ingrediente.insumoId}';
+          return 'No se encontró el insumo con ID: ${ingrediente.insumoId}';
         }
 
         final cantidadNecesaria = ingrediente.cantidadRequerida * orden.cantidadLotes;
         if (insumo.stockActual < cantidadNecesaria) {
-          return 'Stock insuficiente para procesar la orden. Faltan unidades del insumo requerido.';
+          return 'Stock insuficiente de "${insumo.nombre}". '
+              'Necesitas ${cantidadNecesaria.toStringAsFixed(1)} ${insumo.unidad.dbValue} '
+              'pero solo hay ${insumo.stockActual.toStringAsFixed(1)} ${insumo.unidad.dbValue}.';
         }
 
         insumosModificados[ingrediente.insumoId] = insumo;
@@ -173,7 +175,7 @@ class EjecutarProduccion {
 
       // 3. Modificar stock de insumos y registrar movimientos (salidas)
       final effectiveUsuarioId = usuarioId.isNotEmpty ? usuarioId : orden.usuarioId;
-      if (effectiveUsuarioId.isEmpty) {
+      if (effectiveUsuarioId == null || effectiveUsuarioId.isEmpty) {
         return 'Se requiere un usuario autenticado para registrar los movimientos.';
       }
 

@@ -3,7 +3,7 @@ import 'package:happy_oven/core/models/enums.dart';
 class OrdenProduccion {
   final String id;
   final String recetaId;
-  final String usuarioId;
+  final String? usuarioId;
   final int cantidadLotes;
   final int cantidadProducida;
   final EstadoOrden estado;
@@ -17,7 +17,7 @@ class OrdenProduccion {
   OrdenProduccion({
     required this.id,
     required this.recetaId,
-    required this.usuarioId,
+    this.usuarioId,
     required this.cantidadLotes,
     this.cantidadProducida = 0,
     this.estado = EstadoOrden.pendiente,
@@ -33,7 +33,7 @@ class OrdenProduccion {
     return OrdenProduccion(
       id: json['id'] as String,
       recetaId: json['receta_id'] as String,
-      usuarioId: json['usuario_id'] as String,
+      usuarioId: json['usuario_id'] as String?,
       cantidadLotes: (json['cantidad_lotes'] as num?)?.toInt() ?? 1,
       cantidadProducida: (json['cantidad_producida'] as num?)?.toInt() ?? 0,
       estado: EstadoOrden.fromDb(json['estado'] as String? ?? 'pendiente'),
@@ -47,8 +47,12 @@ class OrdenProduccion {
           ? DateTime.parse(json['fecha_fin'] as String)
           : null,
       notas: json['notas'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : DateTime.now(),
     );
   }
 
@@ -56,7 +60,7 @@ class OrdenProduccion {
     return {
       if (id.isNotEmpty) 'id': id,
       'receta_id': recetaId,
-      'usuario_id': usuarioId,
+      if (usuarioId != null && usuarioId!.isNotEmpty) 'usuario_id': usuarioId,
       'cantidad_lotes': cantidadLotes,
       'cantidad_producida': cantidadProducida,
       'estado': estado.dbValue,
@@ -71,6 +75,7 @@ class OrdenProduccion {
     String? id,
     String? recetaId,
     String? usuarioId,
+    bool clearUsuarioId = false,
     int? cantidadLotes,
     int? cantidadProducida,
     EstadoOrden? estado,
@@ -84,7 +89,7 @@ class OrdenProduccion {
     return OrdenProduccion(
       id: id ?? this.id,
       recetaId: recetaId ?? this.recetaId,
-      usuarioId: usuarioId ?? this.usuarioId,
+      usuarioId: clearUsuarioId ? null : (usuarioId ?? this.usuarioId),
       cantidadLotes: cantidadLotes ?? this.cantidadLotes,
       cantidadProducida: cantidadProducida ?? this.cantidadProducida,
       estado: estado ?? this.estado,

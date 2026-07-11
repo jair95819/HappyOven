@@ -63,6 +63,7 @@ class RecetasViewModel extends StateNotifier<AsyncValue<List<Receta>>> {
                 recetaId: nuevaReceta.id,
                 insumoId: i.insumoId,
                 cantidadRequerida: i.cantidadRequerida,
+                unidad: i.unidad,
               ),
             )
             .toList();
