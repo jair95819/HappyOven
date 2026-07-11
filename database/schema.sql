@@ -114,3 +114,41 @@ CREATE INDEX idx_alertas_leida ON alertas(leida);
 CREATE INDEX idx_receta_ingredientes_receta ON receta_ingredientes(receta_id);
 CREATE INDEX idx_ordenes_produccion_estado ON ordenes_produccion(estado);
 CREATE INDEX idx_ordenes_produccion_fecha ON ordenes_produccion(fecha_programada);
+
+-- ============================================
+-- RLS POLICIES
+-- Run this section in Supabase Dashboard > SQL Editor
+-- if RLS is enabled on your tables
+-- ============================================
+
+-- PERFILES
+ALTER TABLE perfiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "anon_perfiles_all" ON perfiles FOR ALL USING (true) WITH CHECK (true);
+
+-- CATEGORIAS
+ALTER TABLE categorias ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "anon_categorias_all" ON categorias FOR ALL USING (true) WITH CHECK (true);
+
+-- ARTICULOS
+ALTER TABLE articulos ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "anon_articulos_all" ON articulos FOR ALL USING (true) WITH CHECK (true);
+
+-- RECETAS
+ALTER TABLE recetas ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "anon_recetas_all" ON recetas FOR ALL USING (true) WITH CHECK (true);
+
+-- RECETA_INGREDIENTES
+ALTER TABLE receta_ingredientes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "anon_receta_ingredientes_all" ON receta_ingredientes FOR ALL USING (true) WITH CHECK (true);
+
+-- ORDENES_PRODUCCION
+ALTER TABLE ordenes_produccion ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "anon_ordenes_all" ON ordenes_produccion FOR ALL USING (true) WITH CHECK (true);
+
+-- MOVIMIENTOS
+ALTER TABLE movimientos ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "anon_movimientos_all" ON movimientos FOR ALL USING (true) WITH CHECK (true);
+
+-- ALERTAS
+ALTER TABLE alertas ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "anon_alertas_all" ON alertas FOR ALL USING (true) WITH CHECK (true);
