@@ -96,10 +96,15 @@ class SupabaseService {
 
   // ── Auth: Update user auth attributes
   
-  /// Actualiza el correo electrónico del usuario actual
-  Future<void> updateAuthEmail(String email) async {
+  /// Actualiza el correo electrónico del usuario actual.
+  /// Devuelve `true` si Supabase requiere confirmación (envía enlace al nuevo correo).
+  Future<bool> updateAuthEmail(String email) async {
     try {
-      await _client.auth.updateUser(UserAttributes(email: email));
+      final response = await _client.auth.updateUser(UserAttributes(email: email));
+      // Supabase returns the user with the new email in `response.user` when
+      // the change is immediate, OR the old email when confirmation is pending.
+      // In either case, the update was accepted — we just inform the caller.
+      return response.user?.email != email;
     } on AuthException catch (e) {
       throw Exception('Error al actualizar correo: ${e.message}');
     }

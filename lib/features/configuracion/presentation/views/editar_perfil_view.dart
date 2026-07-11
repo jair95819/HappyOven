@@ -65,25 +65,55 @@ class _EditarPerfilViewState extends ConsumerState<EditarPerfilView> {
 
               _buildLabel('Correo electrónico'),
               SizedBox(height: AppTheme.spacing.sm),
-              _buildTextField(
-                controller: _emailController,
-                hint: 'usuario@gmail.com',
-                icon: Icons.mail_outline_rounded,
-                keyboardType: TextInputType.emailAddress,
-                enabled: !authState.cargando,
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacing.md,
+                  vertical: AppTheme.spacing.md,
+                ),
+                decoration: BoxDecoration(
+                  color: AppTheme.colors.surface,
+                  borderRadius: AppTheme.radius.brSm,
+                  border: Border.all(color: AppTheme.colors.border, width: 0.5),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.mail_outline_rounded, color: AppTheme.colors.hint, size: 18),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _emailController.text,
+                        style: AppTheme.font.bodySmall.copyWith(
+                          color: AppTheme.colors.hint,
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.lock_outline_rounded, color: AppTheme.colors.hint, size: 14),
+                  ],
+                ),
+              ),
+              SizedBox(height: 4),
+              Text(
+                'Para cambiar el correo contacta al administrador',
+                style: AppTheme.font.caption.copyWith(
+                  fontSize: 11,
+                  color: AppTheme.colors.hint,
+                ),
               ),
               SizedBox(height: AppTheme.spacing.xxl),
 
               _buildPrimaryButton(authState, () async {
                 final exito = await authViewModel.updateProfile(
                   _nombreController.text.trim(),
-                  _emailController.text.trim(),
+                  '', // Email read-only, no enviar cambio
                 );
                 if (exito && mounted) {
+                  final msg = authState.mensaje ?? 'Perfil actualizado exitosamente';
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Perfil actualizado exitosamente'),
+                      content: Text(msg),
                       backgroundColor: Colors.green.shade600,
+                      duration: const Duration(seconds: 4),
                     ),
                   );
                   context.pop();

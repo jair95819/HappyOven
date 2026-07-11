@@ -60,6 +60,7 @@ class AuthState {
   final User? usuario;
   final String? token;
   final String? error;
+  final String? mensaje;
   final bool autenticado;
 
   /// Indica que aún se está restaurando la sesión persistida al arrancar la app.
@@ -72,6 +73,7 @@ class AuthState {
     this.usuario,
     this.token,
     this.error,
+    this.mensaje,
     this.autenticado = false,
     this.inicializando = false,
   });
@@ -81,6 +83,7 @@ class AuthState {
     User? usuario,
     String? token,
     String? error,
+    String? mensaje,
     bool? autenticado,
     bool? inicializando,
   }) {
@@ -89,6 +92,7 @@ class AuthState {
       usuario: usuario ?? this.usuario,
       token: token ?? this.token,
       error: error ?? this.error,
+      mensaje: mensaje ?? this.mensaje,
       autenticado: autenticado ?? this.autenticado,
       inicializando: inicializando ?? this.inicializando,
     );
@@ -294,6 +298,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
       if (response.exito) {
         state = state.copyWith(
           usuario: response.usuario,
+          mensaje: response.mensaje,
           cargando: false,
         );
         return true;

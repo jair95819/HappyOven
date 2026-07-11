@@ -231,23 +231,37 @@ class AuthRepository implements IAuthRepository {
         throw Exception('No hay usuario autenticado');
       }
 
-      // Actualizar email si es diferente
-      if (email != null && email.isNotEmpty && email != user.email) {
-        await _supabaseService.updateAuthEmail(email);
-      }
-
-      // Actualizar perfil
+      // 1. Actualizar nombre siempre (independiente del email)
       await _supabaseService.updateUserProfile(user.id, {
         'nombre_completo': nombre,
       });
 
+      // 2. Actualizar email si es diferente (manejo independiente)
+      String? emailMessage;
+      if (email != null && email.isNotEmpty && email != user.email) {
+        try {
+          final requiereConfirmacion = await _supabaseService.updateAuthEmail(email);
+          if (requiereConfirmacion) {
+            emailMessage = 'Se envió un enlace de confirmación a $email';
+          }
+        } catch (e) {
+          // Si falla el email, el nombre ya se guardó — reportar el error del email
+          emailMessage = 'Error al cambiar correo: ${e.toString()}';
+        }
+      }
+
       final updatedUser = await obtenerUsuarioActual();
+
+      // Combinar mensajes: nombre + email
+      final mensaje = emailMessage != null
+          ? 'Nombre actualizado. $emailMessage'
+          : 'Perfil actualizado exitosamente';
 
       return AuthResponse(
         token: _localStorageService.getToken() ?? '',
-        usuario: updatedUser ?? User(id: '', nombre: '', email: '', createdAt: DateTime.now(), activo: false),
+        usuario: updatedUser ?? User(id: user.id, nombre: nombre, email: user.email ?? '', createdAt: DateTime.now(), activo: true),
         exito: true,
-        mensaje: 'Perfil actualizado exitosamente',
+        mensaje: mensaje,
       );
     } catch (e) {
       return AuthResponse(
