@@ -12,13 +12,17 @@ import 'package:happy_oven/core/repositories/i_recetas_repository.dart';
 import 'package:happy_oven/core/providers.dart';
 
 final ordenesProduccionProvider =
-    StateNotifierProvider<OrdenesProduccionViewModel, AsyncValue<List<OrdenProduccion>>>((ref) {
+    StateNotifierProvider<
+      OrdenesProduccionViewModel,
+      AsyncValue<List<OrdenProduccion>>
+    >((ref) {
       return OrdenesProduccionViewModel(
         ref.watch(ordenesProduccionRepositoryProvider),
       );
     });
 
-class OrdenesProduccionViewModel extends StateNotifier<AsyncValue<List<OrdenProduccion>>> {
+class OrdenesProduccionViewModel
+    extends StateNotifier<AsyncValue<List<OrdenProduccion>>> {
   final OrdenesProduccionRepository _repository;
 
   OrdenesProduccionViewModel(this._repository) : super(const AsyncLoading()) {
@@ -105,10 +109,10 @@ class EjecutarProduccion {
     required IMovimientosRepository movimientosRepo,
     required IArticulosRepository articulosRepo,
     required IRecetasRepository recetasRepo,
-  })  : _ordenesRepo = ordenesRepo,
-        _movimientosRepo = movimientosRepo,
-        _articulosRepo = articulosRepo,
-        _recetasRepo = recetasRepo;
+  }) : _ordenesRepo = ordenesRepo,
+       _movimientosRepo = movimientosRepo,
+       _articulosRepo = articulosRepo,
+       _recetasRepo = recetasRepo;
 
   Future<String?> ejecutarOrden({
     required OrdenProduccion orden,
@@ -151,16 +155,18 @@ class EjecutarProduccion {
       final Map<String, double> cantidadesRequeridas = {};
 
       for (final ingrediente in ingredientes) {
-        final insumo = await _articulosRepo.getArticuloById(ingrediente.insumoId);
+        final insumo = await _articulosRepo.getArticuloById(
+          ingrediente.insumoId,
+        );
         if (insumo == null) {
           return 'No se encontró el insumo con ID: ${ingrediente.insumoId}';
         }
 
-        final cantidadNecesaria = ingrediente.cantidadRequerida * orden.cantidadLotes;
+        final cantidadNecesaria =
+            ingrediente.cantidadRequerida * orden.cantidadLotes;
         if (insumo.stockActual < cantidadNecesaria) {
-          return 'Stock insuficiente de "${insumo.nombre}". '
-              'Necesitas ${cantidadNecesaria.toStringAsFixed(1)} ${insumo.unidad.dbValue} '
-              'pero solo hay ${insumo.stockActual.toStringAsFixed(1)} ${insumo.unidad.dbValue}.';
+          return 'Stock insuficiente para procesar la orden. '
+              'Faltan unidades del insumo requerido.';
         }
 
         insumosModificados[ingrediente.insumoId] = insumo;
@@ -174,7 +180,9 @@ class EjecutarProduccion {
       }
 
       // 3. Modificar stock de insumos y registrar movimientos (salidas)
-      final effectiveUsuarioId = usuarioId.isNotEmpty ? usuarioId : orden.usuarioId;
+      final effectiveUsuarioId = usuarioId.isNotEmpty
+          ? usuarioId
+          : orden.usuarioId;
       if (effectiveUsuarioId == null || effectiveUsuarioId.isEmpty) {
         return 'Se requiere un usuario autenticado para registrar los movimientos.';
       }
