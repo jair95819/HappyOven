@@ -11,8 +11,31 @@ class BottomNavBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // El módulo de Recetas (índice 2) es exclusivo del rol Administrador.
-    final esAdmin = ref.watch(authViewModelProvider).usuario?.esAdmin ?? false;
+    // El botón de Recetas debe estar visible en la navegación para seguir el flujo
+    // de operación, aunque la ruta siga restringida por rol si el usuario no es admin.
+    final items = <_NavItemData>[
+      _NavItemData(icono: Icons.home_rounded, etiqueta: 'Inicio', index: 0),
+      _NavItemData(
+        icono: Icons.inventory_2_outlined,
+        etiqueta: 'Inventario',
+        index: 1,
+      ),
+      _NavItemData(
+        icono: Icons.menu_book_outlined,
+        etiqueta: 'Recetas',
+        index: 2,
+      ),
+      _NavItemData(
+        icono: Icons.bar_chart_rounded,
+        etiqueta: 'Reporte',
+        index: 3,
+      ),
+      _NavItemData(
+        icono: Icons.settings_outlined,
+        etiqueta: 'Configuración',
+        index: 4,
+      ),
+    ];
 
     return Container(
       decoration: BoxDecoration(
@@ -27,39 +50,15 @@ class BottomNavBar extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(
-                icono: Icons.bar_chart_rounded,
-                etiqueta: 'Dashboard',
-                index: 0,
-              ),
-              _buildNavItem(
-                icono: Icons.inventory_2_outlined,
-                etiqueta: 'Inventario',
-                index: 1,
-              ),
-              if (esAdmin)
-                _buildNavItem(
-                  icono: Icons.menu_book_outlined,
-                  etiqueta: 'Recetas',
-                  index: 2,
-                ),
-              _buildNavItem(
-                icono: Icons.factory_outlined,
-                etiqueta: 'Produc.',
-                index: 3,
-              ),
-              _buildNavItem(
-                icono: Icons.swap_horiz_rounded,
-                etiqueta: 'Mov.',
-                index: 4,
-              ),
-              _buildNavItem(
-                icono: Icons.notifications_outlined,
-                etiqueta: 'Alertas',
-                index: 5,
-              ),
-            ],
+            children: items
+                .map(
+                  (item) => _buildNavItem(
+                    icono: item.icono,
+                    etiqueta: item.etiqueta,
+                    index: item.index,
+                  ),
+                )
+                .toList(),
           ),
         ),
       ),
@@ -92,7 +91,11 @@ class BottomNavBar extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(AppTheme.radius.sm),
                         boxShadow: AppTheme.shadows.cardSm,
                       ),
-                      child: Icon(icono, color: AppTheme.colors.white, size: 18),
+                      child: Icon(
+                        icono,
+                        color: AppTheme.colors.white,
+                        size: 18,
+                      ),
                     )
                   : Icon(icono, color: AppTheme.colors.hint, size: 22),
               const SizedBox(height: 4),
@@ -101,7 +104,9 @@ class BottomNavBar extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: activo ? FontWeight.w600 : FontWeight.normal,
-                  color: activo ? AppTheme.colors.primary : AppTheme.colors.hint,
+                  color: activo
+                      ? AppTheme.colors.primary
+                      : AppTheme.colors.hint,
                 ),
               ),
             ],
@@ -110,4 +115,16 @@ class BottomNavBar extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _NavItemData {
+  final IconData icono;
+  final String etiqueta;
+  final int index;
+
+  const _NavItemData({
+    required this.icono,
+    required this.etiqueta,
+    required this.index,
+  });
 }

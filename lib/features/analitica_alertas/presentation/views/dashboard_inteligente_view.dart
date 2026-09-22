@@ -390,7 +390,9 @@ class _DashboardInteligenteViewState
                                   final maxValue = state.consumoSemanal
                                       .map((e) => e.cantidad)
                                       .reduce((a, b) => a > b ? a : b);
-                                  final safeMax = maxValue <= 0 ? 1.0 : maxValue;
+                                  final safeMax = maxValue <= 0
+                                      ? 1.0
+                                      : maxValue;
 
                                   return SizedBox(
                                     height: 110,
@@ -398,8 +400,8 @@ class _DashboardInteligenteViewState
                                       crossAxisAlignment:
                                           CrossAxisAlignment.end,
                                       children: state.consumoSemanal.map((dia) {
-                                        final height = 52 +
-                                            (dia.cantidad / safeMax) * 48;
+                                        final height =
+                                            52 + (dia.cantidad / safeMax) * 48;
                                         return Expanded(
                                           child: Padding(
                                             padding: const EdgeInsets.symmetric(

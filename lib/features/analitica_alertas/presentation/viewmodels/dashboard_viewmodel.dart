@@ -41,6 +41,7 @@ class DashboardState {
   final double valorTotalInventario;
   final int insumosConStockBajo;
   final List<Articulo> listaInsumosConStockBajo;
+  final List<Articulo> inventarioTop;
   final List<InsumoProyeccionData> proyecciones;
   final List<ConsumoDiaData> consumoSemanal;
   final String? error;
@@ -50,6 +51,7 @@ class DashboardState {
     this.valorTotalInventario = 0.0,
     this.insumosConStockBajo = 0,
     this.listaInsumosConStockBajo = const [],
+    this.inventarioTop = const [],
     this.proyecciones = const [],
     this.consumoSemanal = const [],
     this.error,
@@ -64,6 +66,7 @@ class DashboardState {
     double? valorTotalInventario,
     int? insumosConStockBajo,
     List<Articulo>? listaInsumosConStockBajo,
+    List<Articulo>? inventarioTop,
     List<InsumoProyeccionData>? proyecciones,
     List<ConsumoDiaData>? consumoSemanal,
     String? error,
@@ -72,7 +75,9 @@ class DashboardState {
       isLoading: isLoading ?? this.isLoading,
       valorTotalInventario: valorTotalInventario ?? this.valorTotalInventario,
       insumosConStockBajo: insumosConStockBajo ?? this.insumosConStockBajo,
-      listaInsumosConStockBajo: listaInsumosConStockBajo ?? this.listaInsumosConStockBajo,
+      listaInsumosConStockBajo:
+          listaInsumosConStockBajo ?? this.listaInsumosConStockBajo,
+      inventarioTop: inventarioTop ?? this.inventarioTop,
       proyecciones: proyecciones ?? this.proyecciones,
       consumoSemanal: consumoSemanal ?? this.consumoSemanal,
       error: error,
@@ -87,12 +92,15 @@ List<ConsumoDiaData> calcularConsumoSemanal(
   required DateTime hoy,
 }) {
   final inicioDia = DateTime(hoy.year, hoy.month, hoy.day);
-  final dias =
-      List.generate(7, (i) => inicioDia.subtract(Duration(days: 6 - i)));
+  final dias = List.generate(
+    7,
+    (i) => inicioDia.subtract(Duration(days: 6 - i)),
+  );
   final mapa = {for (final d in dias) d: 0.0};
 
   for (final m in movimientos) {
-    if (m.tipoMovimiento == TipoMovimiento.salidaProduccion || m.tipoMovimiento == TipoMovimiento.merma) {
+    if (m.tipoMovimiento == TipoMovimiento.salidaProduccion ||
+        m.tipoMovimiento == TipoMovimiento.merma) {
       final d = DateTime(m.fecha.year, m.fecha.month, m.fecha.day);
       if (mapa.containsKey(d)) {
         mapa[d] = mapa[d]! + (m.cantidad as num).toDouble();
@@ -127,7 +135,12 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
       double valorTotal = 0.0;
       int stockBajo = 0;
       List<Articulo> itemsStockBajo = [];
+      List<Articulo> inventarioTop = [];
       List<InsumoProyeccionData> proyecciones = [];
+
+      final inventarioOrdenado = [...insumos]
+        ..sort((a, b) => b.stockActual.compareTo(a.stockActual));
+      inventarioTop = inventarioOrdenado.take(5).toList();
 
       for (var insumo in insumos) {
         // 1. Calcular KPIs Básicos
@@ -166,17 +179,16 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
         // Para el porcentaje visual de la barra (ej: 14 días o más es 100% verde)
         double porcentaje = (diasRestantes / 14.0).clamp(0.0, 1.0);
 
-        // Solo mostrar los que se agotarán en menos de 30 días, y priorizar los más urgentes
-        if (diasRestantes < 30) {
-          proyecciones.add(
-            InsumoProyeccionData(
-              nombre: insumo.nombre,
-              diasRestantes: diasRestantes,
-              stockPorcentaje: porcentaje,
-              consumoDiario: consumoDiario,
-            ),
-          );
-        }
+        // Incluir todos los insumos para que el panel de almacén muestre
+        // productos reales aunque no estén cerca del agotamiento.
+        proyecciones.add(
+          InsumoProyeccionData(
+            nombre: insumo.nombre,
+            diasRestantes: diasRestantes,
+            stockPorcentaje: porcentaje,
+            consumoDiario: consumoDiario,
+          ),
+        );
       }
 
       // Ordenar proyecciones: los que se agotan primero arriba
@@ -187,14 +199,17 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
         proyecciones = proyecciones.sublist(0, 5);
       }
 
-      final consumoSemanal =
-          calcularConsumoSemanal(movimientos, hoy: DateTime.now());
+      final consumoSemanal = calcularConsumoSemanal(
+        movimientos,
+        hoy: DateTime.now(),
+      );
 
       state = state.copyWith(
         isLoading: false,
         valorTotalInventario: valorTotal,
         insumosConStockBajo: stockBajo,
         listaInsumosConStockBajo: itemsStockBajo,
+        inventarioTop: inventarioTop,
         proyecciones: proyecciones,
         consumoSemanal: consumoSemanal,
       );

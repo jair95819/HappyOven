@@ -1,30 +1,24 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:happy_oven/core/models/articulo.dart';
+import 'package:happy_oven/core/models/receta.dart';
 import 'package:happy_oven/core/widgets/app_shell.dart';
+import 'package:happy_oven/features/analitica_alertas/presentation/views/centro_alertas_view.dart';
+import 'package:happy_oven/features/analitica_alertas/presentation/views/dashboard_inteligente_view.dart';
+import 'package:happy_oven/features/analitica_alertas/presentation/views/reportes_view.dart';
 import 'package:happy_oven/features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:happy_oven/features/auth/presentation/views/login_view.dart';
 import 'package:happy_oven/features/auth/presentation/views/recuperar_password_view.dart';
-import 'package:happy_oven/features/analitica_alertas/presentation/views/dashboard_inteligente_view.dart';
-import 'package:happy_oven/features/analitica_alertas/presentation/views/centro_alertas_view.dart';
-import 'package:happy_oven/features/analitica_alertas/presentation/views/reportes_view.dart';
-import 'package:happy_oven/features/analitica_alertas/presentation/views/sugerencias_compra_view.dart';
-import 'package:happy_oven/core/models/articulo.dart';
-import 'package:happy_oven/core/models/receta.dart';
+import 'package:happy_oven/features/auth/presentation/views/splash_view.dart';
+import 'package:happy_oven/features/configuracion/presentation/views/cambiar_password_view.dart';
+import 'package:happy_oven/features/configuracion/presentation/views/editar_perfil_view.dart';
+import 'package:happy_oven/features/configuracion/presentation/views/gestion_categorias_view.dart';
+import 'package:happy_oven/features/configuracion/presentation/views/perfil_ajustes_view.dart';
+import 'package:happy_oven/features/recetas_costeo/presentation/views/costeo_dinamico_view.dart';
+import 'package:happy_oven/features/recetas_costeo/presentation/views/recetario_view.dart';
+import 'package:happy_oven/features/registro_movimientos/presentation/views/ingreso_almacen_view.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/views/catalogo_general_view.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/views/formulario_articulo_view.dart';
-import 'package:happy_oven/features/registro_movimientos/presentation/views/historial_kardex_view.dart';
-import 'package:happy_oven/features/registro_movimientos/presentation/views/ingreso_ocr_view.dart';
-import 'package:happy_oven/features/registro_movimientos/presentation/views/salida_almacen_view.dart';
-import 'package:happy_oven/features/registro_movimientos/presentation/views/ingreso_almacen_view.dart';
-import 'package:happy_oven/features/recetas_costeo/presentation/views/recetario_view.dart';
-import 'package:happy_oven/features/recetas_costeo/presentation/views/costeo_dinamico_view.dart';
-import 'package:happy_oven/features/produccion/presentation/views/ordenes_produccion_list_view.dart';
-import 'package:happy_oven/features/produccion/presentation/views/nueva_orden_produccion_view.dart';
-import 'package:happy_oven/features/configuracion/presentation/views/perfil_ajustes_view.dart';
-import 'package:happy_oven/features/configuracion/presentation/views/editar_perfil_view.dart';
-import 'package:happy_oven/features/configuracion/presentation/views/cambiar_password_view.dart';
-import 'package:happy_oven/features/configuracion/presentation/views/gestion_categorias_view.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/views/historial_articulo_view.dart';
 
 /// Prefijos de rutas restringidas exclusivamente al rol Administrador.
@@ -73,11 +67,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/splash',
-        builder: (c, s) =>
-            const Scaffold(body: Center(child: CircularProgressIndicator())),
-      ),
+      GoRoute(path: '/splash', builder: (c, s) => const SplashView()),
       GoRoute(path: '/login', builder: (c, s) => const LoginView()),
       GoRoute(
         path: '/recuperar-password',
@@ -93,18 +83,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return AppShell(navigationShell: navigationShell);
         },
         branches: [
-          // Dashboard tab
+          // Inicio tab
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: '/dashboard',
                 builder: (c, s) => const DashboardInteligenteView(),
-                routes: [
-                  GoRoute(
-                    path: 'sugerencias',
-                    builder: (c, s) => const SugerenciasCompraView(),
-                  ),
-                ],
               ),
             ],
           ),
@@ -120,6 +104,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: '/catalogo/nuevo',
                 builder: (c, s) => FormularioArticuloView(
                   articulo: s.extra is Articulo ? s.extra as Articulo? : null,
+                ),
+              ),
+              GoRoute(
+                path: '/catalogo/movimiento/:id',
+                builder: (c, s) => IngresoAlmacenView(
+                  articulo: s.extra is Articulo ? s.extra as Articulo : null,
                 ),
               ),
               GoRoute(
@@ -154,55 +144,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // Producción tab
+          // Reporte tab
           StatefulShellBranch(
             routes: [
-              GoRoute(
-                path: '/produccion',
-                builder: (c, s) => const OrdenesProduccionListView(),
-              ),
-              GoRoute(
-                path: '/produccion/nueva',
-                builder: (c, s) => NuevaOrdenProduccionView(
-                  receta: s.extra is Receta ? s.extra as Receta? : null,
-                ),
-              ),
-            ],
-          ),
-
-          // Movimientos tab
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/movimientos',
-                builder: (c, s) => const HistorialKardexView(),
-              ),
-              GoRoute(
-                path: '/movimientos/ingreso-ocr',
-                builder: (c, s) => const IngresoOcrView(),
-              ),
-              GoRoute(
-                path: '/movimientos/salida',
-                builder: (c, s) => const SalidaAlmacenView(),
-              ),
-              GoRoute(
-                path: '/movimientos/entrada',
-                builder: (c, s) => const IngresoAlmacenView(),
-              ),
-            ],
-          ),
-
-          // Alertas tab
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/alertas',
-                builder: (c, s) => const CentroAlertasView(),
-              ),
               GoRoute(
                 path: '/reportes',
                 builder: (c, s) => const ReportesView(),
               ),
+              GoRoute(
+                path: '/alertas',
+                builder: (c, s) => const CentroAlertasView(),
+              ),
+            ],
+          ),
+
+          // Configuración tab
+          StatefulShellBranch(
+            routes: [
               GoRoute(
                 path: '/perfil',
                 builder: (c, s) => const PerfilAjustesView(),

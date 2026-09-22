@@ -8,7 +8,6 @@ import 'package:happy_oven/core/models/receta.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/viewmodels/recetas_viewmodel.dart';
 
-
 class CatalogoGeneralView extends ConsumerStatefulWidget {
   const CatalogoGeneralView({super.key});
 
@@ -17,33 +16,62 @@ class CatalogoGeneralView extends ConsumerStatefulWidget {
       _CatalogoGeneralViewState();
 }
 
-class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView> {
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
 
   List<Articulo> _todosArticulos = [];
 
-  List<Articulo> get _insumosFiltrados => _todosArticulos
-      .where(
-        (a) =>
-            a.tipo == TipoArticulo.insumo &&
-            a.nombre.toLowerCase().contains(_query.toLowerCase()),
-      )
-      .toList();
-  List<Articulo> get _productosFiltrados => _todosArticulos
-      .where(
-        (a) =>
-            a.tipo == TipoArticulo.productoFinal &&
-            a.nombre.toLowerCase().contains(_query.toLowerCase()),
-      )
-      .toList();
+  List<Articulo> _deduplicarArticulos(List<Articulo> articulos) {
+    final vistos = <String>{};
+    final sinDuplicados = <Articulo>[];
+
+    for (final articulo in articulos) {
+      final clave =
+          (articulo.id.isNotEmpty
+                  ? articulo.id
+                  : articulo.nombre.trim().toLowerCase())
+              .trim();
+
+      if (clave.isEmpty || !vistos.add(clave)) {
+        continue;
+      }
+
+      sinDuplicados.add(articulo);
+    }
+
+    return sinDuplicados;
+  }
+
+  List<Articulo> get _insumosFiltrados => _deduplicarArticulos(
+    _todosArticulos
+        .where(
+          (a) =>
+              a.tipo == TipoArticulo.insumo &&
+              a.nombre.toLowerCase().contains(_query.toLowerCase()),
+        )
+        .toList(),
+  );
+
+  List<Articulo> get _productosFiltrados => _deduplicarArticulos(
+    _todosArticulos
+        .where(
+          (a) =>
+              a.tipo == TipoArticulo.productoFinal &&
+              a.nombre.toLowerCase().contains(_query.toLowerCase()),
+        )
+        .toList(),
+  );
+
+  List<Articulo> get _articulosVisibles => _deduplicarArticulos(
+    _todosArticulos
+        .where((a) => a.nombre.toLowerCase().contains(_query.toLowerCase()))
+        .toList(),
+  );
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _searchController.addListener(
       () => setState(() => _query = _searchController.text),
     );
@@ -51,7 +79,6 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
 
   @override
   void dispose() {
-    _tabController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -75,7 +102,7 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
           Expanded(
             child: state.when(
               data: (articulos) {
-                _todosArticulos = articulos;
+                _todosArticulos = _deduplicarArticulos(articulos);
                 return _buildBody(context);
               },
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -97,24 +124,36 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
     final font = AppTheme.fontOf(context);
 
     return Container(
-      color: colors.accent,
+      color: const Color(0xFFF5F1EA),
       child: SafeArea(
         bottom: false,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-              child: Row(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Catálogo', style: font.h3),
-                      SizedBox(height: AppTheme.spacing.xs),
                       Text(
-                        'Maestro de artículos',
-                        style: font.caption.copyWith(color: colors.accentDark),
+                        'Inventario',
+                        style: font.h1.copyWith(
+                          fontSize: 42,
+                          fontWeight: FontWeight.w800,
+                          color: colors.titleText,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Control de insumos y materia prima',
+                        style: font.caption.copyWith(
+                          fontSize: 12,
+                          color: colors.hint,
+                        ),
                       ),
                     ],
                   ),
@@ -123,25 +162,25 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
-                        vertical: 9,
+                        vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        color: colors.titleText,
-                        borderRadius: AppTheme.radius.brSm,
+                        color: const Color(0xFF2B2B2B),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       child: Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.add_rounded,
-                            color: colors.accent,
-                            size: 16,
+                            color: Colors.white,
+                            size: 18,
                           ),
                           const SizedBox(width: 6),
                           Text(
                             'Nuevo',
                             style: font.label.copyWith(
-                              color: colors.accent,
                               fontSize: 13,
+                              color: Colors.white,
                             ),
                           ),
                         ],
@@ -150,23 +189,24 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
                   ),
                 ],
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-              child: Container(
+              const SizedBox(height: 16),
+              Container(
                 decoration: BoxDecoration(
-                  color: colors.card,
-                  borderRadius: AppTheme.radius.brSm,
+                  color: const Color(0xFFE9E4DF),
+                  borderRadius: BorderRadius.circular(24),
                 ),
                 child: TextField(
                   controller: _searchController,
                   style: font.bodySmall.copyWith(
-                    fontSize: 13,
+                    fontSize: 14,
                     color: colors.titleText,
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Buscar artículo...',
-                    hintStyle: font.hint.copyWith(fontSize: 13),
+                    hintText: 'Buscar insumo o ingrediente...',
+                    hintStyle: font.hint.copyWith(
+                      fontSize: 14,
+                      color: colors.hint,
+                    ),
                     prefixIcon: Icon(
                       Icons.search_rounded,
                       color: colors.hint,
@@ -174,28 +214,14 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
                     ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
+                      horizontal: 16,
+                      vertical: 14,
                     ),
                   ),
                 ),
               ),
-            ),
-            TabBar(
-              controller: _tabController,
-              labelColor: colors.titleText,
-              unselectedLabelColor: colors.hint,
-              labelStyle: font.label.copyWith(fontSize: 13),
-              unselectedLabelStyle: font.bodySmall.copyWith(fontSize: 13),
-              indicatorColor: colors.titleText,
-              indicatorWeight: 2.5,
-              dividerColor: colors.border,
-              tabs: const [
-                Tab(text: 'Insumos'),
-                Tab(text: 'Productos finales'),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -203,27 +229,8 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
 
   Widget _buildBody(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.colorsOf(context).bg,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(AppTheme.radius.xl),
-          topRight: Radius.circular(AppTheme.radius.xl),
-        ),
-      ),
-      transform: Matrix4.translationValues(0, -16, 0),
-      child: ClipRRect(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(AppTheme.radius.xl),
-          topRight: Radius.circular(AppTheme.radius.xl),
-        ),
-        child: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildLista(context, _insumosFiltrados),
-            _buildLista(context, _productosFiltrados),
-          ],
-        ),
-      ),
+      color: const Color(0xFFEFEAE5),
+      child: _buildLista(context, _articulosVisibles),
     );
   }
 
@@ -236,30 +243,22 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
         ),
       );
     }
-    final esProductos =
-        articulos.isNotEmpty && articulos.first.tipo == TipoArticulo.productoFinal;
+
     return ListView.separated(
-      padding: EdgeInsets.fromLTRB(
-        AppTheme.spacing.md,
-        AppTheme.spacing.lg,
-        AppTheme.spacing.md,
-        AppTheme.spacing.sm,
-      ),
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
       itemCount: articulos.length,
-      separatorBuilder: (_, _) => SizedBox(height: AppTheme.spacing.md),
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final art = articulos[index];
-        if (esProductos) {
-          final estado = _estadoDeArticulo(art);
-          final config = _configPorEstado(context, estado);
-          return _ProductoFinalCard(
-            articulo: art,
-            config: config,
-            onEdit: () => context.go('/catalogo/nuevo', extra: art),
-            onDelete: () => _eliminarArticulo(context, art.id),
-          );
-        }
-        return _buildTarjetaArticulo(context, art);
+        final estado = _estadoDeArticulo(art);
+        final config = _configPorEstado(context, estado);
+
+        return _ProductoFinalCard(
+          articulo: art,
+          config: config,
+          onEdit: () => context.go('/catalogo/nuevo', extra: art),
+          onDelete: () => _eliminarArticulo(context, art.id),
+        );
       },
     );
   }
@@ -318,170 +317,158 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView>
     final config = _configPorEstado(context, estado);
     final font = AppTheme.fontOf(context);
     final colors = AppTheme.colorsOf(context);
-
-    // Icono basado en el tipo
-    final icono = articulo.tipo == TipoArticulo.insumo
-        ? Icons.inventory_2_outlined
-        : Icons.breakfast_dining_outlined;
-
     final ratio = (articulo.stockActual / articulo.stockMinimo).clamp(0.0, 1.0);
 
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacing.md),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: colors.card,
-        borderRadius: BorderRadius.circular(AppTheme.radius.lg),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: colors.border, width: 0.5),
-        boxShadow: AppTheme.shadows.cardSm,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: config.colorFondo,
-              borderRadius: AppTheme.radius.brMd,
-            ),
-            child: Icon(icono, color: config.colorPrincipal, size: 22),
-          ),
-          SizedBox(width: AppTheme.spacing.sm + 4),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        articulo.nombre,
-                        style: font.label.copyWith(fontSize: 13),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    SizedBox(width: AppTheme.spacing.sm),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  articulo.nombre,
+                  style: font.label.copyWith(fontSize: 15, height: 1.2),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: config.colorFondo,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  config.etiqueta,
+                  style: font.caption.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: config.colorPrincipal,
+                    fontSize: 10,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              PopupMenuButton<String>(
+                icon: Icon(
+                  Icons.more_vert_rounded,
+                  color: colors.hint,
+                  size: 18,
+                ),
+                padding: EdgeInsets.zero,
+                onSelected: (val) {
+                  if (val == 'editar') {
+                    context.go('/catalogo/nuevo', extra: articulo);
+                  } else if (val == 'registrar_movimiento') {
+                    context.push(
+                      '/catalogo/movimiento/${articulo.id}',
+                      extra: articulo,
+                    );
+                  } else if (val == 'ver_registro') {
+                    context.push('/catalogo/historial/${articulo.id}');
+                  } else if (val == 'eliminar') {
+                    _eliminarArticulo(context, articulo.id);
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'editar',
+                    child: Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: config.colorFondo,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            config.etiqueta,
-                            style: font.caption.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: config.colorPrincipal,
-                            ),
-                          ),
+                        Icon(
+                          Icons.edit_outlined,
+                          size: 18,
+                          color: colors.primary,
                         ),
-                        const SizedBox(width: 4),
-                        // Menú popup para editar y eliminar
-                        PopupMenuButton<String>(
-                          icon: Icon(
-                            Icons.more_vert_rounded,
-                            color: colors.hint,
-                            size: 18,
-                          ),
-                          padding: EdgeInsets.zero,
-                          onSelected: (val) {
-                            if (val == 'editar') {
-                              context.go('/catalogo/nuevo', extra: articulo);
-                            } else if (val == 'historial') {
-                              context.push('/catalogo/historial/${articulo.id}');
-                            } else if (val == 'eliminar') {
-                              _eliminarArticulo(context, articulo.id);
-                            }
-                          },
-                          itemBuilder: (context) => [
-                            PopupMenuItem(
-                              value: 'editar',
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.edit_outlined,
-                                    size: 18,
-                                    color: colors.primary,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text('Editar', style: font.bodySmall),
-                                ],
-                              ),
-                            ),
-                            PopupMenuItem(
-                              value: 'historial',
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.history_rounded,
-                                    size: 18,
-                                    color: colors.primaryBorder,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text('Historial', style: font.bodySmall),
-                                ],
-                              ),
-                            ),
-                            PopupMenuItem(
-                              value: 'eliminar',
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.delete_outline,
-                                    size: 18,
-                                    color: colors.statusCritical,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Eliminar',
-                                    style: font.bodySmall.copyWith(
-                                      color: colors.statusCritical,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                        const SizedBox(width: 8),
+                        Text('Editar', style: font.bodySmall),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'registrar_movimiento',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.swap_horiz_rounded,
+                          size: 18,
+                          color: colors.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text('Registrar movimiento', style: font.bodySmall),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'ver_registro',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.history_rounded,
+                          size: 18,
+                          color: colors.primaryBorder,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Ver registro de movimientos',
+                          style: font.bodySmall,
                         ),
                       ],
                     ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Stock: ${articulo.stockActual} / mín. ${articulo.stockMinimo} ${articulo.unidad.dbValue}',
-                        style: font.caption,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(AppTheme.radius.full),
-                  child: LinearProgressIndicator(
-                    value: ratio,
-                    minHeight: 4,
-                    backgroundColor: colors.surface,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      config.colorPrincipal,
+                  ),
+                  PopupMenuItem(
+                    value: 'eliminar',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.delete_outline,
+                          size: 18,
+                          color: colors.statusCritical,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Eliminar',
+                          style: font.bodySmall.copyWith(
+                            color: colors.statusCritical,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Stock: ${articulo.stockActual} / mín. ${articulo.stockMinimo} ${articulo.unidad.dbValue}',
+            style: font.caption.copyWith(fontSize: 12, color: colors.hint),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: ratio,
+              minHeight: 6,
+              backgroundColor: colors.surface,
+              valueColor: AlwaysStoppedAnimation<Color>(config.colorPrincipal),
             ),
           ),
         ],
@@ -555,171 +542,157 @@ class _ProductoFinalCardState extends ConsumerState<_ProductoFinalCard> {
     final colors = AppTheme.colorsOf(context);
     final art = widget.articulo;
     final config = widget.config;
-    const icono = Icons.breakfast_dining_outlined;
     final ratio = (art.stockActual / art.stockMinimo).clamp(0.0, 1.0);
-
     final recetaAsync = ref.watch(recetaPorProductoProvider(art.id));
 
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacing.md),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: colors.card,
-        borderRadius: BorderRadius.circular(AppTheme.radius.lg),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: colors.border, width: 0.5),
-        boxShadow: AppTheme.shadows.cardSm,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Expanded(
+                child: Text(
+                  art.nombre,
+                  style: font.label.copyWith(fontSize: 15, height: 1.2),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
               Container(
-                width: 44,
-                height: 44,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: config.colorFondo,
-                  borderRadius: AppTheme.radius.brMd,
+                  borderRadius: BorderRadius.circular(999),
                 ),
-                child: Icon(icono, color: config.colorPrincipal, size: 22),
+                child: Text(
+                  config.etiqueta,
+                  style: font.caption.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: config.colorPrincipal,
+                    fontSize: 10,
+                  ),
+                ),
               ),
-              SizedBox(width: AppTheme.spacing.sm + 4),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            art.nombre,
-                            style: font.label.copyWith(fontSize: 13),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        SizedBox(width: AppTheme.spacing.sm),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: config.colorFondo,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                config.etiqueta,
-                                style: font.caption.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: config.colorPrincipal,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            PopupMenuButton<String>(
-                              icon: Icon(
-                                Icons.more_vert_rounded,
-                                color: colors.hint,
-                                size: 18,
-                              ),
-                              padding: EdgeInsets.zero,
-                              onSelected: (val) {
-                                if (val == 'editar') {
-                                  widget.onEdit();
-                                } else if (val == 'historial') {
-                                  context.push('/catalogo/historial/${art.id}');
-                                } else if (val == 'eliminar') {
-                                  widget.onDelete();
-                                }
-                              },
-                              itemBuilder: (context) => [
-                                PopupMenuItem(
-                                  value: 'editar',
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.edit_outlined,
-                                        size: 18,
-                                        color: colors.primary,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text('Editar', style: font.bodySmall),
-                                    ],
-                                  ),
-                                ),
-                                PopupMenuItem(
-                                  value: 'historial',
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.history_rounded,
-                                        size: 18,
-                                        color: colors.primaryBorder,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text('Historial', style: font.bodySmall),
-                                    ],
-                                  ),
-                                ),
-                                PopupMenuItem(
-                                  value: 'eliminar',
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.delete_outline,
-                                        size: 18,
-                                        color: colors.statusCritical,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Eliminar',
-                                        style: font.bodySmall.copyWith(
-                                          color: colors.statusCritical,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Stock: ${art.stockActual} / mín. ${art.stockMinimo} ${art.unidad.dbValue}',
-                            style: font.caption,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(AppTheme.radius.full),
-                      child: LinearProgressIndicator(
-                        value: ratio,
-                        minHeight: 4,
-                        backgroundColor: colors.surface,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          config.colorPrincipal,
-                        ),
-                      ),
-                    ),
-                  ],
+              const SizedBox(width: 4),
+              PopupMenuButton<String>(
+                icon: Icon(
+                  Icons.more_vert_rounded,
+                  color: colors.hint,
+                  size: 18,
                 ),
+                padding: EdgeInsets.zero,
+                onSelected: (val) {
+                  if (val == 'editar') {
+                    widget.onEdit();
+                  } else if (val == 'registrar_movimiento') {
+                    context.push('/catalogo/movimiento/${art.id}', extra: art);
+                  } else if (val == 'ver_registro') {
+                    context.push('/catalogo/historial/${art.id}');
+                  } else if (val == 'eliminar') {
+                    widget.onDelete();
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'editar',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.edit_outlined,
+                          size: 18,
+                          color: colors.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text('Editar', style: font.bodySmall),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'registrar_movimiento',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.swap_horiz_rounded,
+                          size: 18,
+                          color: colors.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text('Registrar movimiento', style: font.bodySmall),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'ver_registro',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.history_rounded,
+                          size: 18,
+                          color: colors.primaryBorder,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Ver registro de movimientos',
+                          style: font.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'eliminar',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.delete_outline,
+                          size: 18,
+                          color: colors.statusCritical,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Eliminar',
+                          style: font.bodySmall.copyWith(
+                            color: colors.statusCritical,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Stock: ${art.stockActual} / mín. ${art.stockMinimo} ${art.unidad.dbValue}',
+            style: font.caption.copyWith(fontSize: 12, color: colors.hint),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: ratio,
+              minHeight: 6,
+              backgroundColor: colors.surface,
+              valueColor: AlwaysStoppedAnimation<Color>(config.colorPrincipal),
+            ),
           ),
           recetaAsync.when(
             data: (receta) {

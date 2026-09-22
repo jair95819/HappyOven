@@ -9,14 +9,16 @@ import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmo
 
 class FormularioArticuloView extends ConsumerStatefulWidget {
   final Articulo? articulo;
-  
+
   const FormularioArticuloView({super.key, this.articulo});
 
   @override
-  ConsumerState<FormularioArticuloView> createState() => _FormularioArticuloViewState();
+  ConsumerState<FormularioArticuloView> createState() =>
+      _FormularioArticuloViewState();
 }
 
-class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView> {
+class _FormularioArticuloViewState
+    extends ConsumerState<FormularioArticuloView> {
   final _formKey = GlobalKey<FormState>();
   final _nombreController = TextEditingController();
   final _stockMinimoController = TextEditingController();
@@ -56,19 +58,26 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
     if (_formKey.currentState!.validate()) {
       setState(() => _isSaving = true);
       final nuevoArticulo = Articulo(
-        id: widget.articulo?.id ?? '', // Si tiene ID, se actualiza, si no, se crea
+        id:
+            widget.articulo?.id ??
+            '', // Si tiene ID, se actualiza, si no, se crea
         nombre: _nombreController.text.trim(),
         tipo: _tipoSeleccionado,
         unidad: _unidadSeleccionada,
         stockActual: double.parse(_stockInicialController.text),
         stockMinimo: double.parse(_stockMinimoController.text),
-        precioUnitario: double.tryParse(_precioController.text) ?? widget.articulo?.precioUnitario ?? 0.0,
+        precioUnitario:
+            double.tryParse(_precioController.text) ??
+            widget.articulo?.precioUnitario ??
+            0.0,
         activo: widget.articulo?.activo ?? true,
         createdAt: widget.articulo?.createdAt ?? DateTime.now(),
         updatedAt: DateTime.now(),
       );
 
-      final error = await ref.read(catalogoViewModelProvider.notifier).guardarArticulo(nuevoArticulo);
+      final error = await ref
+          .read(catalogoViewModelProvider.notifier)
+          .guardarArticulo(nuevoArticulo);
 
       if (error == null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -120,33 +129,50 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
 
   Widget _buildHeader(BuildContext context) {
     return Container(
-      color: AppTheme.colors.accent,
+      color: AppTheme.colors.bg,
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
           child: Row(
             children: [
               GestureDetector(
                 onTap: _retroceder,
                 child: Container(
-                  width: 36, height: 36,
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
                     borderRadius: AppTheme.radius.brSm,
-                    border: Border.all(color: AppTheme.colors.accentDark, width: 0.5),
-                    boxShadow: AppTheme.shadows.cardSm,
+                    color: AppTheme.colors.surface,
+                    border: Border.all(
+                      color: AppTheme.colors.border,
+                      width: 0.5,
+                    ),
                   ),
-                  child: Icon(Icons.arrow_back_rounded, color: AppTheme.colors.titleText, size: 18),
+                  child: Icon(
+                    Icons.arrow_back_rounded,
+                    color: AppTheme.colors.titleText,
+                    size: 18,
+                  ),
                 ),
               ),
               const SizedBox(width: 14),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(widget.articulo == null ? 'Nuevo artículo' : 'Editar artículo', style: AppTheme.font.h3),
+                  Text(
+                    widget.articulo == null ? 'Nuevo insumo' : 'Editar insumo',
+                    style: AppTheme.font.h3,
+                  ),
                   const SizedBox(height: 2),
-                  Text(widget.articulo == null ? 'Completa los datos del artículo' : 'Actualiza los datos del artículo',
-                      style: AppTheme.font.caption.copyWith(color: AppTheme.colors.accentDark)),
+                  Text(
+                    widget.articulo == null
+                        ? 'Completa los datos del insumo'
+                        : 'Actualiza los datos del insumo',
+                    style: AppTheme.font.caption.copyWith(
+                      color: AppTheme.colors.accentDark,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -158,99 +184,102 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
 
   Widget _buildFormulario() {
     return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.colors.card,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(AppTheme.radius.xl),
-          topRight: Radius.circular(AppTheme.radius.xl),
-        ),
-      ),
-      transform: Matrix4.translationValues(0, -16, 0),
-      child: ClipRRect(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(AppTheme.radius.xl),
-          topRight: Radius.circular(AppTheme.radius.xl),
-        ),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 28, 20, 32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildLabel('Tipo de artículo'),
-                SizedBox(height: AppTheme.spacing.md),
-                _buildSelectorTipo(),
-                SizedBox(height: AppTheme.spacing.lg),
-                _buildLabel('Nombre'),
-                SizedBox(height: AppTheme.spacing.md),
-                _buildCampoTexto(
-                  controller: _nombreController, hint: 'Ej. Harina de trigo',
-                  icono: Icons.label_outline_rounded,
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'El nombre es obligatorio' : null,
-                ),
-                SizedBox(height: AppTheme.spacing.lg),
-                _buildLabel('Unidad de medida'),
-                SizedBox(height: AppTheme.spacing.md),
-                _buildSelectorUnidades(),
-                SizedBox(height: AppTheme.spacing.lg),
-                _buildLabel('Stock mínimo de seguridad'),
-                SizedBox(height: AppTheme.spacing.md),
-                _buildCampoNumerico(
-                  controller: _stockMinimoController, hint: 'Ej. 20',
-                  icono: Icons.warning_amber_rounded,
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Ingresa el stock mínimo';
-                    if (double.tryParse(v) == null) return 'Ingresa un número válido';
-                    return null;
-                  },
-                ),
-                SizedBox(height: AppTheme.spacing.lg),
-                _buildLabel('Stock inicial'),
-                SizedBox(height: AppTheme.spacing.md),
-                _buildCampoNumerico(
-                  controller: _stockInicialController, hint: 'Ej. 50',
-                  icono: Icons.inventory_2_outlined,
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Ingresa el stock inicial';
-                    if (double.tryParse(v) == null) return 'Ingresa un número válido';
-                    return null;
-                  },
-                ),
-                SizedBox(height: AppTheme.spacing.lg),
-                _buildLabel('Precio unitario (S/)'),
-                SizedBox(height: AppTheme.spacing.md),
-                _buildCampoNumerico(
-                  controller: _precioController, hint: 'Ej. 12.50',
-                  icono: Icons.attach_money_rounded,
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return null; // precio opcional
-                    if (double.tryParse(v) == null) return 'Ingresa un número válido';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 32),
-                GestureDetector(
-                  onTap: _isSaving ? null : _guardar,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    decoration: BoxDecoration(
-                      color: _isSaving ? AppTheme.colors.hint : AppTheme.colors.primary,
-                      borderRadius: AppTheme.radius.brMd,
-                    ),
-                    child: _isSaving
-                        ? SizedBox(
-                            height: 18, width: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2, color: AppTheme.colors.white,
-                            ),
-                          )
-                        : Text('Guardar artículo',
-                            textAlign: TextAlign.center, style: AppTheme.font.button),
+      decoration: BoxDecoration(color: AppTheme.colors.bg),
+      child: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildLabel('NOMBRE DEL INSUMO'),
+              const SizedBox(height: 10),
+              _buildCampoTexto(
+                controller: _nombreController,
+                hint: 'Ej. Harina de trigo especial',
+                icono: Icons.label_outline_rounded,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'El nombre es obligatorio'
+                    : null,
+              ),
+              const SizedBox(height: 18),
+              _buildLabel('UNIDAD DE MEDIDA'),
+              const SizedBox(height: 10),
+              _buildSelectorUnidades(),
+              const SizedBox(height: 18),
+              _buildLabel('STOCK MÍNIMO DE SEGURIDAD'),
+              const SizedBox(height: 10),
+              _buildCampoNumerico(
+                controller: _stockMinimoController,
+                hint: 'Ej. 20',
+                icono: Icons.warning_amber_rounded,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty)
+                    return 'Ingresa el stock mínimo';
+                  if (double.tryParse(v) == null)
+                    return 'Ingresa un número válido';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 18),
+              _buildLabel('STOCK INICIAL'),
+              const SizedBox(height: 10),
+              _buildCampoNumerico(
+                controller: _stockInicialController,
+                hint: 'Ej. 50',
+                icono: Icons.inventory_2_outlined,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty)
+                    return 'Ingresa el stock inicial';
+                  if (double.tryParse(v) == null)
+                    return 'Ingresa un número válido';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 18),
+              _buildLabel('PRECIO UNITARIO ESTIM. (S/)'),
+              const SizedBox(height: 10),
+              _buildCampoNumerico(
+                controller: _precioController,
+                hint: 'Ej. 12.50',
+                icono: Icons.attach_money_rounded,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return null;
+                  if (double.tryParse(v) == null)
+                    return 'Ingresa un número válido';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 28),
+              GestureDetector(
+                onTap: _isSaving ? null : _guardar,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: _isSaving
+                        ? AppTheme.colors.hint
+                        : const Color(0xFF1E394A),
+                    borderRadius: AppTheme.radius.brMd,
                   ),
+                  child: _isSaving
+                      ? SizedBox(
+                          height: 18,
+                          width: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppTheme.colors.white,
+                          ),
+                        )
+                      : Text(
+                          'Guardar insumo',
+                          textAlign: TextAlign.center,
+                          style: AppTheme.font.button.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -264,28 +293,45 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
         return Expanded(
           child: GestureDetector(
             onTap: () => setState(() => _tipoSeleccionado = tipo),
-                child: Container(
-              margin: EdgeInsets.only(right: tipo == TipoArticulo.insumo ? 8 : 0),
+            child: Container(
+              margin: EdgeInsets.only(
+                right: tipo == TipoArticulo.insumo ? 8 : 0,
+              ),
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: activo ? AppTheme.colors.titleText : AppTheme.colors.surface,
+                color: activo
+                    ? AppTheme.colors.titleText
+                    : AppTheme.colors.surface,
                 borderRadius: AppTheme.radius.brSm,
                 border: Border.all(
-                  color: activo ? AppTheme.colors.titleText : AppTheme.colors.border, width: 0.5),
+                  color: activo
+                      ? AppTheme.colors.titleText
+                      : AppTheme.colors.border,
+                  width: 0.5,
+                ),
                 boxShadow: AppTheme.shadows.cardSm,
               ),
               child: Column(
                 children: [
                   Icon(
-                    tipo == TipoArticulo.insumo ? Icons.inventory_2_outlined : Icons.breakfast_dining_outlined,
-                    color: activo ? AppTheme.colors.accent : AppTheme.colors.hint, size: 20,
+                    tipo == TipoArticulo.insumo
+                        ? Icons.inventory_2_outlined
+                        : Icons.breakfast_dining_outlined,
+                    color: activo
+                        ? AppTheme.colors.accent
+                        : AppTheme.colors.hint,
+                    size: 20,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     tipo == TipoArticulo.insumo ? 'Insumo' : 'Producto final',
-                    style: AppTheme.font.bodySmall.copyWith(fontSize: 12,
+                    style: AppTheme.font.bodySmall.copyWith(
+                      fontSize: 12,
                       fontWeight: activo ? FontWeight.w500 : FontWeight.normal,
-                      color: activo ? AppTheme.colors.white : AppTheme.colors.hint),
+                      color: activo
+                          ? AppTheme.colors.white
+                          : AppTheme.colors.hint,
+                    ),
                   ),
                 ],
               ),
@@ -298,23 +344,32 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
 
   Widget _buildSelectorUnidades() {
     return Wrap(
-      spacing: 8, runSpacing: 8,
+      spacing: 8,
+      runSpacing: 8,
       children: _unidades.map((unidad) {
         final activo = _unidadSeleccionada == unidad;
         return GestureDetector(
           onTap: () => setState(() => _unidadSeleccionada = unidad),
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: AppTheme.spacing.sm),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: activo ? AppTheme.colors.titleText : AppTheme.colors.surface,
-              borderRadius: BorderRadius.circular(AppTheme.radius.full),
+              color: activo ? const Color(0xFF3B2A1F) : AppTheme.colors.surface,
+              borderRadius: BorderRadius.circular(22),
               border: Border.all(
-                color: activo ? AppTheme.colors.titleText : AppTheme.colors.border, width: 0.5),
-              boxShadow: AppTheme.shadows.cardSm,
+                color: activo
+                    ? const Color(0xFF3B2A1F)
+                    : AppTheme.colors.border,
+                width: 0.5,
+              ),
             ),
-            child: Text(unidad.dbValue, style: AppTheme.font.bodySmall.copyWith(fontSize: 12,
-              fontWeight: activo ? FontWeight.w500 : FontWeight.normal,
-              color: activo ? AppTheme.colors.white : AppTheme.colors.hint)),
+            child: Text(
+              unidad.dbValue,
+              style: AppTheme.font.bodySmall.copyWith(
+                fontSize: 12,
+                fontWeight: activo ? FontWeight.w500 : FontWeight.normal,
+                color: activo ? AppTheme.colors.white : AppTheme.colors.hint,
+              ),
+            ),
           ),
         );
       }).toList(),
@@ -322,8 +377,10 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
   }
 
   Widget _buildCampoTexto({
-    required TextEditingController controller, required String hint,
-    required IconData icono, String? Function(String?)? validator,
+    required TextEditingController controller,
+    required String hint,
+    required IconData icono,
+    String? Function(String?)? validator,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -333,22 +390,34 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
         boxShadow: AppTheme.shadows.cardSm,
       ),
       child: TextFormField(
-        controller: controller, validator: validator,
-        style: AppTheme.font.bodySmall.copyWith(color: AppTheme.colors.titleText),
+        controller: controller,
+        validator: validator,
+        style: AppTheme.font.bodySmall.copyWith(
+          color: AppTheme.colors.titleText,
+        ),
         decoration: InputDecoration(
-          hintText: hint, hintStyle: AppTheme.font.hint,
+          hintText: hint,
+          hintStyle: AppTheme.font.hint,
           prefixIcon: Icon(icono, color: AppTheme.colors.brownMid, size: 18),
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md, vertical: AppTheme.spacing.md),
-          errorStyle: TextStyle(fontSize: 11, color: AppTheme.colors.statusCritical),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacing.md,
+            vertical: AppTheme.spacing.md,
+          ),
+          errorStyle: TextStyle(
+            fontSize: 11,
+            color: AppTheme.colors.statusCritical,
+          ),
         ),
       ),
     );
   }
 
   Widget _buildCampoNumerico({
-    required TextEditingController controller, required String hint,
-    required IconData icono, String? Function(String?)? validator,
+    required TextEditingController controller,
+    required String hint,
+    required IconData icono,
+    String? Function(String?)? validator,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -358,16 +427,28 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
         boxShadow: AppTheme.shadows.cardSm,
       ),
       child: TextFormField(
-        controller: controller, validator: validator,
+        controller: controller,
+        validator: validator,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
-        style: AppTheme.font.bodySmall.copyWith(color: AppTheme.colors.titleText),
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+        ],
+        style: AppTheme.font.bodySmall.copyWith(
+          color: AppTheme.colors.titleText,
+        ),
         decoration: InputDecoration(
-          hintText: hint, hintStyle: AppTheme.font.hint,
+          hintText: hint,
+          hintStyle: AppTheme.font.hint,
           prefixIcon: Icon(icono, color: AppTheme.colors.brownMid, size: 18),
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md, vertical: AppTheme.spacing.md),
-          errorStyle: TextStyle(fontSize: 11, color: AppTheme.colors.statusCritical),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacing.md,
+            vertical: AppTheme.spacing.md,
+          ),
+          errorStyle: TextStyle(
+            fontSize: 11,
+            color: AppTheme.colors.statusCritical,
+          ),
         ),
       ),
     );
@@ -377,7 +458,10 @@ class _FormularioArticuloViewState extends ConsumerState<FormularioArticuloView>
     return Text(
       texto.toUpperCase(),
       style: AppTheme.font.label.copyWith(
-        fontSize: 11, color: AppTheme.colors.brownMid, letterSpacing: 0.5),
+        fontSize: 11,
+        color: AppTheme.colors.brownMid,
+        letterSpacing: 0.5,
+      ),
     );
   }
 }
