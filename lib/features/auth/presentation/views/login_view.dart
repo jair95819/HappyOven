@@ -28,11 +28,20 @@ class _LoginViewState extends ConsumerState<LoginView> {
     final authState = ref.watch(authViewModelProvider);
     final authViewModel = ref.read(authViewModelProvider.notifier);
 
-    // Observar cambios de autenticación
+    // Observar cambios de autenticación.
+    // Solo mostrar el snackbar si el error realmente cambió; así no quedan
+    // mensajes viejos del flujo de recuperación de contraseña apareciendo
+    // después de un login exitoso.
     ref.listen(authViewModelProvider, (previous, next) {
       if (next.autenticado) {
+        authViewModel.limpiarError();
         context.go('/dashboard');
-      } else if (next.error != null) {
+        return;
+      }
+
+      if (next.error != null &&
+          previous?.error != next.error &&
+          !next.autenticado) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.error!),
@@ -208,11 +217,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: AppTheme.font.hint,
-          prefixIcon: Icon(
-            icon,
-            color: AppTheme.colors.brownMid,
-            size: 18,
-          ),
+          prefixIcon: Icon(icon, color: AppTheme.colors.brownMid, size: 18),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 14,

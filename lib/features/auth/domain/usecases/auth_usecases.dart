@@ -43,6 +43,16 @@ class RecuperarPasswordUseCase {
   }
 }
 
+class ResetPasswordUseCase {
+  final IAuthRepository repository;
+
+  ResetPasswordUseCase(this.repository);
+
+  Future<AuthResponse> call(String newPassword) {
+    return repository.resetPassword(newPassword);
+  }
+}
+
 class VerificarSesionActivaUseCase {
   final IAuthRepository repository;
 

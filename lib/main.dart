@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -39,7 +42,8 @@ class _AppLoaderState extends State<AppLoader> {
       debugPrint('⌛ 2. Iniciando Supabase...');
       await SupabaseService().initialize(
         url: 'https://rfzsqcgiuroncdnnhpmp.supabase.co',
-        anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmenNxY2dpdXJvbmNkbm5ocG1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMTcyMzUsImV4cCI6MjA5MzY5MzIzNX0._cAZIkuGVFb0EryM1rTvTUSkZpb0SfoLA72xl7Y6kUM',
+        anonKey:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmenNxY2dpdXJvbmNkbm5ocG1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMTcyMzUsImV4cCI6MjA5MzY5MzIzNX0._cAZIkuGVFb0EryM1rTvTUSkZpb0SfoLA72xl7Y6kUM',
       );
       debugPrint('✅ Supabase OK');
 
@@ -50,7 +54,6 @@ class _AppLoaderState extends State<AppLoader> {
       debugPrint('⌛ 4. Iniciando Notificaciones...');
       await NotificationService().initialize();
       debugPrint('✅ Notificaciones OK');
-      
     } catch (e) {
       debugPrint('❌ Error en inicialización: $e');
     }
@@ -67,22 +70,64 @@ class _AppLoaderState extends State<AppLoader> {
     if (!_initialized) {
       return const MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
-        ),
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
       );
     }
     return const HappyOvenApp();
   }
 }
 
-class HappyOvenApp extends ConsumerWidget {
+class HappyOvenApp extends ConsumerStatefulWidget {
   const HappyOvenApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HappyOvenApp> createState() => _HappyOvenAppState();
+}
+
+class _HappyOvenAppState extends ConsumerState<HappyOvenApp> {
+  StreamSubscription<Uri?>? _linkSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _listenForDeepLinks();
+  }
+
+  Future<void> _listenForDeepLinks() async {
+    final appLinks = AppLinks();
+    final initialLink = await appLinks.getInitialLink();
+    _handleDeepLink(initialLink);
+
+    _linkSubscription = appLinks.uriLinkStream.listen((uri) {
+      _handleDeepLink(uri);
+    });
+  }
+
+  void _handleDeepLink(Uri? uri) {
+    if (uri == null) return;
+
+    final isResetLink =
+        uri.scheme == 'happyoven' &&
+        (uri.host == 'reset-password' ||
+            uri.path == '/reset-password' ||
+            uri.path == 'reset-password');
+
+    if (!isResetLink) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(appRouterProvider).go('/reset-password');
+    });
+  }
+
+  @override
+  void dispose() {
+    _linkSubscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
     final themeMode = ref.watch(themeProvider);
 

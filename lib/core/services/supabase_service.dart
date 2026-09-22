@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Servicio singleton que centraliza la configuración y acceso al cliente 
+/// Servicio singleton que centraliza la configuración y acceso al cliente
 /// de base de datos y autenticación de Supabase.
 class SupabaseService {
   static final SupabaseService _instance = SupabaseService._internal();
@@ -27,7 +27,7 @@ class SupabaseService {
   }
 
   // ── Auth: Sign In con email y password
-  
+
   /// Inicia sesión de un usuario existente usando [email] y [password].
   /// Lanza una excepción si las credenciales son incorrectas.
   Future<AuthResponse> signInWithEmail(String email, String password) async {
@@ -43,8 +43,8 @@ class SupabaseService {
   }
 
   // ── Auth: Sign Up
-  
-  /// Registra una nueva cuenta de usuario en la plataforma con el [email] 
+
+  /// Registra una nueva cuenta de usuario en la plataforma con el [email]
   /// y [password] especificados.
   Future<AuthResponse> signUpWithEmail(String email, String password) async {
     try {
@@ -59,7 +59,7 @@ class SupabaseService {
   }
 
   // ── Auth: Sign Out
-  
+
   /// Cierra la sesión activa del usuario actual y limpia los tokens guardados.
   Future<void> signOut() async {
     try {
@@ -70,37 +70,47 @@ class SupabaseService {
   }
 
   // ── Auth: Current user
-  
+
   /// Devuelve la entidad [User] del usuario actualmente logueado, o null si no hay sesión.
   User? getCurrentUser() {
     return _client.auth.currentUser;
   }
 
   // ── Auth: Current session
-  
+
   /// Devuelve el objeto [Session] activo (incluyendo tokens), o null si no existe.
   Session? getCurrentSession() {
     return _client.auth.currentSession;
   }
 
   // ── Auth: Reset password
-  
+
   /// Envía un correo electrónico de recuperación de contraseña a la dirección especificada.
-  Future<void> resetPasswordForEmail(String email) async {
+  /// El [redirectTo] debe apuntar a una URL válida en la configuración de Auth de Supabase;
+  /// sin esto, Supabase usa el valor por defecto y puede redirigir a localhost:3000.
+  Future<void> resetPasswordForEmail(String email, {String? redirectTo}) async {
     try {
-      await _client.auth.resetPasswordForEmail(email);
+      final finalRedirect =
+          redirectTo ??
+          'https://rfzsqcgiuroncdnnhpmp.supabase.co/auth/v1/callback';
+      await _client.auth.resetPasswordForEmail(
+        email,
+        redirectTo: finalRedirect,
+      );
     } on AuthException catch (e) {
       throw Exception('Error: ${e.message}');
     }
   }
 
   // ── Auth: Update user auth attributes
-  
+
   /// Actualiza el correo electrónico del usuario actual.
   /// Devuelve `true` si Supabase requiere confirmación (envía enlace al nuevo correo).
   Future<bool> updateAuthEmail(String email) async {
     try {
-      final response = await _client.auth.updateUser(UserAttributes(email: email));
+      final response = await _client.auth.updateUser(
+        UserAttributes(email: email),
+      );
       // Supabase returns the user with the new email in `response.user` when
       // the change is immediate, OR the old email when confirmation is pending.
       // In either case, the update was accepted — we just inform the caller.

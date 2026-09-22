@@ -28,7 +28,9 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
     final authViewModel = ref.read(authViewModelProvider.notifier);
 
     ref.listen(authViewModelProvider, (previous, next) {
-      if (next.error != null && !_emailEnviado) {
+      if (next.error != null &&
+          previous?.error != next.error &&
+          !_emailEnviado) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.error!),
@@ -58,7 +60,12 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
   Widget _buildHero(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(AppTheme.spacing.lg, AppTheme.spacing.md, AppTheme.spacing.lg, 0),
+      padding: EdgeInsets.fromLTRB(
+        AppTheme.spacing.lg,
+        AppTheme.spacing.md,
+        AppTheme.spacing.lg,
+        0,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -130,7 +137,12 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
         boxShadow: AppTheme.shadows.cardSm,
       ),
       child: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(AppTheme.spacing.xl, AppTheme.spacing.xl, AppTheme.spacing.xl, AppTheme.spacing.lg),
+        padding: EdgeInsets.fromLTRB(
+          AppTheme.spacing.xl,
+          AppTheme.spacing.xl,
+          AppTheme.spacing.xl,
+          AppTheme.spacing.lg,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -140,9 +152,7 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
                 decoration: BoxDecoration(
                   color: AppTheme.colors.successLight,
                   borderRadius: AppTheme.radius.brSm,
-                  border: Border.all(
-                    color: AppTheme.colors.successBorder,
-                  ),
+                  border: Border.all(color: AppTheme.colors.successBorder),
                   boxShadow: AppTheme.shadows.cardSm,
                 ),
                 child: Row(
@@ -180,10 +190,7 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
                 decoration: BoxDecoration(
                   color: AppTheme.colors.primaryLight,
                   borderRadius: AppTheme.radius.brSm,
-                  border: Border.all(
-                    color: AppTheme.colors.border,
-                    width: 0.5,
-                  ),
+                  border: Border.all(color: AppTheme.colors.border, width: 0.5),
                   boxShadow: AppTheme.shadows.cardSm,
                 ),
                 child: TextField(
@@ -239,8 +246,9 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
                                 strokeWidth: 2,
                               ),
                             ),

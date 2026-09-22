@@ -38,6 +38,11 @@ final recuperarPasswordUseCaseProvider = Provider<RecuperarPasswordUseCase>((
   return RecuperarPasswordUseCase(repository);
 });
 
+final resetPasswordUseCaseProvider = Provider<ResetPasswordUseCase>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return ResetPasswordUseCase(repository);
+});
+
 final updateProfileUseCaseProvider = Provider<UpdateProfileUseCase>((ref) {
   final repository = ref.watch(authRepositoryProvider);
   return UpdateProfileUseCase(repository);
@@ -50,9 +55,9 @@ final updatePasswordUseCaseProvider = Provider<UpdatePasswordUseCase>((ref) {
 
 final obtenerUsuarioActualUseCaseProvider =
     Provider<ObtenerUsuarioActualUseCase>((ref) {
-  final repository = ref.watch(authRepositoryProvider);
-  return ObtenerUsuarioActualUseCase(repository);
-});
+      final repository = ref.watch(authRepositoryProvider);
+      return ObtenerUsuarioActualUseCase(repository);
+    });
 
 // ── Estado de autenticación
 class AuthState {
@@ -86,13 +91,15 @@ class AuthState {
     String? mensaje,
     bool? autenticado,
     bool? inicializando,
+    bool clearError = false,
+    bool clearMensaje = false,
   }) {
     return AuthState(
       cargando: cargando ?? this.cargando,
       usuario: usuario ?? this.usuario,
       token: token ?? this.token,
-      error: error ?? this.error,
-      mensaje: mensaje ?? this.mensaje,
+      error: clearError ? null : (error ?? this.error),
+      mensaje: clearMensaje ? null : (mensaje ?? this.mensaje),
       autenticado: autenticado ?? this.autenticado,
       inicializando: inicializando ?? this.inicializando,
     );
@@ -110,6 +117,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
   final RegisterUseCase _registerUseCase;
   final LogoutUseCase _logoutUseCase;
   final RecuperarPasswordUseCase _recuperarPasswordUseCase;
+  final ResetPasswordUseCase _resetPasswordUseCase;
   final UpdateProfileUseCase _updateProfileUseCase;
   final UpdatePasswordUseCase _updatePasswordUseCase;
 
@@ -118,6 +126,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
     required RegisterUseCase registerUseCase,
     required LogoutUseCase logoutUseCase,
     required RecuperarPasswordUseCase recuperarPasswordUseCase,
+    required ResetPasswordUseCase resetPasswordUseCase,
     required UpdateProfileUseCase updateProfileUseCase,
     required UpdatePasswordUseCase updatePasswordUseCase,
     ObtenerUsuarioActualUseCase? obtenerUsuarioActualUseCase,
@@ -125,6 +134,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
        _registerUseCase = registerUseCase,
        _logoutUseCase = logoutUseCase,
        _recuperarPasswordUseCase = recuperarPasswordUseCase,
+       _resetPasswordUseCase = resetPasswordUseCase,
        _updateProfileUseCase = updateProfileUseCase,
        _updatePasswordUseCase = updatePasswordUseCase,
        super(AuthState(inicializando: true)) {
@@ -153,17 +163,24 @@ class AuthViewModel extends StateNotifier<AuthState> {
           token: response.token,
           autenticado: true,
           cargando: false,
+          clearError: true,
+          clearMensaje: true,
         );
         return true;
       } else {
         state = state.copyWith(
           error: response.mensaje ?? 'Error desconocido',
           cargando: false,
+          clearMensaje: true,
         );
         return false;
       }
     } catch (e) {
-      state = state.copyWith(error: 'Error: ${e.toString()}', cargando: false);
+      state = state.copyWith(
+        error: 'Error: ${e.toString()}',
+        cargando: false,
+        clearMensaje: true,
+      );
       return false;
     }
   }
@@ -278,6 +295,41 @@ class AuthViewModel extends StateNotifier<AuthState> {
     }
   }
 
+  // ── Restablecer contraseña desde el enlace de recuperación
+  Future<bool> resetPassword(String newPassword) async {
+    state = state.copyWith(cargando: true);
+
+    try {
+      if (newPassword.isEmpty || newPassword.length < 6) {
+        state = state.copyWith(
+          error: 'La contraseña debe tener al menos 6 caracteres',
+          cargando: false,
+        );
+        return false;
+      }
+
+      final response = await _resetPasswordUseCase(newPassword);
+
+      if (response.exito) {
+        state = state.copyWith(
+          cargando: false,
+          clearError: true,
+          clearMensaje: true,
+        );
+        return true;
+      }
+
+      state = state.copyWith(
+        error: response.mensaje ?? 'No se pudo restablecer la contraseña',
+        cargando: false,
+      );
+      return false;
+    } catch (e) {
+      state = state.copyWith(error: 'Error: ${e.toString()}', cargando: false);
+      return false;
+    }
+  }
+
   // ── Limpiar error
   void limpiarError() {
     state = state.limpiarError();
@@ -289,11 +341,17 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
     try {
       if (nombre.isEmpty) {
-        state = state.copyWith(error: 'El nombre no puede estar vacío', cargando: false);
+        state = state.copyWith(
+          error: 'El nombre no puede estar vacío',
+          cargando: false,
+        );
         return false;
       }
-      
-      final response = await _updateProfileUseCase(nombre: nombre, email: email);
+
+      final response = await _updateProfileUseCase(
+        nombre: nombre,
+        email: email,
+      );
 
       if (response.exito) {
         state = state.copyWith(
@@ -303,7 +361,10 @@ class AuthViewModel extends StateNotifier<AuthState> {
         );
         return true;
       } else {
-        state = state.copyWith(error: response.mensaje ?? 'Error al actualizar', cargando: false);
+        state = state.copyWith(
+          error: response.mensaje ?? 'Error al actualizar',
+          cargando: false,
+        );
         return false;
       }
     } catch (e) {
@@ -313,22 +374,33 @@ class AuthViewModel extends StateNotifier<AuthState> {
   }
 
   // ── Cambiar contraseña
-  Future<bool> updatePassword(String currentPassword, String newPassword) async {
+  Future<bool> updatePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
     state = state.copyWith(cargando: true);
 
     try {
-      if (currentPassword.isEmpty || newPassword.isEmpty || newPassword.length < 6) {
+      if (currentPassword.isEmpty ||
+          newPassword.isEmpty ||
+          newPassword.length < 6) {
         state = state.copyWith(error: 'Contraseña inválida', cargando: false);
         return false;
       }
-      
-      final response = await _updatePasswordUseCase(currentPassword, newPassword);
+
+      final response = await _updatePasswordUseCase(
+        currentPassword,
+        newPassword,
+      );
 
       if (response.exito) {
         state = state.copyWith(cargando: false);
         return true;
       } else {
-        state = state.copyWith(error: response.mensaje ?? 'Error al actualizar', cargando: false);
+        state = state.copyWith(
+          error: response.mensaje ?? 'Error al actualizar',
+          cargando: false,
+        );
         return false;
       }
     } catch (e) {
@@ -346,6 +418,7 @@ final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((
   final registerUseCase = ref.watch(registerUseCaseProvider);
   final logoutUseCase = ref.watch(logoutUseCaseProvider);
   final recuperarPasswordUseCase = ref.watch(recuperarPasswordUseCaseProvider);
+  final resetPasswordUseCase = ref.watch(resetPasswordUseCaseProvider);
   final updateProfileUseCase = ref.watch(updateProfileUseCaseProvider);
   final updatePasswordUseCase = ref.watch(updatePasswordUseCaseProvider);
 
@@ -354,6 +427,7 @@ final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((
     registerUseCase: registerUseCase,
     logoutUseCase: logoutUseCase,
     recuperarPasswordUseCase: recuperarPasswordUseCase,
+    resetPasswordUseCase: resetPasswordUseCase,
     updateProfileUseCase: updateProfileUseCase,
     updatePasswordUseCase: updatePasswordUseCase,
   );

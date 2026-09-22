@@ -54,7 +54,9 @@ class AuthRepository implements IAuthRepository {
       final usuario = User(
         id: response.user!.id,
         nombre:
-            userProfile?['nombre_completo'] ?? response.user!.email ?? 'Usuario',
+            userProfile?['nombre_completo'] ??
+            response.user!.email ??
+            'Usuario',
         email: response.user!.email ?? '',
         fotoPerfil: userProfile?['avatar_url'],
         rol: RolUsuario.fromDb(userProfile?['rol'] ?? 'operador'),
@@ -169,10 +171,53 @@ class AuthRepository implements IAuthRepository {
   @override
   Future<bool> recuperarPassword(RecuperarPasswordRequest request) async {
     try {
-      await _supabaseService.resetPasswordForEmail(request.email);
+      await _supabaseService.resetPasswordForEmail(
+        request.email,
+        redirectTo: 'happyoven://reset-password',
+      );
       return true;
     } catch (e) {
       return false;
+    }
+  }
+
+  @override
+  Future<AuthResponse> resetPassword(String newPassword) async {
+    try {
+      final user = _supabaseService.getCurrentUser();
+      if (user == null) {
+        throw Exception('No hay sesión válida para restablecer la contraseña');
+      }
+
+      await _supabaseService.updateAuthPassword(newPassword);
+
+      return AuthResponse(
+        token: _localStorageService.getToken() ?? '',
+        usuario:
+            await obtenerUsuarioActual() ??
+            User(
+              id: user.id,
+              nombre: user.email ?? 'Usuario',
+              email: user.email ?? '',
+              createdAt: DateTime.now(),
+              activo: true,
+            ),
+        exito: true,
+        mensaje: 'Contraseña restablecida exitosamente',
+      );
+    } catch (e) {
+      return AuthResponse(
+        token: '',
+        usuario: User(
+          id: '',
+          nombre: '',
+          email: '',
+          createdAt: DateTime.now(),
+          activo: false,
+        ),
+        exito: false,
+        mensaje: 'Error al restablecer contraseña: ${e.toString()}',
+      );
     }
   }
 
@@ -224,7 +269,10 @@ class AuthRepository implements IAuthRepository {
   }
 
   @override
-  Future<AuthResponse> updateProfile({required String nombre, String? email}) async {
+  Future<AuthResponse> updateProfile({
+    required String nombre,
+    String? email,
+  }) async {
     try {
       final user = _supabaseService.getCurrentUser();
       if (user == null) {
@@ -240,7 +288,9 @@ class AuthRepository implements IAuthRepository {
       String? emailMessage;
       if (email != null && email.isNotEmpty && email != user.email) {
         try {
-          final requiereConfirmacion = await _supabaseService.updateAuthEmail(email);
+          final requiereConfirmacion = await _supabaseService.updateAuthEmail(
+            email,
+          );
           if (requiereConfirmacion) {
             emailMessage = 'Se envió un enlace de confirmación a $email';
           }
@@ -259,14 +309,28 @@ class AuthRepository implements IAuthRepository {
 
       return AuthResponse(
         token: _localStorageService.getToken() ?? '',
-        usuario: updatedUser ?? User(id: user.id, nombre: nombre, email: user.email ?? '', createdAt: DateTime.now(), activo: true),
+        usuario:
+            updatedUser ??
+            User(
+              id: user.id,
+              nombre: nombre,
+              email: user.email ?? '',
+              createdAt: DateTime.now(),
+              activo: true,
+            ),
         exito: true,
         mensaje: mensaje,
       );
     } catch (e) {
       return AuthResponse(
         token: '',
-        usuario: User(id: '', nombre: '', email: '', createdAt: DateTime.now(), activo: false),
+        usuario: User(
+          id: '',
+          nombre: '',
+          email: '',
+          createdAt: DateTime.now(),
+          activo: false,
+        ),
         exito: false,
         mensaje: 'Error al actualizar perfil: ${e.toString()}',
       );
@@ -274,7 +338,10 @@ class AuthRepository implements IAuthRepository {
   }
 
   @override
-  Future<AuthResponse> updatePassword(String currentPassword, String newPassword) async {
+  Future<AuthResponse> updatePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
     try {
       final user = _supabaseService.getCurrentUser();
       if (user == null) {
@@ -289,14 +356,28 @@ class AuthRepository implements IAuthRepository {
 
       return AuthResponse(
         token: _localStorageService.getToken() ?? '',
-        usuario: (await obtenerUsuarioActual()) ?? User(id: '', nombre: '', email: '', createdAt: DateTime.now(), activo: false),
+        usuario:
+            (await obtenerUsuarioActual()) ??
+            User(
+              id: '',
+              nombre: '',
+              email: '',
+              createdAt: DateTime.now(),
+              activo: false,
+            ),
         exito: true,
         mensaje: 'Contraseña actualizada exitosamente',
       );
     } catch (e) {
       return AuthResponse(
         token: '',
-        usuario: User(id: '', nombre: '', email: '', createdAt: DateTime.now(), activo: false),
+        usuario: User(
+          id: '',
+          nombre: '',
+          email: '',
+          createdAt: DateTime.now(),
+          activo: false,
+        ),
         exito: false,
         mensaje: 'Error al actualizar contraseña: ${e.toString()}',
       );

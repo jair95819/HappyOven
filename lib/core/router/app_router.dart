@@ -53,7 +53,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final autenticado = authState.autenticado;
       final enLogin =
           state.matchedLocation == '/login' ||
-          state.matchedLocation == '/recuperar-password';
+          state.matchedLocation == '/recuperar-password' ||
+          state.matchedLocation == '/reset-password';
 
       // Terminada la restauración: ir al login siempre.
       // Nunca redirigimos del splash al dashboard: el usuario debe
@@ -74,14 +75,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: '/splash',
-        builder: (c, s) => const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
+        builder: (c, s) =>
+            const Scaffold(body: Center(child: CircularProgressIndicator())),
       ),
       GoRoute(path: '/login', builder: (c, s) => const LoginView()),
       GoRoute(
         path: '/recuperar-password',
         builder: (c, s) => const RecuperarPasswordView(),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        builder: (c, s) => const CambiarPasswordView(resetFlow: true),
       ),
 
       StatefulShellRoute.indexedStack(
@@ -120,9 +124,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
               GoRoute(
                 path: '/catalogo/historial/:id',
-                builder: (c, s) => HistorialArticuloView(
-                  articuloId: s.pathParameters['id']!,
-                ),
+                builder: (c, s) =>
+                    HistorialArticuloView(articuloId: s.pathParameters['id']!),
               ),
             ],
           ),
@@ -137,7 +140,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/recetas/nueva',
                 builder: (c, s) => CosteoDinamicoView(
-                  productoFinal: s.extra is Articulo ? s.extra as Articulo? : null,
+                  productoFinal: s.extra is Articulo
+                      ? s.extra as Articulo?
+                      : null,
                 ),
               ),
               GoRoute(

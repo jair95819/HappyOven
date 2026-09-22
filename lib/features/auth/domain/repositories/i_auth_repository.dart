@@ -15,6 +15,9 @@ abstract class IAuthRepository {
   /// Recuperar contraseña
   Future<bool> recuperarPassword(RecuperarPasswordRequest request);
 
+  /// Restablecer la contraseña desde el enlace de recuperación.
+  Future<AuthResponse> resetPassword(String newPassword);
+
   /// Obtener usuario actual (si existe token válido)
   Future<User?> obtenerUsuarioActual();
 
@@ -28,5 +31,8 @@ abstract class IAuthRepository {
   Future<AuthResponse> updateProfile({required String nombre, String? email});
 
   /// Cambiar contraseña
-  Future<AuthResponse> updatePassword(String currentPassword, String newPassword);
+  Future<AuthResponse> updatePassword(
+    String currentPassword,
+    String newPassword,
+  );
 }
