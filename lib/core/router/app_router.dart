@@ -14,9 +14,16 @@ import 'package:happy_oven/features/configuracion/presentation/views/cambiar_pas
 import 'package:happy_oven/features/configuracion/presentation/views/editar_perfil_view.dart';
 import 'package:happy_oven/features/configuracion/presentation/views/gestion_categorias_view.dart';
 import 'package:happy_oven/features/configuracion/presentation/views/perfil_ajustes_view.dart';
+import 'package:happy_oven/features/produccion/presentation/views/nueva_orden_produccion_view.dart';
+import 'package:happy_oven/features/recetas_costeo/presentation/views/analizar_costos_view.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/views/costeo_dinamico_view.dart';
+import 'package:happy_oven/features/recetas_costeo/presentation/views/gestionar_receta_view.dart';
+import 'package:happy_oven/features/recetas_costeo/presentation/views/ver_receta_view.dart';
 import 'package:happy_oven/features/recetas_costeo/presentation/views/recetario_view.dart';
+import 'package:happy_oven/features/registro_movimientos/presentation/views/historial_kardex_view.dart';
 import 'package:happy_oven/features/registro_movimientos/presentation/views/ingreso_almacen_view.dart';
+import 'package:happy_oven/features/registro_movimientos/presentation/views/ingreso_ocr_view.dart';
+import 'package:happy_oven/features/registro_movimientos/presentation/views/salida_almacen_view.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/views/catalogo_general_view.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/views/formulario_articulo_view.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/views/historial_articulo_view.dart';
@@ -90,6 +97,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: '/dashboard',
                 builder: (c, s) => const DashboardInteligenteView(),
               ),
+              GoRoute(
+                path: '/movimientos',
+                builder: (c, s) => const HistorialKardexView(),
+              ),
+              GoRoute(
+                path: '/movimientos/entrada',
+                builder: (c, s) => const IngresoAlmacenView(),
+              ),
+              GoRoute(
+                path: '/movimientos/salida',
+                builder: (c, s) => const SalidaAlmacenView(),
+              ),
+              GoRoute(
+                path: '/movimientos/ingreso-ocr',
+                builder: (c, s) => const IngresoOcrView(),
+              ),
             ],
           ),
 
@@ -138,6 +161,27 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/recetas/editar',
                 builder: (c, s) => CosteoDinamicoView(
+                  receta: s.extra is Receta ? s.extra as Receta? : null,
+                ),
+              ),
+              GoRoute(
+                path: '/recetas/ver',
+                builder: (c, s) => VerRecetaView(receta: s.extra as Receta),
+              ),
+              GoRoute(
+                path: '/recetas/costos',
+                builder: (c, s) => AnalizarCostosView(
+                  receta: s.extra is Receta ? s.extra as Receta? : null,
+                ),
+              ),
+              GoRoute(
+                path: '/recetas/gestionar',
+                builder: (c, s) =>
+                    GestionarRecetaView(receta: s.extra as Receta),
+              ),
+              GoRoute(
+                path: '/produccion/nueva',
+                builder: (c, s) => NuevaOrdenProduccionView(
                   receta: s.extra is Receta ? s.extra as Receta? : null,
                 ),
               ),
