@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:happy_oven/core/demo/diseno_demo.dart';
 import 'package:happy_oven/core/theme/theme.dart';
+import 'package:happy_oven/core/widgets/ho_ui.dart';
 import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/models/receta.dart';
@@ -42,26 +44,6 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView> {
 
     return sinDuplicados;
   }
-
-  List<Articulo> get _insumosFiltrados => _deduplicarArticulos(
-    _todosArticulos
-        .where(
-          (a) =>
-              a.tipo == TipoArticulo.insumo &&
-              a.nombre.toLowerCase().contains(_query.toLowerCase()),
-        )
-        .toList(),
-  );
-
-  List<Articulo> get _productosFiltrados => _deduplicarArticulos(
-    _todosArticulos
-        .where(
-          (a) =>
-              a.tipo == TipoArticulo.productoFinal &&
-              a.nombre.toLowerCase().contains(_query.toLowerCase()),
-        )
-        .toList(),
-  );
 
   List<Articulo> get _articulosVisibles => _deduplicarArticulos(
     _todosArticulos
@@ -120,132 +102,57 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    final colors = AppTheme.colorsOf(context);
-    final font = AppTheme.fontOf(context);
-
-    return Container(
-      color: const Color(0xFFF5F1EA),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Inventario',
-                        style: font.h1.copyWith(
-                          fontSize: 42,
-                          fontWeight: FontWeight.w800,
-                          color: colors.titleText,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Control de insumos y materia prima',
-                        style: font.caption.copyWith(
-                          fontSize: 12,
-                          color: colors.hint,
-                        ),
-                      ),
-                    ],
-                  ),
-                  GestureDetector(
-                    onTap: () => context.go('/catalogo/nuevo'),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2B2B2B),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.add_rounded,
-                            color: Colors.white,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Nuevo',
-                            style: font.label.copyWith(
-                              fontSize: 13,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE9E4DF),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  style: font.bodySmall.copyWith(
-                    fontSize: 14,
-                    color: colors.titleText,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Buscar insumo o ingrediente...',
-                    hintStyle: font.hint.copyWith(
-                      fontSize: 14,
-                      color: colors.hint,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.search_rounded,
-                      color: colors.hint,
-                      size: 18,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+    return HoHeader(
+      title: 'Inventario',
+      subtitle: 'Control de insumos y materia prima',
+      action: HoHeaderButton(
+        label: 'Nuevo',
+        icon: Icons.add_rounded,
+        onTap: () => context.go('/catalogo/nuevo'),
+      ),
+      bottom: HoSearchField(
+        controller: _searchController,
+        hint: 'Buscar insumo o ingrediente...',
       ),
     );
   }
 
   Widget _buildBody(BuildContext context) {
-    return Container(
-      color: const Color(0xFFEFEAE5),
+    return RefreshIndicator(
+      onRefresh: () =>
+          ref.read(catalogoViewModelProvider.notifier).cargarArticulos(),
       child: _buildLista(context, _articulosVisibles),
     );
   }
 
   Widget _buildLista(BuildContext context, List<Articulo> articulos) {
     if (articulos.isEmpty) {
-      return Center(
-        child: Text(
-          'Sin resultados',
-          style: AppTheme.fontOf(context).hint.copyWith(fontSize: 13),
-        ),
+      final c = AppTheme.colorsOf(context);
+      return ListView(
+        children: [
+          const SizedBox(height: 64),
+          Icon(Icons.inventory_2_outlined, size: 40, color: c.hint),
+          const SizedBox(height: 8),
+          Text(
+            'No se encontraron insumos',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: c.bodyText,
+            ),
+          ),
+          Text(
+            'Prueba con otra búsqueda',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12, color: c.hint),
+          ),
+        ],
       );
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+      padding: const EdgeInsets.all(16),
       itemCount: articulos.length,
       separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
@@ -312,170 +219,6 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView> {
     }
   }
 
-  Widget _buildTarjetaArticulo(BuildContext context, Articulo articulo) {
-    final estado = _estadoDeArticulo(articulo);
-    final config = _configPorEstado(context, estado);
-    final font = AppTheme.fontOf(context);
-    final colors = AppTheme.colorsOf(context);
-    final ratio = (articulo.stockActual / articulo.stockMinimo).clamp(0.0, 1.0);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: colors.card,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: colors.border, width: 0.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  articulo.nombre,
-                  style: font.label.copyWith(fontSize: 15, height: 1.2),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: config.colorFondo,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  config.etiqueta,
-                  style: font.caption.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: config.colorPrincipal,
-                    fontSize: 10,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 4),
-              PopupMenuButton<String>(
-                icon: Icon(
-                  Icons.more_vert_rounded,
-                  color: colors.hint,
-                  size: 18,
-                ),
-                padding: EdgeInsets.zero,
-                onSelected: (val) {
-                  if (val == 'editar') {
-                    context.go('/catalogo/nuevo', extra: articulo);
-                  } else if (val == 'registrar_movimiento') {
-                    context.push(
-                      '/catalogo/movimiento/${articulo.id}',
-                      extra: articulo,
-                    );
-                  } else if (val == 'ver_registro') {
-                    context.push('/catalogo/historial/${articulo.id}');
-                  } else if (val == 'eliminar') {
-                    _eliminarArticulo(context, articulo.id);
-                  }
-                },
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'editar',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.edit_outlined,
-                          size: 18,
-                          color: colors.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text('Editar', style: font.bodySmall),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'registrar_movimiento',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.swap_horiz_rounded,
-                          size: 18,
-                          color: colors.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text('Registrar movimiento', style: font.bodySmall),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'ver_registro',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.history_rounded,
-                          size: 18,
-                          color: colors.primaryBorder,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Ver registro de movimientos',
-                          style: font.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'eliminar',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.delete_outline,
-                          size: 18,
-                          color: colors.statusCritical,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Eliminar',
-                          style: font.bodySmall.copyWith(
-                            color: colors.statusCritical,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Stock: ${articulo.stockActual} / mín. ${articulo.stockMinimo} ${articulo.unidad.dbValue}',
-            style: font.caption.copyWith(fontSize: 12, color: colors.hint),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: LinearProgressIndicator(
-              value: ratio,
-              minHeight: 6,
-              backgroundColor: colors.surface,
-              valueColor: AlwaysStoppedAnimation<Color>(config.colorPrincipal),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   _ConfigEstado _configPorEstado(BuildContext context, _EstadoStock estado) {
     final colors = AppTheme.colorsOf(context);
     switch (estado) {
@@ -488,7 +231,7 @@ class _CatalogoGeneralViewState extends ConsumerState<CatalogoGeneralView> {
       case _EstadoStock.bajo:
         return _ConfigEstado(
           etiqueta: 'Bajo',
-          colorPrincipal: colors.primary,
+          colorPrincipal: colors.primaryDark,
           colorFondo: colors.primaryLight,
         );
       case _EstadoStock.normal:
@@ -542,157 +285,129 @@ class _ProductoFinalCardState extends ConsumerState<_ProductoFinalCard> {
     final colors = AppTheme.colorsOf(context);
     final art = widget.articulo;
     final config = widget.config;
-    final ratio = (art.stockActual / art.stockMinimo).clamp(0.0, 1.0);
     final recetaAsync = ref.watch(recetaPorProductoProvider(art.id));
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: colors.card,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: colors.border, width: 0.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    final bajo = art.stockActual <= art.stockMinimo;
+    final pct = art.stockMinimo <= 0
+        ? 1.0
+        : art.stockActual / (art.stockMinimo * 2);
+
+    return HoCard(
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _Miniatura(articulo: art, bajo: bajo),
+              const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  art.nombre,
-                  style: font.label.copyWith(fontSize: 15, height: 1.2),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: config.colorFondo,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  config.etiqueta,
-                  style: font.caption.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: config.colorPrincipal,
-                    fontSize: 10,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 4),
-              PopupMenuButton<String>(
-                icon: Icon(
-                  Icons.more_vert_rounded,
-                  color: colors.hint,
-                  size: 18,
-                ),
-                padding: EdgeInsets.zero,
-                onSelected: (val) {
-                  if (val == 'editar') {
-                    widget.onEdit();
-                  } else if (val == 'registrar_movimiento') {
-                    context.push('/catalogo/movimiento/${art.id}', extra: art);
-                  } else if (val == 'ver_registro') {
-                    context.push('/catalogo/historial/${art.id}');
-                  } else if (val == 'eliminar') {
-                    widget.onDelete();
-                  }
-                },
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'editar',
-                    child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Icon(
-                          Icons.edit_outlined,
-                          size: 18,
-                          color: colors.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text('Editar', style: font.bodySmall),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'registrar_movimiento',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.swap_horiz_rounded,
-                          size: 18,
-                          color: colors.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text('Registrar movimiento', style: font.bodySmall),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'ver_registro',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.history_rounded,
-                          size: 18,
-                          color: colors.primaryBorder,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Ver registro de movimientos',
-                          style: font.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'eliminar',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.delete_outline,
-                          size: 18,
-                          color: colors.statusCritical,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Eliminar',
-                          style: font.bodySmall.copyWith(
-                            color: colors.statusCritical,
+                        Expanded(
+                          child: Text(
+                            art.nombre,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              color: colors.titleText,
+                            ),
                           ),
                         ),
+                        const SizedBox(width: 4),
+                        HoBadge(
+                          text: config.etiqueta,
+                          color: config.colorPrincipal,
+                          background: config.colorFondo,
+                        ),
                       ],
                     ),
+                    const SizedBox(height: 2),
+                    Text.rich(
+                      TextSpan(
+                        text: 'Stock: ',
+                        style: TextStyle(fontSize: 12, color: colors.bodyText),
+                        children: [
+                          TextSpan(
+                            text:
+                                '${art.stockActual.toStringAsFixed(2)} ${art.unidad.dbValue}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: colors.titleText,
+                            ),
+                          ),
+                          TextSpan(
+                            text: ' / mín. ${art.stockMinimo.toStringAsFixed(2)}',
+                          ),
+                        ],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    HoProgressBar(
+                      value: pct,
+                      color: bajo ? colors.statusCritical : colors.statusNormal,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 32,
+                height: 32,
+                child: PopupMenuButton<String>(
+                  icon: Icon(
+                    Icons.more_vert_rounded,
+                    color: colors.bodyText,
+                    size: 20,
                   ),
-                ],
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  color: colors.card,
+                  onSelected: (val) {
+                    if (val == 'editar') {
+                      widget.onEdit();
+                    } else if (val == 'registrar_movimiento') {
+                      context.push('/catalogo/movimiento/${art.id}', extra: art);
+                    } else if (val == 'ver_registro') {
+                      context.push('/catalogo/historial/${art.id}');
+                    } else if (val == 'eliminar') {
+                      widget.onDelete();
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    _menuItem(context, 'editar', Icons.edit_outlined, 'Editar insumo'),
+                    _menuItem(
+                      context,
+                      'registrar_movimiento',
+                      Icons.sync_alt_rounded,
+                      'Registrar movimiento',
+                    ),
+                    _menuItem(
+                      context,
+                      'ver_registro',
+                      Icons.history_rounded,
+                      'Ver registro de movimientos',
+                    ),
+                    _menuItem(
+                      context,
+                      'eliminar',
+                      Icons.delete_outline,
+                      'Eliminar',
+                      danger: true,
+                    ),
+                  ],
+                ),
               ),
             ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Stock: ${art.stockActual} / mín. ${art.stockMinimo} ${art.unidad.dbValue}',
-            style: font.caption.copyWith(fontSize: 12, color: colors.hint),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: LinearProgressIndicator(
-              value: ratio,
-              minHeight: 6,
-              backgroundColor: colors.surface,
-              valueColor: AlwaysStoppedAnimation<Color>(config.colorPrincipal),
-            ),
           ),
           recetaAsync.when(
             data: (receta) {
@@ -728,6 +443,89 @@ class _ProductoFinalCardState extends ConsumerState<_ProductoFinalCard> {
             ),
             error: (_, _) => const SizedBox.shrink(),
           ),
+        ],
+      ),
+    );
+  }
+
+  PopupMenuItem<String> _menuItem(
+    BuildContext context,
+    String value,
+    IconData icon,
+    String label, {
+    bool danger = false,
+  }) {
+    final colors = AppTheme.colorsOf(context);
+    final color = danger ? colors.statusCritical : colors.titleText;
+    return PopupMenuItem(
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 10),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Miniatura del artículo (icono según tipo) con indicador de stock bajo.
+class _Miniatura extends StatelessWidget {
+  final Articulo articulo;
+  final bool bajo;
+
+  const _Miniatura({required this.articulo, required this.bajo});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppTheme.colorsOf(context);
+    final esProducto = articulo.tipo == TipoArticulo.productoFinal;
+    return SizedBox(
+      width: 64,
+      height: 64,
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: colors.border),
+            ),
+            child: HoPhoto(
+              // TODO: foto real del artículo (hoy es foto demo por nombre).
+              photoId:
+                  DisenoDemo.fotoPara(articulo.nombre) ??
+                  DisenoDemo.fotoPorDefecto,
+              width: 64,
+              height: 64,
+              px: 128,
+              radius: BorderRadius.circular(11),
+              fallbackIcon: esProducto
+                  ? Icons.bakery_dining_rounded
+                  : Icons.grain_rounded,
+            ),
+          ),
+          if (bajo)
+            Positioned(
+              right: 4,
+              bottom: 4,
+              child: Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: colors.statusCritical,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: colors.white, width: 2),
+                ),
+              ),
+            ),
         ],
       ),
     );

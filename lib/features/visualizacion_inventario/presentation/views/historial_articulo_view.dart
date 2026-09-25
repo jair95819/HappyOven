@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:happy_oven/core/theme/theme.dart';
+import 'package:happy_oven/core/widgets/ho_ui.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
 import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/models/articulo.dart';
@@ -31,17 +32,13 @@ class HistorialArticuloView extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: colors.bg,
-      appBar: AppBar(
-        backgroundColor: colors.accent,
-        title: articuloAsync.when(
-          data: (a) => Text(a?.nombre ?? 'Historial', style: font.h3),
-          loading: () => Text('Cargando...', style: font.h3),
-          error: (_, _) => Text('Historial', style: font.h3),
+      appBar: HoTopBar(
+        title: articuloAsync.maybeWhen(
+          data: (a) => a?.nombre ?? 'Historial',
+          orElse: () => 'Historial',
         ),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: colors.titleText),
-          onPressed: () => Navigator.pop(context),
-        ),
+        subtitle: 'Registro de movimientos',
+        onBack: () => Navigator.pop(context),
       ),
       body: historialAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
