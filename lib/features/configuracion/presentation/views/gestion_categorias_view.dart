@@ -1,6 +1,8 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
+import 'package:happy_oven/core/widgets/ho_ui.dart';
 import 'package:happy_oven/core/models/categoria.dart';
 import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/repositories/categorias_repository.dart';
@@ -135,52 +137,26 @@ class _GestionCategoriasViewState extends ConsumerState<GestionCategoriasView> {
       backgroundColor: colors.bg,
       body: Column(
         children: [
-          Container(
-            color: colors.accent,
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(AppTheme.spacing.lg, AppTheme.spacing.md, AppTheme.spacing.lg, AppTheme.spacing.md),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                         Text('Categorías', style: font.h3),
-                          SizedBox(height: AppTheme.spacing.sm),
-                          Text('${cats.length} categorías', style: font.caption.copyWith(color: colors.accentDark)),
-                      ],
-                    ),
-                    GestureDetector(
-                      onTap: () => _mostrarDialogo(),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md, vertical: AppTheme.spacing.sm),
-                        decoration: BoxDecoration(
-                          color: colors.titleText,
-                          borderRadius: AppTheme.radius.brSm,
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.add_rounded, color: colors.accent, size: 16),
-                            SizedBox(width: AppTheme.spacing.sm),
-                            Text('Nueva', style: font.label.copyWith(color: colors.accent, fontSize: 13)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+          HoTopBar(
+            title: 'Categorías',
+            subtitle: '${cats.length} categorías',
+            onBack: () =>
+                context.canPop() ? context.pop() : context.go('/perfil'),
+            actions: [
+              HoHeaderButton(
+                label: 'Nueva',
+                icon: Icons.add_rounded,
+                onTap: () => _mostrarDialogo(),
               ),
-            ),
-          ),
-          Container(
-            color: colors.accent,
-            child: Row(
-              children: [
-                _buildTab(TipoArticulo.insumo, 'Insumos'),
-                _buildTab(TipoArticulo.productoFinal, 'Productos'),
-              ],
+            ],
+            bottom: HoUnderlineTabs(
+              labels: const ['Insumos', 'Productos'],
+              selected: _tab == TipoArticulo.insumo ? 0 : 1,
+              onChanged: (i) => setState(
+                () => _tab = i == 0
+                    ? TipoArticulo.insumo
+                    : TipoArticulo.productoFinal,
+              ),
             ),
           ),
           Expanded(
@@ -201,19 +177,8 @@ class _GestionCategoriasViewState extends ConsumerState<GestionCategoriasView> {
                       ),
                     )
                   : Container(
-                      decoration: BoxDecoration(
-                        color: colors.bg,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(AppTheme.radius.xl),
-                          topRight: Radius.circular(AppTheme.radius.xl),
-                        ),
-                      ),
-                      transform: Matrix4.translationValues(0, -16, 0),
+                      color: colors.bg,
                       child: ClipRRect(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(AppTheme.radius.xl),
-                          topRight: Radius.circular(AppTheme.radius.xl),
-                        ),
                         child: ListView.builder(
                           padding: EdgeInsets.fromLTRB(AppTheme.spacing.md, AppTheme.spacing.lg, AppTheme.spacing.md, AppTheme.spacing.sm),
                           itemCount: filtradas.length,
@@ -223,8 +188,8 @@ class _GestionCategoriasViewState extends ConsumerState<GestionCategoriasView> {
                               padding: EdgeInsets.all(AppTheme.spacing.md),
                               decoration: BoxDecoration(
                                 color: colors.card,
-                                borderRadius: BorderRadius.circular(AppTheme.radius.lg),
-                                border: Border.all(color: colors.border, width: 0.5),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: colors.border),
                                 boxShadow: AppTheme.shadows.cardSm,
                               ),
                               child: Row(
@@ -285,33 +250,4 @@ class _GestionCategoriasViewState extends ConsumerState<GestionCategoriasView> {
     );
   }
 
-  Widget _buildTab(TipoArticulo tipo, String etiqueta) {
-    final colors = AppTheme.colorsOf(context);
-    final activo = _tab == tipo;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => _tab = tipo),
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: activo ? colors.titleText : Colors.transparent,
-                width: 2,
-              ),
-            ),
-          ),
-          child: Text(
-            etiqueta,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: activo ? FontWeight.w600 : FontWeight.normal,
-              color: activo ? colors.titleText : colors.hint,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }

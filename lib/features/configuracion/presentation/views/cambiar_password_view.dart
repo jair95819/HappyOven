@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
+import 'package:happy_oven/core/widgets/ho_ui.dart';
 import 'package:happy_oven/features/auth/presentation/viewmodels/auth_viewmodel.dart';
 
 class CambiarPasswordView extends ConsumerStatefulWidget {
@@ -40,26 +41,16 @@ class _CambiarPasswordViewState extends ConsumerState<CambiarPasswordView> {
     final isResetFlow = widget.resetFlow;
 
     return Scaffold(
-      backgroundColor: AppTheme.colors.bg,
-      appBar: AppBar(
-        title: Text(
-          isResetFlow ? 'Restablecer contraseña' : 'Cambiar contraseña',
-          style: AppTheme.font.h3,
-        ),
-        backgroundColor: AppTheme.colors.card,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_rounded,
-            color: AppTheme.colors.titleText,
-          ),
-          onPressed: () => context.pop(),
-        ),
+      backgroundColor: AppTheme.colorsOf(context).bg,
+      appBar: HoTopBar(
+        title: isResetFlow ? 'Restablecer contraseña' : 'Cambiar contraseña',
+        subtitle: 'Protege el acceso a tu cuenta',
+        onBack: () =>
+            context.canPop() ? context.pop() : context.go('/login'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(AppTheme.spacing.xl),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -160,14 +151,7 @@ class _CambiarPasswordViewState extends ConsumerState<CambiarPasswordView> {
   }
 
   Widget _buildLabel(String text) {
-    return Text(
-      text.toUpperCase(),
-      style: AppTheme.font.label.copyWith(
-        fontSize: 11,
-        color: AppTheme.colors.brownMid,
-        letterSpacing: 0.5,
-      ),
-    );
+    return Text(text.toUpperCase(), style: AppTheme.fontOf(context).section);
   }
 
   Widget _buildPasswordField({
@@ -176,43 +160,25 @@ class _CambiarPasswordViewState extends ConsumerState<CambiarPasswordView> {
     required VoidCallback onVisibilityChanged,
     bool enabled = true,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.colors.primaryLight,
-        borderRadius: AppTheme.radius.brSm,
-        border: Border.all(color: AppTheme.colors.border, width: 0.5),
-        boxShadow: AppTheme.shadows.cardSm,
-      ),
-      child: TextField(
-        controller: controller,
-        obscureText: hidePassword,
-        enabled: enabled,
-        style: AppTheme.font.bodySmall.copyWith(
-          color: AppTheme.colors.titleText,
-        ),
-        decoration: InputDecoration(
-          hintText: '••••••••',
-          hintStyle: AppTheme.font.hint,
-          prefixIcon: Icon(
-            Icons.lock_outline_rounded,
-            color: AppTheme.colors.brownMid,
-            size: 18,
+    final c = AppTheme.colorsOf(context);
+    return TextField(
+      controller: controller,
+      obscureText: hidePassword,
+      enabled: enabled,
+      style: TextStyle(fontSize: 15, color: c.titleText),
+      decoration: hoInputDecoration(
+        context,
+        hint: '••••••••',
+        icon: Icons.lock_outline_rounded,
+        suffixIcon: IconButton(
+          icon: Icon(
+            hidePassword
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
+            color: c.bodyText,
+            size: 20,
           ),
-          suffixIcon: IconButton(
-            icon: Icon(
-              hidePassword
-                  ? Icons.visibility_off_outlined
-                  : Icons.visibility_outlined,
-              color: AppTheme.colors.brownMid,
-              size: 18,
-            ),
-            onPressed: onVisibilityChanged,
-          ),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: AppTheme.spacing.md,
-            vertical: AppTheme.spacing.md,
-          ),
+          onPressed: onVisibilityChanged,
         ),
       ),
     );
@@ -223,36 +189,10 @@ class _CambiarPasswordViewState extends ConsumerState<CambiarPasswordView> {
     String label,
     VoidCallback onPressed,
   ) {
-    return GestureDetector(
-      onTap: authState.cargando ? null : onPressed,
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.md),
-        decoration: BoxDecoration(
-          color: authState.cargando
-              ? AppTheme.colors.hint
-              : AppTheme.colors.primary,
-          borderRadius: AppTheme.radius.brMd,
-        ),
-        child: authState.cargando
-            ? const SizedBox(
-                height: 20,
-                child: Center(
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      strokeWidth: 2,
-                    ),
-                  ),
-                ),
-              )
-            : Text(
-                label,
-                textAlign: TextAlign.center,
-                style: AppTheme.font.button,
-              ),
-      ),
+    return HoPrimaryButton(
+      label: label,
+      loading: authState.cargando,
+      onPressed: onPressed,
     );
   }
 }
