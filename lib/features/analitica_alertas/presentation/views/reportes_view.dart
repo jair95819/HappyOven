@@ -7,7 +7,10 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:go_router/go_router.dart';
+import 'package:happy_oven/core/demo/diseno_demo.dart';
 import 'package:happy_oven/core/theme/theme.dart';
+import 'package:happy_oven/core/widgets/ho_ui.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
 import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/providers.dart';
@@ -167,6 +170,7 @@ class ReportesView extends ConsumerStatefulWidget {
 }
 
 class _ReportesViewState extends ConsumerState<ReportesView> {
+  int _tab = 0;
   DateTimeRange _rango = DateTimeRange(
     start: DateTime.now().subtract(const Duration(days: 6)),
     end: DateTime.now(),
@@ -289,89 +293,394 @@ class _ReportesViewState extends ConsumerState<ReportesView> {
   @override
   Widget build(BuildContext context) {
     final dataAsync = ref.watch(reportesDataProvider(_rango));
+    final data = dataAsync.valueOrNull;
     return Scaffold(
       backgroundColor: AppTheme.colors.bg,
       body: Column(
         children: [
-          _buildHeader(dataAsync),
-          Expanded(child: _buildBody(dataAsync)),
+          HoHeader(
+            title: 'Reportes',
+            subtitle: 'Análisis y métricas del negocio',
+            action: HoHeaderButton(
+              label: 'Exportar',
+              icon: Icons.download_rounded,
+              onTap: data != null ? () => _exportarPDF(data) : null,
+            ),
+            bottom: HoUnderlineTabs(
+              labels: const [
+                'Resumen',
+                'Inventario',
+                'Movimientos',
+                'Recetas',
+                'Costos',
+              ],
+              icons: const [
+                Icons.pie_chart_outline_rounded,
+                Icons.inventory_2_outlined,
+                Icons.sync_alt_rounded,
+                Icons.menu_book_outlined,
+                Icons.attach_money_rounded,
+              ],
+              selected: _tab,
+              onChanged: (i) => setState(() => _tab = i),
+            ),
+          ),
+          Expanded(
+            child: switch (_tab) {
+              0 => _buildResumen(data),
+              2 => _buildBody(dataAsync),
+              _ => _buildProximamente(),
+            },
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(AsyncValue<ReportesData> dataAsync) {
-    final data = dataAsync.valueOrNull;
-    return Container(
-      color: AppTheme.colors.accent,
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-          child: Column(
+  // ───────────── Pestaña "Resumen" (tal cual el diseño) ─────────────
+  // TODO: los datos de esta pestaña vienen de DisenoDemo (provisionales).
+
+  Widget _buildResumen(ReportesData? data) {
+    final c = AppTheme.colors;
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
+              Expanded(
+                child: HoCard(
+                  radius: 18,
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                      Text('Reportes', style: AppTheme.font.h3),
-                      SizedBox(height: AppTheme.spacing.sm),
-                      Text('Genera y exporta tu resumen',
-                          style: AppTheme.font.caption
-                              .copyWith(color: AppTheme.colors.accentDark)),
-                    ],
-                  ),
-                  Row(
                     children: [
-                      _botonExportar(
-                        icono: Icons.picture_as_pdf_outlined,
-                        etiqueta: 'PDF',
-                        onTap: data != null ? () => _exportarPDF(data) : null,
+                      Text(
+                        'TIPO DE REPORTE',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: c.bodyText,
+                        ),
                       ),
-                      const SizedBox(width: 8),
-                      _botonExportar(
-                        icono: Icons.grid_on_outlined,
-                        etiqueta: 'CSV',
-                        onTap: data != null ? () => _exportarCSV(data) : null,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              GestureDetector(
-                onTap: _seleccionarRango,
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md, vertical: AppTheme.spacing.sm),
-                  decoration: BoxDecoration(
-                    color: AppTheme.colors.card,
-                    borderRadius: AppTheme.radius.brMd,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
+                      const SizedBox(height: 2),
                       Row(
                         children: [
-                          Icon(Icons.calendar_today_outlined,
-                              color: AppTheme.colors.brownMid, size: 16),
-                          const SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Rango seleccionado',
-                              style: AppTheme.font.caption),
-                          SizedBox(height: AppTheme.spacing.sm),
-                          Text(_rangoFormateado,
-                                  style: AppTheme.font.label.copyWith(fontSize: 13)),
-                            ],
+                          Expanded(
+                            child: Text(
+                              'Resumen general',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: c.titleText,
+                              ),
+                            ),
+                          ),
+                          Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            size: 18,
+                            color: c.bodyText,
                           ),
                         ],
                       ),
-                      Icon(Icons.keyboard_arrow_down_rounded,
-                          color: AppTheme.colors.brownMid, size: 20),
                     ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Material(
+                color: c.primary,
+                borderRadius: BorderRadius.circular(18),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(18),
+                  onTap: () => ref.invalidate(reportesDataProvider(_rango)),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        Icon(Icons.refresh_rounded, size: 16, color: c.white),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Generar',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: c.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        _buildPeriodo(),
+        const SizedBox(height: 16),
+        const HoSectionLabel('Resumen del período'),
+        const SizedBox(height: 8),
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: 1.25,
+          children: [
+            for (final (i, (icono, label, valor, delta, sube))
+                in DisenoDemo.kpis.indexed)
+              _kpiDemo(icono, label, valor, delta, sube, [
+                c.statusNormal,
+                c.primary,
+                c.accent,
+                c.primary,
+              ][i % 4]),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _buildVentasPorDia(),
+        const SizedBox(height: 16),
+        _buildCostosCategoria(),
+        const SizedBox(height: 16),
+        _buildProductosUsados(),
+        const SizedBox(height: 16),
+        const HoSectionLabel('Oportunidades de mejora'),
+        const SizedBox(height: 8),
+        for (final (icono, titulo, desc) in DisenoDemo.oportunidades) ...[
+          HoCard(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: c.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icono, size: 20, color: c.primary),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        titulo,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: c.titleText,
+                        ),
+                      ),
+                      Text(
+                        desc,
+                        style: TextStyle(fontSize: 12, color: c.bodyText),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+        ],
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            Expanded(
+              child: _botonExportar(
+                icono: Icons.download_rounded,
+                etiqueta: 'PDF',
+                principal: true,
+                onTap: data != null ? () => _exportarPDF(data) : null,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _botonExportar(
+                icono: Icons.lightbulb_outline_rounded,
+                etiqueta: 'Analizar costos',
+                onTap: () => context.push('/recetas/costos'),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _kpiDemo(
+    IconData icono,
+    String label,
+    String valor,
+    String delta,
+    bool sube,
+    Color color,
+  ) {
+    final c = AppTheme.colors;
+    final colorDelta = sube ? c.statusNormal : c.statusCritical;
+    return HoCard(
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icono, size: 16, color: color),
+          ),
+          const Spacer(),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: c.bodyText,
+            ),
+          ),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              valor,
+              style: AppTheme.serif(
+                TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: c.titleText,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Row(
+            children: [
+              Icon(
+                sube ? Icons.trending_up_rounded : Icons.trending_down_rounded,
+                size: 12,
+                color: colorDelta,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                delta,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: colorDelta,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tarjeta({required String titulo, required Widget child}) {
+    final c = AppTheme.colors;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: c.border),
+        boxShadow: AppTheme.shadows.cardSm,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            titulo,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: c.titleText,
+            ),
+          ),
+          const SizedBox(height: 12),
+          child,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVentasPorDia() {
+    final c = AppTheme.colors;
+    final serie = DisenoDemo.ventasPorDia;
+    return _tarjeta(
+      titulo: 'Ventas por día (recetas)',
+      child: SizedBox(
+        height: 160,
+        child: LineChart(
+          LineChartData(
+            minY: 0,
+            gridData: FlGridData(
+              drawVerticalLine: false,
+              getDrawingHorizontalLine: (_) => FlLine(
+                color: c.border,
+                strokeWidth: 1,
+                dashArray: const [3, 4],
+              ),
+            ),
+            borderData: FlBorderData(show: false),
+            titlesData: FlTitlesData(
+              rightTitles: const AxisTitles(),
+              topTitles: const AxisTitles(),
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 24,
+                  getTitlesWidget: (v, _) => Text(
+                    v.toInt().toString(),
+                    style: TextStyle(fontSize: 9, color: c.bodyText),
+                  ),
+                ),
+              ),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  interval: 1,
+                  getTitlesWidget: (v, _) {
+                    final i = v.toInt();
+                    if (i < 0 || i >= serie.length) {
+                      return const SizedBox.shrink();
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        serie[i].$1,
+                        style: TextStyle(fontSize: 9, color: c.bodyText),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            lineBarsData: [
+              LineChartBarData(
+                spots: [
+                  for (var i = 0; i < serie.length; i++)
+                    FlSpot(i.toDouble(), serie[i].$2),
+                ],
+                isCurved: true,
+                color: c.primary,
+                barWidth: 2.5,
+                dotData: FlDotData(
+                  getDotPainter: (_, _, _, _) => FlDotCirclePainter(
+                    radius: 3.5,
+                    color: c.primary,
+                    strokeWidth: 0,
                   ),
                 ),
               ),
@@ -382,125 +691,389 @@ class _ReportesViewState extends ConsumerState<ReportesView> {
     );
   }
 
+  Widget _buildCostosCategoria() {
+    final c = AppTheme.colors;
+    const colores = [
+      Color(0xFF0B2137),
+      Color(0xFF1A385C),
+      Color(0xFF2B4C70),
+      Color(0xFF8EA2B0),
+    ];
+    final datos = DisenoDemo.costosCategoria;
+    return _tarjeta(
+      titulo: 'Costos por categoría',
+      child: Row(
+        children: [
+          SizedBox(
+            width: 128,
+            height: 128,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                PieChart(
+                  PieChartData(
+                    centerSpaceRadius: 38,
+                    sectionsSpace: 2,
+                    sections: [
+                      for (var i = 0; i < datos.length; i++)
+                        PieChartSectionData(
+                          value: datos[i].$2,
+                          color: colores[i % colores.length],
+                          radius: 20,
+                          showTitle: false,
+                        ),
+                    ],
+                  ),
+                ),
+                Text(
+                  DisenoDemo.costosCategoriaTotal,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: c.titleText,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              children: [
+                for (var i = 0; i < datos.length; i++)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 3),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: colores[i % colores.length],
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            datos[i].$1,
+                            style: TextStyle(fontSize: 12, color: c.bodyText),
+                          ),
+                        ),
+                        Text(
+                          '${datos[i].$2.toInt()}%',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: c.titleText,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductosUsados() {
+    final c = AppTheme.colors;
+    final items = DisenoDemo.productosUsados;
+    return _tarjeta(
+      titulo: 'Productos más utilizados',
+      child: Column(
+        children: [
+          for (var i = 0; i < items.length; i++)
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                border: i == 0
+                    ? null
+                    : Border(top: BorderSide(color: c.border)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      items[i].$1,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: c.titleText,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    items[i].$2,
+                    style: TextStyle(fontSize: 13, color: c.bodyText),
+                  ),
+                  SizedBox(
+                    width: 72,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Icon(
+                          items[i].$4
+                              ? Icons.trending_up_rounded
+                              : Icons.trending_down_rounded,
+                          size: 12,
+                          color: items[i].$4 ? c.statusNormal : c.statusCritical,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          items[i].$3,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: items[i].$4
+                                ? c.statusNormal
+                                : c.statusCritical,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProximamente() {
+    final c = AppTheme.colors;
+    // TODO: contenido de las pestañas Inventario / Recetas / Costos.
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.insert_chart_outlined_rounded, size: 40, color: c.hint),
+          const SizedBox(height: 8),
+          Text(
+            'Próximamente',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: c.bodyText,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPeriodo() {
+    final c = AppTheme.colors;
+    return HoCard(
+      onTap: _seleccionarRango,
+      radius: 18,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
+        children: [
+          Icon(Icons.calendar_today_outlined, color: c.bodyText, size: 18),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'PERÍODO',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: c.bodyText,
+                  ),
+                ),
+                Text(
+                  _rangoFormateado,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: c.titleText,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.keyboard_arrow_down_rounded, color: c.bodyText, size: 20),
+        ],
+      ),
+    );
+  }
+
   Widget _botonExportar({
     required IconData icono,
     required String etiqueta,
     required VoidCallback? onTap,
+    bool principal = false,
   }) {
-    final habilitado = onTap != null;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-        decoration: BoxDecoration(
-          color: habilitado
-              ? AppTheme.colors.primary
-              : AppTheme.colors.primary.withValues(alpha: 0.4),
-          borderRadius: AppTheme.radius.brSm,
-        ),
-        child: Row(
-          children: [
-            Icon(icono, color: AppTheme.colors.white, size: 16),
-            const SizedBox(width: 6),
-            Text(etiqueta,
-                style: AppTheme.font.label
-                    .copyWith(color: AppTheme.colors.white, fontSize: 13)),
-          ],
+    final c = AppTheme.colors;
+    return Material(
+      color: principal ? c.statusNormal : c.card,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: principal ? null : Border.all(color: c.border),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icono, color: principal ? c.white : c.primary, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                etiqueta,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: principal ? c.white : c.titleText,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildBody(AsyncValue<ReportesData> dataAsync) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.colors.bg,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(AppTheme.radius.xl),
-          topRight: Radius.circular(AppTheme.radius.xl),
+    return dataAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Text('Error al cargar datos: $e', style: AppTheme.font.body),
         ),
       ),
-      transform: Matrix4.translationValues(0, -16, 0),
-      child: ClipRRect(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(AppTheme.radius.xl),
-          topRight: Radius.circular(AppTheme.radius.xl),
-        ),
-        child: dataAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Text('Error al cargar datos: $e', style: AppTheme.font.body),
-            ),
+      data: (data) => ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _buildPeriodo(),
+          const SizedBox(height: 16),
+          const HoSectionLabel('Resumen del período'),
+          const SizedBox(height: 8),
+          _buildKpiGrid(data),
+          const SizedBox(height: 16),
+          _buildTendenciaConsumo(data),
+          const SizedBox(height: 16),
+          _buildInsumosConsumo(data),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _botonExportar(
+                  icono: Icons.picture_as_pdf_outlined,
+                  etiqueta: 'PDF',
+                  principal: true,
+                  onTap: () => _exportarPDF(data),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _botonExportar(
+                  icono: Icons.grid_on_outlined,
+                  etiqueta: 'CSV',
+                  onTap: () => _exportarCSV(data),
+                ),
+              ),
+            ],
           ),
-          data: (data) => SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(AppTheme.spacing.md, AppTheme.spacing.lg, AppTheme.spacing.md, AppTheme.spacing.sm),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildKpiGrid(data),
-                SizedBox(height: AppTheme.spacing.lg),
-                _buildTendenciaConsumo(data),
-                SizedBox(height: AppTheme.spacing.lg),
-                _buildInsumosConsumo(data),
-                SizedBox(height: AppTheme.spacing.lg),
-              ],
-            ),
-          ),
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildKpiGrid(ReportesData data) {
+    final c = AppTheme.colors;
     return GridView.count(
-      crossAxisCount: 2, shrinkWrap: true,
+      crossAxisCount: 2,
+      shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      crossAxisSpacing: 10, mainAxisSpacing: 10, childAspectRatio: 1.4,
+      crossAxisSpacing: 10,
+      mainAxisSpacing: 10,
+      childAspectRatio: 1.35,
       children: [
-        _buildKpiCard(icono: Icons.arrow_circle_down_outlined,
-            valor: '${data.totalEntradas.toStringAsFixed(1)} kg',
-            etiqueta: 'Total entradas', colorFondo: AppTheme.colors.successLight,
-            colorBorde: AppTheme.colors.successBorder, colorIcono: AppTheme.colors.statusNormal),
-        _buildKpiCard(icono: Icons.arrow_circle_up_outlined,
-            valor: '${data.totalSalidas.toStringAsFixed(1)} kg',
-            etiqueta: 'Total salidas', colorFondo: AppTheme.colors.dangerLight,
-            colorBorde: AppTheme.colors.dangerBorder, colorIcono: AppTheme.colors.statusCritical),
-        _buildKpiCard(icono: Icons.monetization_on_outlined,
-            valor: 'S/ ${data.valorMovido.toStringAsFixed(2)}',
-            etiqueta: 'Valor movido', colorFondo: AppTheme.colors.primaryLight,
-            colorBorde: AppTheme.colors.primaryBorder, colorIcono: AppTheme.colors.primary),
-        _buildKpiCard(icono: Icons.delete_outline_rounded,
-            valor: '${data.totalMermas.toStringAsFixed(1)} kg',
-            etiqueta: 'Mermas del período', colorFondo: AppTheme.colors.dangerLight,
-            colorBorde: AppTheme.colors.dangerBorder, colorIcono: AppTheme.colors.statusCritical),
+        _buildKpiCard(
+          icono: Icons.download_rounded,
+          valor: '${data.totalEntradas.toStringAsFixed(1)} kg',
+          etiqueta: 'Total entradas',
+          color: c.statusNormal,
+        ),
+        _buildKpiCard(
+          icono: Icons.upload_rounded,
+          valor: '${data.totalSalidas.toStringAsFixed(1)} kg',
+          etiqueta: 'Total salidas',
+          color: c.primary,
+        ),
+        _buildKpiCard(
+          icono: Icons.attach_money_rounded,
+          valor: 'S/ ${data.valorMovido.toStringAsFixed(2)}',
+          etiqueta: 'Valor movido',
+          color: c.accent,
+        ),
+        _buildKpiCard(
+          icono: Icons.delete_outline_rounded,
+          valor: '${data.totalMermas.toStringAsFixed(1)} kg',
+          etiqueta: 'Mermas del período',
+          color: c.statusCritical,
+        ),
       ],
     );
   }
 
   Widget _buildKpiCard({
-    required IconData icono, required String valor, required String etiqueta,
-    required Color colorFondo, required Color colorBorde, required Color colorIcono,
+    required IconData icono,
+    required String valor,
+    required String etiqueta,
+    required Color color,
   }) {
-    return Container(
-      padding: EdgeInsets.all(AppTheme.spacing.md),
-      decoration: BoxDecoration(
-        color: colorFondo,
-        borderRadius: BorderRadius.circular(AppTheme.radius.lg),
-        border: Border.all(color: colorBorde, width: 0.5),
-        boxShadow: AppTheme.shadows.cardSm,
-      ),
+    final c = AppTheme.colors;
+    return HoCard(
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icono, color: colorIcono, size: 20),
-          SizedBox(height: AppTheme.spacing.md),
-          Text(valor, style: AppTheme.font.h3.copyWith(fontSize: 18, color: colorIcono)),
-          SizedBox(height: AppTheme.spacing.sm),
-          Text(etiqueta, style: AppTheme.font.caption.copyWith(
-            color: colorIcono.withValues(alpha: 0.8), height: 1.3)),
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icono, color: color, size: 16),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            etiqueta,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: c.bodyText,
+            ),
+          ),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              valor,
+              style: AppTheme.serif(
+                TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: c.titleText,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -516,17 +1089,17 @@ class _ReportesViewState extends ConsumerState<ReportesView> {
     final fmtDia = DateFormat('d MMM', 'es');
 
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacing.md),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.colors.card,
-        borderRadius: BorderRadius.circular(AppTheme.radius.lg),
-        border: Border.all(color: AppTheme.colors.border, width: 0.5),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppTheme.colors.border),
         boxShadow: AppTheme.shadows.cardSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Tendencia de consumo', style: AppTheme.font.label.copyWith(fontSize: 13)),
+          Text('Tendencia de consumo', style: AppTheme.font.label.copyWith(fontSize: 14)),
           SizedBox(height: AppTheme.spacing.sm),
           Text('Consumo de insumos por día. Toca un punto para ver el valor.',
               style: AppTheme.font.caption.copyWith(fontSize: 10, color: AppTheme.colors.hint)),
@@ -632,17 +1205,17 @@ class _ReportesViewState extends ConsumerState<ReportesView> {
         : 10.0;
 
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacing.md),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.colors.card,
-        borderRadius: BorderRadius.circular(AppTheme.radius.lg),
-        border: Border.all(color: AppTheme.colors.border, width: 0.5),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppTheme.colors.border),
         boxShadow: AppTheme.shadows.cardSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Insumos más consumidos', style: AppTheme.font.label.copyWith(fontSize: 13)),
+          Text('Insumos más consumidos', style: AppTheme.font.label.copyWith(fontSize: 14)),
           SizedBox(height: AppTheme.spacing.sm),
           Text('Toca una barra para ver el insumo y su consumo.',
               style: AppTheme.font.caption.copyWith(fontSize: 10, color: AppTheme.colors.hint)),

@@ -40,7 +40,13 @@ class SugerenciasCompraView extends ConsumerWidget {
   Widget _buildHeader(BuildContext context, AppColors colors) {
     final font = AppTheme.fontOf(context);
     return Container(
-      color: colors.accent,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [colors.khaki, colors.khakiSoft],
+        ),
+      ),
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -52,11 +58,11 @@ class SugerenciasCompraView extends ConsumerWidget {
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: colors.titleText,
+                    color: colors.primary,
                     borderRadius: AppTheme.radius.brSm,
                   ),
                   child: Icon(Icons.arrow_back_rounded,
-                      color: colors.accent, size: 18),
+                      color: colors.white, size: 18),
                 ),
               ),
               const SizedBox(width: 12),
