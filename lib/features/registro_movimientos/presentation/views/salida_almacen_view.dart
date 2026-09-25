@@ -6,6 +6,7 @@ import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
 import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/theme/theme.dart';
+import 'package:happy_oven/core/widgets/ho_ui.dart';
 import 'package:happy_oven/features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:happy_oven/features/registro_movimientos/presentation/viewmodels/movimientos_viewmodel.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
@@ -203,58 +204,15 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
 
     return Scaffold(
       backgroundColor: colors.bg,
-      body: Column(
-        children: [
-          _buildHeader(context, colors, font),
-          Expanded(child: _buildFormulario(context, colors, font, productos)),
-        ],
+      appBar: HoTopBar(
+        title: 'Registrar movimientos',
+        subtitle: _tipoSeleccionado == TipoArticulo.productoFinal
+            ? 'Salida · descuento de productos finales'
+            : 'Salida · descuento de materia prima',
+        onBack: () =>
+            context.canPop() ? context.pop() : context.go('/dashboard'),
       ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, AppColors colors, AppFont font) {
-    return Container(
-      color: colors.accent,
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(AppTheme.spacing.lg, AppTheme.spacing.sm + 6, AppTheme.spacing.lg, AppTheme.spacing.lg + 4),
-          child: Row(
-            children: [
-              GestureDetector(
-                onTap: () => context.pop(),
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    borderRadius: AppTheme.radius.brSm,
-                    border: Border.all(color: colors.accentDark, width: 0.5),
-                  ),
-                  child: Icon(
-                    Icons.arrow_back_rounded,
-                    color: colors.titleText,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Registrar salida', style: font.h3),
-                  const SizedBox(height: 2),
-                  Text(
-                    _tipoSeleccionado == TipoArticulo.productoFinal
-                        ? 'Descuento de productos finales'
-                        : 'Descuento de materia prima',
-                    style: font.caption.copyWith(color: colors.accentDark),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
+      body: _buildFormulario(context, colors, font, productos),
     );
   }
 
@@ -264,71 +222,118 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
     AppFont font,
     List<Articulo> productos,
   ) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.card,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(AppTheme.radius.xl),
-          topRight: Radius.circular(AppTheme.radius.xl),
-        ),
-      ),
-      transform: Matrix4.translationValues(0, -16, 0),
-      child: ClipRRect(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(AppTheme.radius.xl),
-          topRight: Radius.circular(AppTheme.radius.xl),
-        ),
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(AppTheme.spacing.lg, AppTheme.spacing.lg + 2, AppTheme.spacing.lg, AppTheme.spacing.xl),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildLabel('Tipo de artículo', colors, font),
-              SizedBox(height: AppTheme.spacing.sm),
-              _buildSelectorTipo(colors, font),
-              SizedBox(height: AppTheme.spacing.lg),
-              _buildLabel('Motivo de salida', colors, font),
-              SizedBox(height: AppTheme.spacing.sm),
-              _buildSelectorMotivo(colors, font),
-              SizedBox(height: AppTheme.spacing.lg),
-              _buildLabel(
-                _tipoSeleccionado == TipoArticulo.productoFinal
-                    ? 'Producto final'
-                    : 'Materia prima',
-                colors,
-                font,
-              ),
-              SizedBox(height: AppTheme.spacing.sm),
-              _buildSelectorProducto(context, colors, font, productos),
-              SizedBox(height: AppTheme.spacing.lg),
-              _buildLabel('Cantidad a descontar', colors, font),
-              SizedBox(height: AppTheme.spacing.sm),
-              _buildControlCantidad(colors, font),
-              SizedBox(height: AppTheme.spacing.lg),
-              _buildLabel('Justificación (obligatoria)', colors, font),
-              SizedBox(height: AppTheme.spacing.sm),
-              _buildCampoObservacion(colors, font),
-              SizedBox(height: AppTheme.spacing.lg),
-              _buildResumen(colors, font),
-              SizedBox(height: AppTheme.spacing.lg),
-              _buildBotonRegistrar(colors, font),
-            ],
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildLabel('Tipo de movimiento', colors, font),
+          const SizedBox(height: 8),
+          _buildSelectorMovimiento(colors),
+          const SizedBox(height: 20),
+          _buildLabel('Tipo de artículo', colors, font),
+          const SizedBox(height: 8),
+          _buildSelectorTipo(colors, font),
+          const SizedBox(height: 20),
+          _buildLabel('Motivo de salida', colors, font),
+          const SizedBox(height: 8),
+          _buildSelectorMotivo(colors, font),
+          const SizedBox(height: 20),
+          _buildLabel(
+            _tipoSeleccionado == TipoArticulo.productoFinal
+                ? 'Producto final'
+                : 'Materia prima',
+            colors,
+            font,
           ),
-        ),
+          const SizedBox(height: 8),
+          _buildSelectorProducto(context, colors, font, productos),
+          const SizedBox(height: 20),
+          _buildLabel('Cantidad a descontar', colors, font),
+          const SizedBox(height: 8),
+          _buildControlCantidad(colors, font),
+          const SizedBox(height: 20),
+          _buildLabel('Justificación (obligatoria)', colors, font),
+          const SizedBox(height: 8),
+          _buildCampoObservacion(colors, font),
+          const SizedBox(height: 20),
+          _buildResumen(colors, font),
+          const SizedBox(height: 20),
+          _buildBotonRegistrar(colors, font),
+        ],
       ),
     );
   }
 
-  Widget _buildLabel(String texto, AppColors colors, AppFont font) {
-    return Text(
-      texto.toUpperCase(),
-      style: font.caption.copyWith(
-        fontSize: 10,
-        fontWeight: FontWeight.w500,
-        color: colors.brownMid,
-        letterSpacing: 0.5,
-      ),
+  Widget _buildSelectorMovimiento(AppColors colors) {
+    Widget boton(
+      String label,
+      IconData icon,
+      Color color,
+      bool selected,
+      VoidCallback? onTap,
+    ) {
+      return Expanded(
+        child: Material(
+          color: selected ? color : colors.card,
+          borderRadius: BorderRadius.circular(16),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: onTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: selected ? color : colors.border),
+              ),
+              child: Column(
+                children: [
+                  Icon(icon, size: 20, color: selected ? colors.white : color),
+                  const SizedBox(height: 6),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: selected ? colors.white : colors.titleText,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Row(
+      children: [
+        boton(
+          'Entrada',
+          Icons.download_rounded,
+          colors.statusNormal,
+          false,
+          () => context.pushReplacement('/movimientos/entrada'),
+        ),
+        const SizedBox(width: 8),
+        boton('Salida', Icons.upload_rounded, colors.primary, true, null),
+        const SizedBox(width: 8),
+        boton(
+          'Ajuste',
+          Icons.sync_rounded,
+          const Color(0xFF7C3AED),
+          false,
+          // TODO: movimiento de ajuste.
+          () => ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Próximamente')),
+          ),
+        ),
+      ],
     );
+  }
+
+  Widget _buildLabel(String texto, AppColors colors, AppFont font) {
+    return HoSectionLabel(texto);
   }
 
   Widget _buildSelectorTipo(AppColors colors, AppFont font) {
@@ -340,20 +345,18 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
           child: Container(
             padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.sm + 3),
             decoration: BoxDecoration(
-              color: activo ? colors.titleText : colors.surface,
-              borderRadius: AppTheme.radius.brSm,
+              color: activo ? colors.primary : colors.card,
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: activo ? colors.titleText : colors.border,
-                width: 0.5,
+                color: activo ? colors.primary : colors.border,
               ),
-              boxShadow: AppTheme.shadows.cardSm,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   icono,
-                  color: activo ? colors.accent : colors.hint,
+                  color: activo ? colors.white : colors.bodyText,
                   size: 16,
                 ),
                 const SizedBox(width: 6),
@@ -361,8 +364,8 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
                   etiqueta,
                   style: font.label.copyWith(
                     fontSize: 12,
-                    fontWeight: activo ? FontWeight.w500 : FontWeight.normal,
-                    color: activo ? colors.white : colors.hint,
+                    fontWeight: FontWeight.w700,
+                    color: activo ? colors.white : colors.titleText,
                   ),
                 ),
               ],
@@ -399,20 +402,18 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
           onTap: () => setState(() => _motivoSeleccionado = motivo),
           child: Container(
             decoration: BoxDecoration(
-              color: activo ? colors.titleText : colors.surface,
-              borderRadius: AppTheme.radius.brSm,
+              color: activo ? colors.primary : colors.card,
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: activo ? colors.titleText : colors.border,
-                width: 0.5,
+                color: activo ? colors.primary : colors.border,
               ),
-              boxShadow: AppTheme.shadows.cardSm,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   _iconoMotivo(motivo),
-                  color: activo ? colors.accent : colors.hint,
+                  color: activo ? colors.white : colors.bodyText,
                   size: 16,
                 ),
                 const SizedBox(width: 6),
@@ -420,8 +421,8 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
                   _etiquetaMotivo(motivo),
                   style: font.label.copyWith(
                     fontSize: 12,
-                    fontWeight: activo ? FontWeight.w500 : FontWeight.normal,
-                    color: activo ? colors.white : colors.hint,
+                    fontWeight: FontWeight.w700,
+                    color: activo ? colors.white : colors.titleText,
                   ),
                 ),
               ],
@@ -443,10 +444,9 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md, vertical: AppTheme.spacing.sm + 4),
         decoration: BoxDecoration(
-          color: colors.primaryLight,
-          borderRadius: AppTheme.radius.brSm,
-          border: Border.all(color: colors.primaryBorder, width: 0.5),
-          boxShadow: AppTheme.shadows.cardSm,
+          color: colors.primaryLight.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colors.border),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -475,7 +475,7 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
                 if (_productoSeleccionado != null)
                   Text(
                     'Stock: ${_productoSeleccionado!.stockActual.toStringAsFixed(0)} '
-                    '${_productoSeleccionado!.unidad}',
+                    '${_productoSeleccionado!.unidad.dbValue}',
                     style: font.caption,
                   ),
                 const SizedBox(width: 6),
@@ -552,7 +552,7 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
                         ),
                       ),
                       Text(
-                        'Stock: ${p.stockActual.toStringAsFixed(0)} ${p.unidad}',
+                        'Stock: ${p.stockActual.toStringAsFixed(0)} ${p.unidad.dbValue}',
                         style: font.caption,
                       ),
                     ],
@@ -569,10 +569,9 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
   Widget _buildControlCantidad(AppColors colors, AppFont font) {
     return Container(
       decoration: BoxDecoration(
-        color: colors.primaryLight,
-        borderRadius: AppTheme.radius.brSm,
-        border: Border.all(color: colors.primaryBorder, width: 0.5),
-        boxShadow: AppTheme.shadows.cardSm,
+        color: colors.primaryLight.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.border),
       ),
       child: Row(
         children: [
@@ -591,7 +590,11 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
                         FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
                       ],
                       onChanged: _onCantidadChanged,
-                      style: font.h3.copyWith(fontSize: 16),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: colors.titleText,
+                      ),
                       decoration: const InputDecoration(
                         isDense: true,
                         border: InputBorder.none,
@@ -659,10 +662,9 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
   Widget _buildCampoObservacion(AppColors colors, AppFont font) {
     return Container(
       decoration: BoxDecoration(
-        color: colors.primaryLight,
-        borderRadius: AppTheme.radius.brSm,
-        border: Border.all(color: colors.primaryBorder, width: 0.5),
-        boxShadow: AppTheme.shadows.cardSm,
+        color: colors.primaryLight.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.border),
       ),
       child: TextField(
         controller: _observacionController,
@@ -691,9 +693,9 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md, vertical: AppTheme.spacing.md),
       decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: AppTheme.radius.brSm,
-        boxShadow: AppTheme.shadows.cardSm,
+        color: colors.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.border),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -703,12 +705,16 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
             children: [
               Text('Stock después de salida', style: font.caption),
               const SizedBox(height: 4),
-              RichText(
-                text: TextSpan(
+              Text.rich(
+                TextSpan(
                   children: [
                     TextSpan(
                       text: '${_fmt(_stockResultante)} ',
-                      style: font.h3.copyWith(fontSize: 18, color: colorStock),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: colorStock,
+                      ),
                     ),
                     TextSpan(
                       text: _productoSeleccionado?.unidad.dbValue ?? '',
@@ -736,31 +742,11 @@ class _SalidaAlmacenViewState extends ConsumerState<SalidaAlmacenView> {
   }
 
   Widget _buildBotonRegistrar(AppColors colors, AppFont font) {
-    return GestureDetector(
-      onTap: _guardando ? null : _registrar,
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.md),
-        decoration: BoxDecoration(
-          color: _guardando ? colors.hint : colors.primary,
-          borderRadius: AppTheme.radius.brSm,
-        ),
-        child: _guardando
-            ? Center(
-                child: SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: colors.white,
-                  ),
-                ),
-              )
-            : Text(
-                'Registrar salida',
-                textAlign: TextAlign.center,
-                style: font.label.copyWith(fontSize: 14, color: colors.white),
-              ),
-      ),
+    return HoPrimaryButton(
+      label: 'Registrar salida',
+      icon: Icons.save_outlined,
+      loading: _guardando,
+      onPressed: _registrar,
     );
   }
 }
