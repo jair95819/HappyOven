@@ -142,24 +142,8 @@ class _HappyOvenAppState extends ConsumerState<HappyOvenApp> {
       title: 'Happy Oven',
       debugShowCheckedModeBanner: false,
       themeMode: themeMode,
-      theme: ThemeData(
-        brightness: Brightness.light,
-        scaffoldBackgroundColor: AppTheme.colors.bg,
-        colorScheme: ColorScheme.light(
-          primary: AppTheme.colors.primary,
-          secondary: AppTheme.colors.accent,
-          surface: AppTheme.colors.surface,
-        ),
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF121212),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFFFF8C42),
-          secondary: Color(0xFFFF8C42),
-          surface: Color(0xFF2C2C2C),
-        ),
-      ),
+      theme: AppTheme.themeData(Brightness.light),
+      darkTheme: AppTheme.themeData(Brightness.dark),
       routerConfig: router,
     );
   }

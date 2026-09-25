@@ -3,58 +3,68 @@ import 'package:flutter/material.dart';
 class AppTheme {
   // --- INSTANCIAS CONSTANTES ---
   static const shadows = _Shadows();
+  // Paleta Happy Oven — Navy (#0B2137) + Crema (#F8F6F0).
+  // Fuente: prototipo de diseño (src/index.css).
   static const _lightColors = AppColors(
-    bg: Color(0xFFFAF8F5),
+    bg: Color(0xFFF8F6F0),
     card: Color(0xFFFFFFFF),
-    surface: Color(0xFFF5F2ED),
-    primary: Color(0xFFFF8C42),
-    primaryDark: Color(0xFF6B3E26),
-    primaryLight: Color(0xFFFFF3EB),
-    primaryBorder: Color(0xFFFFD9BE),
-    accent: Color(0xFFFF8C42),
-    accentDark: Color(0xFF4A4A38),
-    titleText: Color(0xFF2C1810),
-    bodyText: Color(0xFF6B5B4E),
-    hint: Color(0xFFAA9990),
-    border: Color(0xFFE8E0D8),
-    borderActive: Color(0xFFFF8C42),
-    statusNormal: Color(0xFF27AE60),
-    successLight: Color(0xFFEAF3DE),
-    successBorder: Color(0xFFC2DFA8),
-    statusCritical: Color(0xFFE74C3C),
-    dangerLight: Color(0xFFFCEBEB),
-    dangerBorder: Color(0xFFF5C6C6),
-    statusLow: Color(0xFFF1C27D),
-    brownLight: Color(0xFFD4A47A),
-    brownMid: Color(0xFFA8714A),
+    surface: Color(0xFFEDF1F7),
+    primary: Color(0xFF0B2137),
+    primaryDark: Color(0xFF051425),
+    primaryLight: Color(0xFFE6EBF2),
+    primaryBorder: Color(0xFFD3DEEA),
+    accent: Color(0xFF1A385C),
+    accentDark: Color(0xFF0B2137),
+    titleText: Color(0xFF101C2A),
+    bodyText: Color(0xFF5B6978),
+    hint: Color(0xFF8A97A6),
+    border: Color(0xFFE2E7EE),
+    borderActive: Color(0xFF0B2137),
+    statusNormal: Color(0xFF1F9D55),
+    successLight: Color(0xFFE3F2E6),
+    successBorder: Color(0xFFBFE3C9),
+    successDeep: Color(0xFF15803D),
+    statusCritical: Color(0xFFDC2626),
+    dangerLight: Color(0xFFFDEAEA),
+    dangerBorder: Color(0xFFF7C5C5),
+    statusLow: Color(0xFFE2A008),
+    brownLight: Color(0xFFD3DEEA),
+    brownMid: Color(0xFF5B6978),
+    khaki: Color(0xFFDBE2EA),
+    khakiSoft: Color(0xFFEDF1F7),
+    slate: Color(0xFFD3DEEA),
     white: Color(0xFFFFFFFF),
     black: Color(0xFF000000),
   );
 
   static const _darkColors = AppColors(
-    bg: Color(0xFF121212),
-    card: Color(0xFF1E1E1E),
-    surface: Color(0xFF2C2C2C),
-    primary: Color(0xFFFF8C42),
-    primaryDark: Color(0xFFE57C3A),
-    primaryLight: Color(0xFF3B2A1E),
-    primaryBorder: Color(0xFF4A3222),
-    accent: Color(0xFFFF8C42),
-    accentDark: Color(0xFFE0E2BE),
-    titleText: Color(0xFFF5F5F5),
-    bodyText: Color(0xFFCCCCCC),
-    hint: Color(0xFF888888),
-    border: Color(0xFF333333),
-    borderActive: Color(0xFFFF8C42),
-    statusNormal: Color(0xFF27AE60),
-    successLight: Color(0xFF1A3B22),
-    successBorder: Color(0xFF245531),
-    statusCritical: Color(0xFFE74C3C),
-    dangerLight: Color(0xFF4A1A1A),
-    dangerBorder: Color(0xFF6B2222),
-    statusLow: Color(0xFFF1C27D),
-    brownLight: Color(0xFFD4A47A),
-    brownMid: Color(0xFFA8714A),
+    bg: Color(0xFF0A1420),
+    card: Color(0xFF122033),
+    surface: Color(0xFF1A2B40),
+    primary: Color(0xFF5B8BC4),
+    primaryDark: Color(0xFF3F6FA8),
+    primaryLight: Color(0xFF1A2B40),
+    primaryBorder: Color(0xFF2B4C70),
+    accent: Color(0xFF7FA6D4),
+    accentDark: Color(0xFFD3DEEA),
+    titleText: Color(0xFFF1F4F8),
+    bodyText: Color(0xFFB4C0CD),
+    hint: Color(0xFF7D8B9B),
+    border: Color(0xFF243650),
+    borderActive: Color(0xFF5B8BC4),
+    statusNormal: Color(0xFF34C274),
+    successLight: Color(0xFF12301F),
+    successBorder: Color(0xFF1E4D32),
+    successDeep: Color(0xFF4ADE80),
+    statusCritical: Color(0xFFEF4444),
+    dangerLight: Color(0xFF3A1717),
+    dangerBorder: Color(0xFF5E2222),
+    statusLow: Color(0xFFE2A008),
+    brownLight: Color(0xFF2B4C70),
+    brownMid: Color(0xFFB4C0CD),
+    khaki: Color(0xFF16263A),
+    khakiSoft: Color(0xFF0F1B2B),
+    slate: Color(0xFF2B4C70),
     white: Color(0xFFFFFFFF),
     black: Color(0xFF000000),
   );
@@ -76,6 +86,86 @@ class AppTheme {
   // Proporciona colores sin contexto (útil en builders sin BuildContext)
   static AppColors get colors => _lightColors;
   static AppFont get font => AppFont(colors: colors);
+
+  /// Tipografía de titulares (Fraunces, serif) usada en encabezados del diseño.
+  static const serifFamily = 'Fraunces';
+  static const sansFamily = 'PlusJakartaSans';
+
+  static TextStyle serif(TextStyle style) =>
+      style.copyWith(fontFamily: serifFamily);
+
+  /// ThemeData de Material con la paleta y tipografía de Happy Oven.
+  static ThemeData themeData(Brightness brightness) {
+    final c = brightness == Brightness.dark ? _darkColors : _lightColors;
+    final base = ThemeData(
+      brightness: brightness,
+      useMaterial3: true,
+      fontFamily: sansFamily,
+    );
+    return base.copyWith(
+      scaffoldBackgroundColor: c.bg,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: c.primary,
+        brightness: brightness,
+        primary: c.primary,
+        onPrimary: c.white,
+        secondary: c.accent,
+        surface: c.card,
+        error: c.statusCritical,
+      ),
+      textTheme: base.textTheme.apply(
+        bodyColor: c.titleText,
+        displayColor: c.titleText,
+      ),
+      dividerColor: c.border,
+      appBarTheme: AppBarTheme(
+        backgroundColor: c.khaki,
+        foregroundColor: c.titleText,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        titleTextStyle: TextStyle(
+          fontFamily: serifFamily,
+          fontSize: 20,
+          fontWeight: FontWeight.w800,
+          color: c.titleText,
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: c.card,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: c.border),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: c.primary,
+          foregroundColor: c.white,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: c.primary,
+          foregroundColor: c.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: c.primary,
+        foregroundColor: c.white,
+      ),
+      chipTheme: base.chipTheme.copyWith(
+        shape: const StadiumBorder(),
+        side: BorderSide.none,
+      ),
+      snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
+    );
+  }
 
   // Helpers para el estado de stock
   static Color getStockStatusColor(BuildContext context, String? status) {
@@ -110,12 +200,16 @@ class AppColors {
   final Color statusNormal;
   final Color successLight;
   final Color successBorder;
+  final Color successDeep;
   final Color statusCritical;
   final Color dangerLight;
   final Color dangerBorder;
   final Color statusLow;
   final Color brownLight;
   final Color brownMid;
+  final Color khaki;
+  final Color khakiSoft;
+  final Color slate;
   final Color white;
   final Color black;
 
@@ -137,12 +231,16 @@ class AppColors {
     required this.statusNormal,
     required this.successLight,
     required this.successBorder,
+    required this.successDeep,
     required this.statusCritical,
     required this.dangerLight,
     required this.dangerBorder,
     required this.statusLow,
     required this.brownLight,
     required this.brownMid,
+    required this.khaki,
+    required this.khakiSoft,
+    required this.slate,
     required this.white,
     required this.black,
   });
@@ -195,25 +293,25 @@ class AppFont {
   final AppColors colors;
   AppFont({required this.colors});
 
-  TextStyle get h1 => TextStyle(
-    fontSize: 32,
-    fontWeight: FontWeight.w700,
+  TextStyle get h1 => AppTheme.serif(TextStyle(
+    fontSize: 30,
+    fontWeight: FontWeight.w800,
     color: colors.titleText,
     letterSpacing: -0.5,
-  );
+  ));
 
-  TextStyle get h2 => TextStyle(
-    fontSize: 24,
-    fontWeight: FontWeight.w700,
+  TextStyle get h2 => AppTheme.serif(TextStyle(
+    fontSize: 26,
+    fontWeight: FontWeight.w800,
     color: colors.titleText,
     letterSpacing: -0.3,
-  );
+  ));
 
-  TextStyle get h3 => TextStyle(
+  TextStyle get h3 => AppTheme.serif(TextStyle(
     fontSize: 20,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w700,
     color: colors.titleText,
-  );
+  ));
 
   TextStyle get body => TextStyle(
     fontSize: 16,
@@ -240,9 +338,17 @@ class AppFont {
 
   TextStyle get label => TextStyle(
     fontSize: 13,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w700,
     color: colors.titleText,
     letterSpacing: 0.3,
+  );
+
+  /// Etiqueta de sección en mayúsculas (SectionLabel del diseño).
+  TextStyle get section => TextStyle(
+    fontSize: 11,
+    fontWeight: FontWeight.w700,
+    color: colors.bodyText,
+    letterSpacing: 1.1,
   );
 
   TextStyle get caption =>
