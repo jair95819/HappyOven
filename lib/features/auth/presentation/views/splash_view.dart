@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:happy_oven/core/theme/theme.dart';
+import 'package:happy_oven/core/widgets/ho_ui.dart';
 
 class SplashView extends StatelessWidget {
   const SplashView({super.key});
@@ -15,32 +16,11 @@ class SplashView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  width: 140,
-                  height: 140,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppTheme.colors.card,
-                    border: Border.all(
-                      color: AppTheme.colors.border,
-                      width: 1.5,
-                    ),
-                    boxShadow: AppTheme.shadows.cardMd,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
+                const HoLogo(size: 140),
                 SizedBox(height: AppTheme.spacing.xl),
                 Text(
                   'Happy Oven',
-                  style: AppTheme.font.h2.copyWith(
-                    color: AppTheme.colors.titleText,
-                  ),
+                  style: AppTheme.font.h2,
                 ),
                 SizedBox(height: AppTheme.spacing.sm),
                 Text(
