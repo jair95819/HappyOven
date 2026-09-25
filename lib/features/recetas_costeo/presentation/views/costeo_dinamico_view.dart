@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
+import 'package:happy_oven/core/widgets/ho_ui.dart';
+import 'package:happy_oven/features/recetas_costeo/presentation/views/widgets/receta_widgets.dart';
 import 'package:happy_oven/core/models/receta.dart';
 import 'package:happy_oven/core/models/receta_ingrediente.dart';
 import 'package:happy_oven/core/models/articulo.dart';
@@ -26,10 +28,10 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
   final TextEditingController _rendimientoController = TextEditingController();
   final TextEditingController _instruccionesController =
       TextEditingController();
-  final TextEditingController _precioVentaController = TextEditingController();
   final TextEditingController _manoObraController = TextEditingController();
   final TextEditingController _empaqueController = TextEditingController();
-  final TextEditingController _gastosGeneralesController = TextEditingController();
+  final TextEditingController _gastosGeneralesController =
+      TextEditingController();
 
   /// Lista local de ingredientes en edición
   final List<_IngredienteLocal> _ingredientes = [];
@@ -97,7 +99,6 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
     _nombreController.dispose();
     _rendimientoController.dispose();
     _instruccionesController.dispose();
-    _precioVentaController.dispose();
     _manoObraController.dispose();
     _empaqueController.dispose();
     _gastosGeneralesController.dispose();
@@ -116,38 +117,15 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
 
   double get _costoManoObra => double.tryParse(_manoObraController.text) ?? 0;
   double get _costoEmpaque => double.tryParse(_empaqueController.text) ?? 0;
-  double get _costoGastosGenerales => double.tryParse(_gastosGeneralesController.text) ?? 0;
+  double get _costoGastosGenerales =>
+      double.tryParse(_gastosGeneralesController.text) ?? 0;
 
-  double get _costoTotal => _costoInsumos + _costoManoObra + _costoGastosGenerales;
+  double get _costoTotal =>
+      _costoInsumos + _costoManoObra + _costoGastosGenerales;
 
   double get _costoUnitario {
     final rend = double.tryParse(_rendimientoController.text) ?? 1;
     return rend > 0 ? (_costoTotal / rend) + _costoEmpaque : 0;
-  }
-
-  double get _margenGanancia {
-    final pv = double.tryParse(_precioVentaController.text) ?? 0;
-    return pv - _costoUnitario;
-  }
-
-  double get _rentabilidad {
-    if (_costoUnitario <= 0) return 0;
-    return (_margenGanancia / _costoUnitario) * 100;
-  }
-
-  Color _getColorRentabilidad() {
-    final colors = AppTheme.colorsOf(context);
-    if (_rentabilidad >= 40) return colors.statusNormal;
-    if (_rentabilidad >= 20) return colors.primary;
-    if (_rentabilidad > 0) return colors.brownLight;
-    return colors.statusCritical;
-  }
-
-  String _getTextoRentabilidad() {
-    if (_rentabilidad >= 40) return 'Muy rentable';
-    if (_rentabilidad >= 20) return 'Rentable';
-    if (_rentabilidad > 0) return 'Revisar';
-    return 'No rentable';
   }
 
   void _agregarIngrediente() {
@@ -162,7 +140,9 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
 
   void _seleccionarArticulo(int index) {
     final articulos = ref.read(catalogoViewModelProvider).value ?? [];
-    final insumos = articulos.where((a) => a.tipo == TipoArticulo.insumo).toList();
+    final insumos = articulos
+        .where((a) => a.tipo == TipoArticulo.insumo)
+        .toList();
     final colors = AppTheme.colorsOf(context);
     final font = AppTheme.fontOf(context);
 
@@ -180,8 +160,13 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
           builder: (context, setModalState) {
             final insumosFiltrados = filtro.isEmpty
                 ? insumos
-                : insumos.where((a) =>
-                    a.nombre.toLowerCase().contains(filtro.toLowerCase())).toList();
+                : insumos
+                      .where(
+                        (a) => a.nombre.toLowerCase().contains(
+                          filtro.toLowerCase(),
+                        ),
+                      )
+                      .toList();
 
             return DraggableScrollableSheet(
               maxChildSize: 0.85,
@@ -189,11 +174,19 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
               initialChildSize: 0.6,
               expand: false,
               builder: (context, scrollController) => Padding(
-                padding: EdgeInsets.fromLTRB(AppTheme.spacing.lg, AppTheme.spacing.lg, AppTheme.spacing.lg, AppTheme.spacing.lg),
+                padding: EdgeInsets.fromLTRB(
+                  AppTheme.spacing.lg,
+                  AppTheme.spacing.lg,
+                  AppTheme.spacing.lg,
+                  AppTheme.spacing.lg,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Seleccionar insumo', style: font.h3.copyWith(fontSize: 15)),
+                    Text(
+                      'Seleccionar insumo',
+                      style: font.h3.copyWith(fontSize: 15),
+                    ),
                     SizedBox(height: AppTheme.spacing.md),
                     // ── Campo de búsqueda
                     Container(
@@ -205,20 +198,35 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                       ),
                       child: TextField(
                         autofocus: true,
-                        onChanged: (value) => setModalState(() => filtro = value),
-                        style: font.bodySmall.copyWith(fontSize: 13, color: colors.titleText),
+                        onChanged: (value) =>
+                            setModalState(() => filtro = value),
+                        style: font.bodySmall.copyWith(
+                          fontSize: 13,
+                          color: colors.titleText,
+                        ),
                         decoration: InputDecoration(
                           hintText: 'Buscar insumo por nombre...',
                           hintStyle: font.hint.copyWith(fontSize: 13),
-                          prefixIcon: Icon(Icons.search_rounded, color: colors.primary, size: 20),
+                          prefixIcon: Icon(
+                            Icons.search_rounded,
+                            color: colors.primary,
+                            size: 20,
+                          ),
                           suffixIcon: filtro.isNotEmpty
                               ? GestureDetector(
                                   onTap: () => setModalState(() => filtro = ''),
-                                  child: Icon(Icons.close_rounded, color: colors.hint, size: 18),
+                                  child: Icon(
+                                    Icons.close_rounded,
+                                    color: colors.hint,
+                                    size: 18,
+                                  ),
                                 )
                               : null,
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm + 4, vertical: AppTheme.spacing.sm + 2),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: AppTheme.spacing.sm + 4,
+                            vertical: AppTheme.spacing.sm + 2,
+                          ),
                         ),
                       ),
                     ),
@@ -235,10 +243,16 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.search_off_rounded, color: colors.hint, size: 36),
+                                  Icon(
+                                    Icons.search_off_rounded,
+                                    color: colors.hint,
+                                    size: 36,
+                                  ),
                                   const SizedBox(height: 8),
-                                  Text('No se encontraron insumos',
-                                      style: font.hint.copyWith(fontSize: 13)),
+                                  Text(
+                                    'No se encontraron insumos',
+                                    style: font.hint.copyWith(fontSize: 13),
+                                  ),
                                 ],
                               ),
                             )
@@ -253,13 +267,17 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                                 return ListTile(
                                   leading: Icon(
                                     Icons.inventory_2_outlined,
-                                    color: yaUsado ? colors.hint : colors.primary,
+                                    color: yaUsado
+                                        ? colors.hint
+                                        : colors.primary,
                                     size: 18,
                                   ),
                                   title: Text(
                                     a.nombre,
                                     style: font.bodySmall.copyWith(
-                                      color: yaUsado ? colors.hint : colors.titleText,
+                                      color: yaUsado
+                                          ? colors.hint
+                                          : colors.titleText,
                                     ),
                                   ),
                                   subtitle: Text(
@@ -280,18 +298,37 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                                       IconButton(
                                         padding: EdgeInsets.zero,
                                         constraints: const BoxConstraints(),
-                                        icon: Icon(Icons.edit, size: 16, color: colors.primary),
+                                        icon: Icon(
+                                          Icons.edit,
+                                          size: 16,
+                                          color: colors.primary,
+                                        ),
                                         onPressed: () async {
                                           Navigator.pop(context);
-                                          final Articulo? actualizado = await Navigator.of(context).push<Articulo?>(
-                                            MaterialPageRoute(builder: (_) => FormularioArticuloView(articulo: a)),
-                                          );
+                                          final Articulo? actualizado =
+                                              await Navigator.of(
+                                                context,
+                                              ).push<Articulo?>(
+                                                MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      FormularioArticuloView(
+                                                        articulo: a,
+                                                      ),
+                                                ),
+                                              );
                                           if (actualizado != null) {
                                             setState(() {
-                                              _ingredientes[index] = _IngredienteLocal(
-                                                articulo: actualizado,
-                                                cantidad: _ingredientes[index].cantidad > 0 ? _ingredientes[index].cantidad : 1,
-                                              );
+                                              _ingredientes[index] =
+                                                  _IngredienteLocal(
+                                                    articulo: actualizado,
+                                                    cantidad:
+                                                        _ingredientes[index]
+                                                                .cantidad >
+                                                            0
+                                                        ? _ingredientes[index]
+                                                              .cantidad
+                                                        : 1,
+                                                  );
                                             });
                                           }
                                         },
@@ -302,12 +339,17 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                                       ? null
                                       : () {
                                           setState(() {
-                                            _ingredientes[index] = _IngredienteLocal(
-                                              articulo: a,
-                                              cantidad: _ingredientes[index].cantidad > 0
-                                                  ? _ingredientes[index].cantidad
-                                                  : 1,
-                                            );
+                                            _ingredientes[index] =
+                                                _IngredienteLocal(
+                                                  articulo: a,
+                                                  cantidad:
+                                                      _ingredientes[index]
+                                                              .cantidad >
+                                                          0
+                                                      ? _ingredientes[index]
+                                                            .cantidad
+                                                      : 1,
+                                                );
                                           });
                                           Navigator.pop(context);
                                         },
@@ -346,7 +388,12 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
         minChildSize: 0.3,
         expand: false,
         builder: (context, scrollController) => Padding(
-          padding: EdgeInsets.fromLTRB(AppTheme.spacing.lg, AppTheme.spacing.lg, AppTheme.spacing.lg, AppTheme.spacing.lg),
+          padding: EdgeInsets.fromLTRB(
+            AppTheme.spacing.lg,
+            AppTheme.spacing.lg,
+            AppTheme.spacing.lg,
+            AppTheme.spacing.lg,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -518,214 +565,199 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
 
     return Scaffold(
       backgroundColor: colors.bg,
-      body: Column(
+      appBar: HoTopBar(
+        title: _modoEdicion ? 'Editar receta' : 'Registrar nueva receta',
+        subtitle: 'Completa la información de tu receta',
+        onBack: () => context.pop(),
+      ),
+      body: _buildBody(colors, font),
+    );
+  }
+
+  Widget _buildBody(AppColors colors, AppFont font) {
+    final rendimiento = double.tryParse(_rendimientoController.text) ?? 0;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildHeader(colors, font),
-          Expanded(child: _buildBody(colors, font)),
+          _buildSectionTitle('Nombre de la receta', font),
+          const SizedBox(height: 6),
+          _buildTextField(
+            controller: _nombreController,
+            label: 'Ej. Alfajores de Maicena',
+            icon: Icons.sell_outlined,
+            colors: colors,
+            font: font,
+          ),
+          const SizedBox(height: 20),
+          _buildSectionTitle('Producto final', font),
+          const SizedBox(height: 6),
+          _buildSelectorProductoFinal(colors, font),
+          const SizedBox(height: 20),
+          _buildSectionTitle('Rendimiento de la receta', font),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              SizedBox(
+                width: 88,
+                child: TextField(
+                  controller: _rendimientoController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  onChanged: (_) => setState(() {}),
+                  style: TextStyle(fontSize: 15, color: colors.titleText),
+                  decoration: hoInputDecoration(context, hint: '10'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: InputDecorator(
+                  decoration: hoInputDecoration(
+                    context,
+                    suffixIcon: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: colors.bodyText,
+                    ),
+                  ),
+                  child: Text(
+                    _productoSeleccionado?.unidad.dbValue ?? 'unidades',
+                    style: TextStyle(fontSize: 15, color: colors.titleText),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (rendimiento > 0) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: colors.successLight,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                'Esta receta producirá ${rendimiento % 1 == 0 ? rendimiento.toInt() : rendimiento} ${_productoSeleccionado?.unidad.dbValue ?? 'unidades'}.',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: colors.successDeep,
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 20),
+          HoSectionLabel(
+            'Ingredientes',
+            trailing: _buildAgregarIngredienteBtn(colors, font),
+          ),
+          const SizedBox(height: 8),
+          _buildIngredientesList(colors, font),
+          if (_tieneInsumosSinPrecio && _ingredientes.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: () => context.push('/catalogo'),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: colors.dangerLight,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      color: colors.statusCritical,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Algunos insumos no tienen precio. Edítalos en el catálogo.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colors.statusCritical,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 20),
+          _buildSectionTitle('Resumen de costos', font),
+          const SizedBox(height: 8),
+          _buildCostoResumen(colors, font),
+          const SizedBox(height: 12),
+          _buildMasOpciones(colors, font),
+          const SizedBox(height: 20),
+          _buildBotonGuardar(colors, font),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(AppColors colors, AppFont font) {
-    return Container(
-      color: colors.accent,
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(AppTheme.spacing.lg, AppTheme.spacing.md, AppTheme.spacing.lg, AppTheme.spacing.sm + 6),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _modoEdicion ? 'Editar Receta' : 'Nueva Receta',
-                    style: font.h3,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Costeo dinámico en tiempo real',
-                    style: font.caption.copyWith(color: colors.accentDark),
-                  ),
-                ],
-              ),
-              GestureDetector(
-                onTap: () => context.pop(),
-                child: Container(
-                  padding: EdgeInsets.all(AppTheme.spacing.sm),
-                  decoration: BoxDecoration(
-                    color: colors.titleText,
-                    borderRadius: AppTheme.radius.brSm,
-                  ),
-                  child: Icon(
-                    Icons.close_rounded,
-                    color: colors.accent,
-                    size: 18,
-                  ),
-                ),
-              ),
-            ],
+  /// Campos que no están en el diseño pero la lógica ya usa
+  /// (instrucciones y costos adicionales), plegados para no alterar la vista.
+  Widget _buildMasOpciones(AppColors colors, AppFont font) {
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        tilePadding: EdgeInsets.zero,
+        childrenPadding: const EdgeInsets.only(bottom: 8),
+        title: Text(
+          'Más opciones (instrucciones y costos adicionales)',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: colors.bodyText,
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildBody(AppColors colors, AppFont font) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.bg,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(AppTheme.radius.xl),
-          topRight: Radius.circular(AppTheme.radius.xl),
-        ),
-      ),
-      transform: Matrix4.translationValues(0, -16, 0),
-      child: ClipRRect(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(AppTheme.radius.xl),
-          topRight: Radius.circular(AppTheme.radius.xl),
-        ),
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(AppTheme.spacing.md, AppTheme.spacing.lg, AppTheme.spacing.md, AppTheme.spacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSectionTitle('Información Básica', font),
-              SizedBox(height: AppTheme.spacing.md),
-              _buildTextField(
-                controller: _nombreController,
-                label: 'Nombre de la Receta',
-                icon: Icons.edit_outlined,
-                colors: colors,
-                font: font,
-              ),
-              SizedBox(height: AppTheme.spacing.md),
-              _buildTextField(
-                controller: _rendimientoController,
-                label: 'Rendimiento (unidades por lote)',
-                icon: Icons.production_quantity_limits_outlined,
-                colors: colors,
-                font: font,
-                onChanged: () => setState(() {}),
-              ),
-              SizedBox(height: AppTheme.spacing.md),
-              _buildTextField(
-                controller: _instruccionesController,
-                label: 'Instrucciones (opcional)',
-                icon: Icons.description_outlined,
-                colors: colors,
-                font: font,
-                maxLines: 3,
-              ),
-              SizedBox(height: AppTheme.spacing.lg),
-
-              _buildSectionTitle('Producto final', font),
-              SizedBox(height: AppTheme.spacing.md),
-              _buildSelectorProductoFinal(colors, font),
-              SizedBox(height: AppTheme.spacing.lg),
-
-              _buildSectionTitle('Ingredientes', font),
-              SizedBox(height: AppTheme.spacing.md),
-              _buildIngredientesList(colors, font),
-              SizedBox(height: AppTheme.spacing.md),
-              _buildAgregarIngredienteBtn(colors, font),
-              SizedBox(height: AppTheme.spacing.lg),
-
-              _buildSectionTitle('Costos Adicionales (por lote)', font),
-              SizedBox(height: AppTheme.spacing.md),
-              _buildTextField(
-                controller: _manoObraController,
-                label: 'Mano de obra (S/)',
-                icon: Icons.engineering_outlined,
-                colors: colors,
-                font: font,
-                onChanged: () => setState(() {}),
-              ),
-              SizedBox(height: AppTheme.spacing.md),
-              _buildTextField(
-                controller: _empaqueController,
-                label: 'Empaque por unidad (S/)',
-                icon: Icons.inventory_outlined,
-                colors: colors,
-                font: font,
-                onChanged: () => setState(() {}),
-              ),
-              SizedBox(height: AppTheme.spacing.md),
-              _buildTextField(
-                controller: _gastosGeneralesController,
-                label: 'Gastos generales (S/)',
-                icon: Icons.miscellaneous_services_outlined,
-                colors: colors,
-                font: font,
-                onChanged: () => setState(() {}),
-              ),
-              SizedBox(height: AppTheme.spacing.lg),
-
-              _buildSectionTitle('Análisis de Costos', font),
-              SizedBox(height: AppTheme.spacing.md),
-              if (_tieneInsumosSinPrecio)
-                GestureDetector(
-                  onTap: () {
-                    context.push('/catalogo');
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(AppTheme.spacing.md),
-                    decoration: BoxDecoration(
-                      color: colors.dangerLight,
-                      borderRadius: AppTheme.radius.brSm,
-                      border: Border.all(color: colors.statusCritical.withValues(alpha: 0.15)),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.warning_amber_rounded, color: colors.statusCritical, size: 16),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Algunos insumos no tienen precio. Edita el insumo en el catálogo para un análisis completo.',
-                            style: font.caption.copyWith(fontSize: 12, color: colors.statusCritical),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text('Ir al catálogo', style: font.caption.copyWith(fontSize: 12, color: colors.primary)),
-                      ],
-                    ),
-                  ),
-                ),
-              _buildCostoResumen(colors, font),
-              SizedBox(height: AppTheme.spacing.md),
-
-              _buildSectionTitle('Simulador de Precio', font),
-              SizedBox(height: AppTheme.spacing.md),
-              _buildTextField(
-                controller: _precioVentaController,
-                label: 'Precio de Venta por unidad (S/)',
-                icon: Icons.attach_money_rounded,
-                colors: colors,
-                font: font,
-                onChanged: () => setState(() {}),
-              ),
-              SizedBox(height: AppTheme.spacing.md),
-              _buildRentabilidadCard(colors, font),
-              SizedBox(height: AppTheme.spacing.lg),
-
-              _buildBotonGuardar(colors, font),
-              SizedBox(height: AppTheme.spacing.md),
-            ],
+        children: [
+          _buildTextField(
+            controller: _instruccionesController,
+            label: 'Instrucciones / descripción (opcional)',
+            icon: Icons.description_outlined,
+            colors: colors,
+            font: font,
+            maxLines: 3,
           ),
-        ),
+          const SizedBox(height: 10),
+          _buildTextField(
+            controller: _manoObraController,
+            label: 'Mano de obra por lote (S/)',
+            icon: Icons.engineering_outlined,
+            colors: colors,
+            font: font,
+            onChanged: () => setState(() {}),
+          ),
+          const SizedBox(height: 10),
+          _buildTextField(
+            controller: _empaqueController,
+            label: 'Empaque por unidad (S/)',
+            icon: Icons.inventory_outlined,
+            colors: colors,
+            font: font,
+            onChanged: () => setState(() {}),
+          ),
+          const SizedBox(height: 10),
+          _buildTextField(
+            controller: _gastosGeneralesController,
+            label: 'Gastos generales por lote (S/)',
+            icon: Icons.miscellaneous_services_outlined,
+            colors: colors,
+            font: font,
+            onChanged: () => setState(() {}),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildSectionTitle(String titulo, AppFont font) {
-    return Text(
-      titulo,
-      style: font.label.copyWith(fontSize: 14, fontWeight: FontWeight.w600),
-    );
+    return HoSectionLabel(titulo);
   }
 
   Widget _buildTextField({
@@ -737,29 +769,12 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
     VoidCallback? onChanged,
     int maxLines = 1,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.card,
-        borderRadius: AppTheme.radius.brSm,
-        border: Border.all(color: colors.border),
-        boxShadow: AppTheme.shadows.cardSm,
-      ),
-      child: TextField(
-        controller: controller,
-        maxLines: maxLines,
-        onChanged: (_) => onChanged?.call(),
-        style: font.bodySmall.copyWith(fontSize: 13, color: colors.titleText),
-        decoration: InputDecoration(
-          hintText: label,
-          hintStyle: font.hint.copyWith(fontSize: 13),
-          prefixIcon: Icon(icon, color: colors.primary, size: 16),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 12,
-          ),
-        ),
-      ),
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      onChanged: (_) => onChanged?.call(),
+      style: TextStyle(fontSize: 15, color: colors.titleText),
+      decoration: hoInputDecoration(context, hint: label, icon: icon),
     );
   }
 
@@ -768,12 +783,11 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
       onTap: _seleccionarProductoFinal,
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md, vertical: AppTheme.spacing.sm + 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
         decoration: BoxDecoration(
-          color: colors.card,
-          borderRadius: AppTheme.radius.brSm,
+          color: colors.primaryLight.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: colors.border),
-          boxShadow: AppTheme.shadows.cardSm,
         ),
         child: Row(
           children: [
@@ -792,7 +806,7 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
                 _productoSeleccionado?.nombre ??
                     'Seleccionar producto final...',
                 style: font.bodySmall.copyWith(
-                  fontSize: 12,
+                  fontSize: 15,
                   color: _productoSeleccionado != null
                       ? colors.titleText
                       : colors.hint,
@@ -819,345 +833,195 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
   Widget _buildIngredientesList(AppColors colors, AppFont font) {
     if (_ingredientes.isEmpty) {
       return Container(
-        padding: EdgeInsets.all(AppTheme.spacing.lg),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: AppTheme.radius.brMd,
-          boxShadow: AppTheme.shadows.cardSm,
+          color: colors.card,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colors.border),
         ),
-        child: Center(
-          child: Text(
-            'Sin ingredientes. Toca "+" para agregar.',
-            style: font.caption.copyWith(fontSize: 12),
-          ),
+        child: Text(
+          'Sin ingredientes. Toca "Agregar ingrediente".',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 12, color: colors.hint),
         ),
       );
     }
-
     return Column(
-      children: _ingredientes.asMap().entries.map((entry) {
-        int idx = entry.key;
-        _IngredienteLocal ing = entry.value;
-        final costo = ing.articulo != null
-            ? ing.articulo!.precioUnitario * ing.cantidad
-            : 0.0;
+      children: [
+        for (var idx = 0; idx < _ingredientes.length; idx++)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: _filaIngrediente(colors, idx),
+          ),
+      ],
+    );
+  }
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Container(
+  Widget _filaIngrediente(AppColors colors, int idx) {
+    final ing = _ingredientes[idx];
+    final color = coloresIngrediente[idx % coloresIngrediente.length];
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: colors.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.border),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
-              color: colors.card,
-              borderRadius: AppTheme.radius.brSm,
-              border: Border.all(color: colors.border),
-              boxShadow: AppTheme.shadows.cardSm,
+              color: color.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: Padding(
-              padding: EdgeInsets.all(AppTheme.spacing.sm + 2),
-              child: Column(
+            alignment: Alignment.center,
+            child: Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => _seleccionarArticulo(idx),
+              behavior: HitTestBehavior.opaque,
+              child: Text(
+                ing.articulo?.nombre ?? 'Seleccionar insumo...',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: ing.articulo != null
+                      ? colors.titleText
+                      : colors.statusCritical,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Container(
+            width: 64,
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            decoration: BoxDecoration(
+              color: colors.bg,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: TextFormField(
+              key: ValueKey('cant-$idx-${ing.articulo?.id}'),
+              initialValue: ing.cantidad > 0 ? ing.cantidad.toString() : '',
+              textAlign: TextAlign.center,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              style: TextStyle(fontSize: 13, color: colors.titleText),
+              decoration: const InputDecoration(
+                isDense: true,
+                border: InputBorder.none,
+                hintText: '0',
+                contentPadding: EdgeInsets.symmetric(vertical: 8),
+              ),
+              onChanged: (v) => setState(() {
+                _ingredientes[idx] = _IngredienteLocal(
+                  articulo: ing.articulo,
+                  cantidad: double.tryParse(v) ?? 0,
+                );
+              }),
+            ),
+          ),
+          const SizedBox(width: 6),
+          GestureDetector(
+            onTap: () => _seleccionarArticulo(idx),
+            child: Container(
+              width: 80,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              decoration: BoxDecoration(
+                color: colors.bg,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => _seleccionarArticulo(idx),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: AppTheme.spacing.sm,
-                              vertical: AppTheme.spacing.xs + 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: colors.surface,
-                              borderRadius: AppTheme.radius.brSm,
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  ing.articulo != null
-                                      ? Icons.inventory_2_outlined
-                                      : Icons.add_circle_outline,
-                                  color: ing.articulo != null
-                                      ? colors.primary
-                                      : colors.statusCritical,
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Text(
-                                    ing.articulo?.nombre ??
-                                        'Seleccionar insumo...',
-                                    style: font.label.copyWith(
-                                      fontSize: 12,
-                                      color: ing.articulo != null
-                                          ? colors.titleText
-                                          : colors.statusCritical,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.keyboard_arrow_down_rounded,
-                                  color: colors.hint,
-                                  size: 14,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: () => _eliminarIngrediente(idx),
-                        child: Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: colors.dangerLight,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Icon(
-                            Icons.delete_outline_rounded,
-                            color: colors.statusCritical,
-                            size: 14,
-                          ),
-                        ),
-                      ),
-                    ],
+                  Expanded(
+                    child: Text(
+                      ing.articulo?.unidad.dbValue ?? '-',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12, color: colors.titleText),
+                    ),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: colors.primaryLight,
-                            borderRadius: AppTheme.radius.brSm,
-                            border: Border.all(
-                              color: colors.border,
-                              width: 0.5,
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'CANTIDAD',
-                                style: font.caption.copyWith(
-                                  fontSize: 8,
-                                  color: colors.brownMid,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              TextFormField(
-                                initialValue: ing.cantidad > 0
-                                    ? ing.cantidad.toString()
-                                    : '',
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
-                                style: font.label.copyWith(fontSize: 13),
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.zero,
-                                ),
-                                onChanged: (v) {
-                                  setState(() {
-                                    _ingredientes[idx] = _IngredienteLocal(
-                                      articulo: ing.articulo,
-                                      cantidad: double.tryParse(v) ?? 0,
-                                    );
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: colors.primaryLight,
-                            borderRadius: AppTheme.radius.brSm,
-                            border: Border.all(
-                              color: colors.border,
-                              width: 0.5,
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'UNIDAD',
-                                style: font.caption.copyWith(
-                                  fontSize: 8,
-                                  color: colors.brownMid,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                ing.articulo?.unidad.dbValue ?? '-',
-                                style: font.label.copyWith(fontSize: 13),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: colors.primaryLight,
-                            borderRadius: AppTheme.radius.brSm,
-                            border: Border.all(
-                              color: colors.border,
-                              width: 0.5,
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'COSTO',
-                                style: font.caption.copyWith(
-                                  fontSize: 8,
-                                  color: colors.brownMid,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                ing.articulo != null && (ing.articulo!.precioUnitario > 0)
-                                    ? 'S/ ${costo.toStringAsFixed(2)}'
-                                    : 'Sin precio',
-                                style: font.h3.copyWith(
-                                  fontSize: 13,
-                                  color: ing.articulo != null && (ing.articulo!.precioUnitario > 0)
-                                      ? colors.primary
-                                      : colors.statusCritical,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+                  Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 14,
+                    color: colors.bodyText,
                   ),
                 ],
               ),
             ),
           ),
-        );
-      }).toList(),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            onPressed: () => _eliminarIngrediente(idx),
+            icon: Icon(
+              Icons.delete_outline_rounded,
+              size: 18,
+              color: colors.statusCritical,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildAgregarIngredienteBtn(AppColors colors, AppFont font) {
-    return GestureDetector(
-      onTap: _agregarIngrediente,
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.sm + 4),
-        decoration: BoxDecoration(
-          color: colors.primaryLight,
-          borderRadius: AppTheme.radius.brSm,
-          border: Border.all(color: colors.primaryBorder),
-          boxShadow: AppTheme.shadows.cardSm,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.add_rounded, color: colors.primary, size: 16),
-            const SizedBox(width: 6),
-            Text(
-              'Agregar Ingrediente',
-              style: font.label.copyWith(fontSize: 13, color: colors.primary),
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Material(
+        color: colors.card,
+        shape: StadiumBorder(side: BorderSide(color: colors.border)),
+        child: InkWell(
+          customBorder: const StadiumBorder(),
+          onTap: _agregarIngrediente,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.add_rounded, color: colors.titleText, size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  'Agregar ingrediente',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: colors.titleText,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildCostoResumen(AppColors colors, AppFont font) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.card,
-        borderRadius: AppTheme.radius.brSm,
-        border: Border.all(color: colors.border),
-        boxShadow: AppTheme.shadows.cardSm,
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(AppTheme.spacing.md),
-        child: Column(
-          children: [
-            _costoRow('Insumos', _costoInsumos, colors, font),
-            if (_costoManoObra > 0) ...[
-              const SizedBox(height: 4),
-              _costoRow('Mano de obra', _costoManoObra, colors, font),
-            ],
-            if (_costoGastosGenerales > 0) ...[
-              const SizedBox(height: 4),
-              _costoRow('Gastos generales', _costoGastosGenerales, colors, font),
-            ],
-            if (_costoEmpaque > 0) ...[
-              const SizedBox(height: 4),
-              _costoRow('Empaque (por unidad)', _costoEmpaque, colors, font),
-            ],
-            const SizedBox(height: 8),
-            Divider(color: colors.border, height: 1),
-            const SizedBox(height: 8),
-            _costoRow('Costo Total del Lote', _costoTotal, colors, font, bold: true),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Costo por Unidad:',
-                  style: font.caption.copyWith(fontSize: 12),
-                ),
-                Text(
-                  'S/ ${_costoUnitario.toStringAsFixed(2)}',
-                  style: font.label.copyWith(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: colors.primary,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _costoRow(String label, double valor, AppColors colors, AppFont font, {bool bold = false}) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: font.caption.copyWith(fontSize: 12, fontWeight: bold ? FontWeight.w600 : null)),
-        Text(
-          'S/ ${valor.toStringAsFixed(2)}',
-          style: font.label.copyWith(fontSize: 13, fontWeight: bold ? FontWeight.w600 : null),
+        Expanded(
+          child: HoCostCard(
+            label: 'Costo total de la receta',
+            value: 'S/ ${_costoTotal.toStringAsFixed(2)}',
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: HoCostCard(
+            label: 'Costo por unidad (aprox.)',
+            value: 'S/ ${_costoUnitario.toStringAsFixed(2)}',
+          ),
         ),
       ],
     );
@@ -1167,108 +1031,12 @@ class _CosteoDinamicoViewState extends ConsumerState<CosteoDinamicoView> {
     return _ingredientes.any((ing) => (ing.articulo?.precioUnitario ?? 0) <= 0);
   }
 
-  Widget _buildRentabilidadCard(AppColors colors, AppFont font) {
-    Color colorRent = _getColorRentabilidad();
-    String textoRent = _getTextoRentabilidad();
-
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.card,
-        borderRadius: AppTheme.radius.brSm,
-        border: Border.all(color: colors.border),
-        boxShadow: AppTheme.shadows.cardSm,
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(AppTheme.spacing.md),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Margen por Unidad:',
-                  style: font.caption.copyWith(fontSize: 12),
-                ),
-                Text(
-                  'S/ ${_margenGanancia.toStringAsFixed(2)}',
-                  style: font.label.copyWith(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: colorRent,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: AppTheme.spacing.sm),
-            Divider(color: colors.border, height: 1),
-            SizedBox(height: AppTheme.spacing.sm),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Rentabilidad:',
-                  style: font.caption.copyWith(fontSize: 12),
-                ),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacing.sm + 2,
-                    vertical: AppTheme.spacing.xs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorRent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    '${_rentabilidad.toStringAsFixed(1)}% - $textoRent',
-                    style: font.label.copyWith(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: colorRent,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildBotonGuardar(AppColors colors, AppFont font) {
-    return GestureDetector(
-      onTap: _isSaving ? null : _guardarReceta,
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.md),
-        decoration: BoxDecoration(
-          color: _isSaving ? colors.hint : colors.accent,
-          borderRadius: AppTheme.radius.brSm,
-        ),
-        child: _isSaving
-            ? SizedBox(
-                height: 18,
-                width: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: colors.titleText,
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.save_outlined, color: colors.titleText, size: 16),
-                  const SizedBox(width: 8),
-                  Text(
-                    _modoEdicion ? 'Actualizar Receta' : 'Guardar Receta',
-                    style: font.label.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-      ),
+    return HoPrimaryButton(
+      label: _modoEdicion ? 'Actualizar receta' : 'Guardar receta',
+      icon: Icons.save_outlined,
+      loading: _isSaving,
+      onPressed: _guardarReceta,
     );
   }
 }
