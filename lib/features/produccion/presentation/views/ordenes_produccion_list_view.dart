@@ -336,7 +336,7 @@ class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionLis
     };
 
     return Container(
-      color: colors.accent,
+      color: colors.khakiSoft,
       child: Container(
         decoration: BoxDecoration(
           color: colors.bg,
@@ -380,7 +380,13 @@ class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionLis
   Widget _buildHeader(AppColors colors, AppFont font, AsyncValue<List<OrdenProduccion>> ordenesAsync) {
     final total = ordenesAsync.valueOrNull?.length ?? 0;
     return Container(
-      color: colors.accent,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [colors.khaki, colors.khakiSoft],
+        ),
+      ),
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -401,14 +407,14 @@ class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionLis
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                   decoration: BoxDecoration(
-                    color: colors.titleText,
+                    color: colors.primary,
                     borderRadius: AppTheme.radius.brSm,
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.add_rounded, color: colors.accent, size: 16),
+                      Icon(Icons.add_rounded, color: colors.white, size: 16),
                       const SizedBox(width: 6),
-                      Text('Nueva', style: font.label.copyWith(color: colors.accent, fontSize: 13)),
+                      Text('Nueva', style: font.label.copyWith(color: colors.white, fontSize: 13)),
                     ],
                   ),
                 ),
@@ -567,20 +573,20 @@ class _OrdenesProduccionListViewState extends ConsumerState<OrdenesProduccionLis
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   decoration: BoxDecoration(
-                    color: colors.accent,
-                    borderRadius: AppTheme.radius.brSm,
+                    color: colors.primary,
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.play_arrow_rounded, color: colors.titleText, size: 16),
+                      Icon(Icons.play_arrow_rounded, color: colors.white, size: 16),
                       const SizedBox(width: 6),
                       Text(
                         'Ejecutar producción',
                         style: font.label.copyWith(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: colors.titleText,
+                          color: colors.white,
                         ),
                       ),
                     ],

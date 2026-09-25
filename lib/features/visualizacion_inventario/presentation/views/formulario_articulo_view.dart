@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
+import 'package:happy_oven/core/widgets/ho_ui.dart';
 import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/features/visualizacion_inventario/presentation/viewmodels/catalogo_viewmodel.dart';
@@ -116,84 +117,32 @@ class _FormularioArticuloViewState
 
   @override
   Widget build(BuildContext context) {
+    final editando = widget.articulo != null;
     return Scaffold(
-      backgroundColor: AppTheme.colors.bg,
-      body: Column(
-        children: [
-          _buildHeader(context),
-          Expanded(child: _buildFormulario()),
-        ],
+      backgroundColor: AppTheme.colorsOf(context).bg,
+      appBar: HoTopBar(
+        title: editando ? 'Editar insumo' : 'Nuevo insumo',
+        subtitle: editando
+            ? 'Actualiza los datos del insumo'
+            : 'Completa los datos del insumo',
+        onBack: _retroceder,
       ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      color: AppTheme.colors.bg,
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-          child: Row(
-            children: [
-              GestureDetector(
-                onTap: _retroceder,
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    borderRadius: AppTheme.radius.brSm,
-                    color: AppTheme.colors.surface,
-                    border: Border.all(
-                      color: AppTheme.colors.border,
-                      width: 0.5,
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.arrow_back_rounded,
-                    color: AppTheme.colors.titleText,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.articulo == null ? 'Nuevo insumo' : 'Editar insumo',
-                    style: AppTheme.font.h3,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    widget.articulo == null
-                        ? 'Completa los datos del insumo'
-                        : 'Actualiza los datos del insumo',
-                    style: AppTheme.font.caption.copyWith(
-                      color: AppTheme.colors.accentDark,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
+      body: _buildFormulario(),
     );
   }
 
   Widget _buildFormulario() {
     return Container(
-      decoration: BoxDecoration(color: AppTheme.colors.bg),
+      decoration: BoxDecoration(color: AppTheme.colorsOf(context).bg),
       child: Form(
         key: _formKey,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildLabel('NOMBRE DEL INSUMO'),
-              const SizedBox(height: 10),
+              const SizedBox(height: 6),
               _buildCampoTexto(
                 controller: _nombreController,
                 hint: 'Ej. Harina de trigo especial',
@@ -202,13 +151,13 @@ class _FormularioArticuloViewState
                     ? 'El nombre es obligatorio'
                     : null,
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 20),
               _buildLabel('UNIDAD DE MEDIDA'),
-              const SizedBox(height: 10),
+              const SizedBox(height: 6),
               _buildSelectorUnidades(),
-              const SizedBox(height: 18),
+              const SizedBox(height: 20),
               _buildLabel('STOCK MÍNIMO DE SEGURIDAD'),
-              const SizedBox(height: 10),
+              const SizedBox(height: 6),
               _buildCampoNumerico(
                 controller: _stockMinimoController,
                 hint: 'Ej. 20',
@@ -221,9 +170,9 @@ class _FormularioArticuloViewState
                   return null;
                 },
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 20),
               _buildLabel('STOCK INICIAL'),
-              const SizedBox(height: 10),
+              const SizedBox(height: 6),
               _buildCampoNumerico(
                 controller: _stockInicialController,
                 hint: 'Ej. 50',
@@ -236,9 +185,9 @@ class _FormularioArticuloViewState
                   return null;
                 },
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 20),
               _buildLabel('PRECIO UNITARIO ESTIM. (S/)'),
-              const SizedBox(height: 10),
+              const SizedBox(height: 6),
               _buildCampoNumerico(
                 controller: _precioController,
                 hint: 'Ej. 12.50',
@@ -251,33 +200,10 @@ class _FormularioArticuloViewState
                 },
               ),
               const SizedBox(height: 28),
-              GestureDetector(
-                onTap: _isSaving ? null : _guardar,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    color: _isSaving
-                        ? AppTheme.colors.hint
-                        : const Color(0xFF1E394A),
-                    borderRadius: AppTheme.radius.brMd,
-                  ),
-                  child: _isSaving
-                      ? SizedBox(
-                          height: 18,
-                          width: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppTheme.colors.white,
-                          ),
-                        )
-                      : Text(
-                          'Guardar insumo',
-                          textAlign: TextAlign.center,
-                          style: AppTheme.font.button.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                ),
+              HoPrimaryButton(
+                label: 'Guardar insumo',
+                loading: _isSaving,
+                onPressed: _guardar,
               ),
             ],
           ),
@@ -343,31 +269,27 @@ class _FormularioArticuloViewState
   }
 
   Widget _buildSelectorUnidades() {
+    final c = AppTheme.colorsOf(context);
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: _unidades.map((unidad) {
         final activo = _unidadSeleccionada == unidad;
-        return GestureDetector(
-          onTap: () => setState(() => _unidadSeleccionada = unidad),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: activo ? const Color(0xFF3B2A1F) : AppTheme.colors.surface,
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(
-                color: activo
-                    ? const Color(0xFF3B2A1F)
-                    : AppTheme.colors.border,
-                width: 0.5,
-              ),
-            ),
-            child: Text(
-              unidad.dbValue,
-              style: AppTheme.font.bodySmall.copyWith(
-                fontSize: 12,
-                fontWeight: activo ? FontWeight.w500 : FontWeight.normal,
-                color: activo ? AppTheme.colors.white : AppTheme.colors.hint,
+        return Material(
+          color: activo ? c.primary : c.primaryLight,
+          borderRadius: BorderRadius.circular(999),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(999),
+            onTap: () => setState(() => _unidadSeleccionada = unidad),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                unidad.dbValue,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: activo ? c.white : c.bodyText,
+                ),
               ),
             ),
           ),
@@ -382,34 +304,11 @@ class _FormularioArticuloViewState
     required IconData icono,
     String? Function(String?)? validator,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.colors.primaryLight,
-        borderRadius: AppTheme.radius.brSm,
-        border: Border.all(color: AppTheme.colors.border, width: 0.5),
-        boxShadow: AppTheme.shadows.cardSm,
-      ),
-      child: TextFormField(
-        controller: controller,
-        validator: validator,
-        style: AppTheme.font.bodySmall.copyWith(
-          color: AppTheme.colors.titleText,
-        ),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: AppTheme.font.hint,
-          prefixIcon: Icon(icono, color: AppTheme.colors.brownMid, size: 18),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: AppTheme.spacing.md,
-            vertical: AppTheme.spacing.md,
-          ),
-          errorStyle: TextStyle(
-            fontSize: 11,
-            color: AppTheme.colors.statusCritical,
-          ),
-        ),
-      ),
+    return TextFormField(
+      controller: controller,
+      validator: validator,
+      style: TextStyle(fontSize: 15, color: AppTheme.colorsOf(context).titleText),
+      decoration: hoInputDecoration(context, hint: hint, icon: icono),
     );
   }
 
@@ -419,49 +318,19 @@ class _FormularioArticuloViewState
     required IconData icono,
     String? Function(String?)? validator,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.colors.primaryLight,
-        borderRadius: AppTheme.radius.brSm,
-        border: Border.all(color: AppTheme.colors.border, width: 0.5),
-        boxShadow: AppTheme.shadows.cardSm,
-      ),
-      child: TextFormField(
-        controller: controller,
-        validator: validator,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-        ],
-        style: AppTheme.font.bodySmall.copyWith(
-          color: AppTheme.colors.titleText,
-        ),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: AppTheme.font.hint,
-          prefixIcon: Icon(icono, color: AppTheme.colors.brownMid, size: 18),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: AppTheme.spacing.md,
-            vertical: AppTheme.spacing.md,
-          ),
-          errorStyle: TextStyle(
-            fontSize: 11,
-            color: AppTheme.colors.statusCritical,
-          ),
-        ),
-      ),
+    return TextFormField(
+      controller: controller,
+      validator: validator,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+      ],
+      style: TextStyle(fontSize: 15, color: AppTheme.colorsOf(context).titleText),
+      decoration: hoInputDecoration(context, hint: hint, icon: icono),
     );
   }
 
   Widget _buildLabel(String texto) {
-    return Text(
-      texto.toUpperCase(),
-      style: AppTheme.font.label.copyWith(
-        fontSize: 11,
-        color: AppTheme.colors.brownMid,
-        letterSpacing: 0.5,
-      ),
-    );
+    return Text(texto.toUpperCase(), style: AppTheme.fontOf(context).section);
   }
 }

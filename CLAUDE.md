@@ -30,7 +30,7 @@ dart run build_runner build --delete-conflicting-outputs
 - `lib/core/models/enums.dart` — **critical convention**: Dart enums (`TipoArticulo`, `TipoMovimiento`, `TipoAlerta`, etc.) map to/from Postgres string values via `.dbValue` (write) and `.fromDb(String)` (read). Postgres uses snake_case (`producto_final`, `salida_produccion`, `stock_bajo`); Dart uses camelCase. Always go through these mappers when reading/writing the DB — never pass `enum.name` directly.
 - `lib/core/repositories/` — each entity has an interface `i_<name>_repository.dart` and a Supabase implementation `<name>_repository.dart`. Repositories take a `SupabaseService` via constructor and talk to tables directly.
 - `lib/core/providers.dart` — central Riverpod wiring: singleton services and every repository are exposed as `Provider`s here. ViewModels read repositories from these providers; do not instantiate repositories directly in features.
-- `lib/core/theme/` — `AppTheme` colors + `themeProvider` (light/dark, persisted directly in `shared_preferences` key `theme_mode`). `lib/core/widgets/` — `AppShell` and `bottom_nav_bar.dart`.
+- `lib/core/theme/` — `AppTheme` colors (navy `#0B2137` + cream `#F8F6F0` palette from the design prototype), `AppTheme.themeData()`, `AppTheme.serif()` for Fraunces headings + `themeProvider` (light/dark, persisted directly in `shared_preferences` key `theme_mode`). Fonts (Plus Jakarta Sans, Fraunces) are bundled in `assets/fonts/`. `lib/core/widgets/` — `AppShell`, `bottom_nav_bar.dart`, and `ho_ui.dart` (shared design widgets: `HoHeader`, `HoTopBar`, `HoCard`, `HoSectionLabel`, `HoBadge`, `HoPrimaryButton`, `hoInputDecoration`, …) — use these when building or restyling screens. `lib/core/demo/diseno_demo.dart` holds **placeholder data copied from the design prototype** (report KPIs/charts, category distribution, nutrition, Unsplash photo IDs); every screen reading from it is marked `TODO` and still needs real data.
 - `lib/core/services/` — `SupabaseService` (singleton client + auth helpers), `LocalStorageService` (shared_preferences: `auth_token`, `refresh_token`, `user_id`, `user_email`, theme), `NotificationService` (local push), `StockMonitorService` (periodic 20-min timer that scans stock and raises alerts + notifications), `OcrService` (ML Kit text recognition for receipts).
 - `lib/features/<feature>/presentation/{views,viewmodels}/` — UI per feature. Features: `auth`, `visualizacion_inventario`, `recetas_costeo`, `produccion`, `registro_movimientos`, `analitica_alertas`, `configuracion`.
 
@@ -52,10 +52,11 @@ dart run build_runner build --delete-conflicting-outputs
 - The main shell uses `StatefulShellRoute.indexedStack` via `AppShell` + `bottom_nav_bar.dart` with 5 tabs/branches:
   - Inicio: `/dashboard`
   - Inventario: `/catalogo`, `/catalogo/nuevo`, `/catalogo/movimiento/:id` (`IngresoAlmacenView` for a given `Articulo`), `/catalogo/historial/:id`
-  - Recetas: `/recetas`, `/recetas/nueva`, `/recetas/editar`
+  - Recetas: `/recetas`, `/recetas/nueva`, `/recetas/editar`, `/recetas/ver`, `/recetas/costos`, `/recetas/gestionar` (the last three take `extra: Receta`)
   - Reporte: `/reportes`, `/alertas`
   - Configuración: `/perfil` (+ `/perfil/editar`, `/perfil/password`), `/categorias`
-- Some views have **no route** in the router (`OrdenesProduccionListView`, `NuevaOrdenProduccionView`, `SalidaAlmacenView`, `HistorialKardexView`, `IngresoOcrView`, `SugerenciasCompraView`); check how they're reached before assuming they're live, and add a route if wiring them up.
+- Movement/production routes: `/movimientos` (`HistorialKardexView`), `/movimientos/entrada` (`IngresoAlmacenView`), `/movimientos/salida` (`SalidaAlmacenView`), `/movimientos/ingreso-ocr` (`IngresoOcrView`) live in the Inicio branch; `/produccion/nueva` (`NuevaOrdenProduccionView`, `extra: Receta`) in the Recetas branch.
+- Some views still have **no route** (`OrdenesProduccionListView`, `SugerenciasCompraView`); check how they're reached before assuming they're live, and add a route if wiring them up.
 - Routes pass models between screens via `state.extra` (e.g. editing an `Articulo` or `Receta`).
 
 ### Backend

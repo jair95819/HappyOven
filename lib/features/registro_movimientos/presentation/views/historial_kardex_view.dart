@@ -79,8 +79,8 @@ class HistorialKardexView extends ConsumerWidget {
           FloatingActionButton(
             heroTag: 'salida',
             onPressed: () => context.push('/movimientos/salida'),
-            backgroundColor: colors.titleText,
-            child: Icon(Icons.add_rounded, color: colors.accent),
+            backgroundColor: colors.accent,
+            child: Icon(Icons.upload_rounded, color: colors.white),
           ),
         ],
       ),
@@ -99,7 +99,13 @@ class HistorialKardexView extends ConsumerWidget {
     );
 
     return Container(
-      color: colors.accent,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [colors.khaki, colors.khakiSoft],
+        ),
+      ),
       child: SafeArea(
         bottom: false,
         child: Padding(

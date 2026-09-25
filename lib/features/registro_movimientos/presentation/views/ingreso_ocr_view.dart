@@ -536,7 +536,13 @@ class _IngresoOcrViewState extends ConsumerState<IngresoOcrView> {
     AppFont font,
   ) {
     return Container(
-      color: colors.accent,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [colors.khaki, colors.khakiSoft],
+        ),
+      ),
       child: SafeArea(
         bottom: false,
         child: Padding(

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
+import 'package:happy_oven/core/widgets/ho_ui.dart';
+import 'package:intl/intl.dart';
 import 'package:happy_oven/core/models/articulo.dart';
 import 'package:happy_oven/core/models/enums.dart';
 import 'package:happy_oven/core/models/movimiento.dart';
@@ -94,7 +96,7 @@ class _IngresoAlmacenViewState extends ConsumerState<IngresoAlmacenView> {
                       ),
                       title: Text(a.nombre, style: font.bodySmall),
                       subtitle: Text(
-                        'Stock: ${a.stockActual} ${a.unidad}',
+                        'Stock: ${a.stockActual} ${a.unidad.dbValue}',
                         style: font.caption,
                       ),
                       onTap: () {
@@ -166,7 +168,7 @@ class _IngresoAlmacenViewState extends ConsumerState<IngresoAlmacenView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '${_articuloSeleccionado!.nombre}: +$cantidad ${_articuloSeleccionado!.unidad}',
+            '${_articuloSeleccionado!.nombre}: +$cantidad ${_articuloSeleccionado!.unidad.dbValue}',
           ),
           backgroundColor: AppTheme.colorsOf(context).statusNormal,
           behavior: SnackBarBehavior.floating,
@@ -174,7 +176,7 @@ class _IngresoAlmacenViewState extends ConsumerState<IngresoAlmacenView> {
       );
       context.pop();
     } else if (mounted) {
-      _isSaving = false;
+      setState(() => _isSaving = false);
       _mostrarError('Error al registrar entrada');
     }
   }
@@ -192,717 +194,444 @@ class _IngresoAlmacenViewState extends ConsumerState<IngresoAlmacenView> {
   @override
   Widget build(BuildContext context) {
     final colors = AppTheme.colorsOf(context);
-    final font = AppTheme.fontOf(context);
+    final art = _articuloSeleccionado;
+    final unidad = art?.unidad.dbValue ?? '';
+    final cantidad = double.tryParse(_cantidadController.text) ?? 0;
 
     return Scaffold(
       backgroundColor: colors.bg,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 430),
-              child: Container(
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: colors.bg,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildHeader(colors, font),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildSelectorArticulo(colors, font),
-                          const SizedBox(height: 22),
-                          Text(
-                            'TIPO DE MOVIMIENTO',
-                            style: font.caption.copyWith(
-                              fontSize: 11,
-                              letterSpacing: 0.5,
-                              fontWeight: FontWeight.w700,
-                              color: colors.brownMid,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF2C7A4B),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Icon(
-                                        Icons.arrow_downward_rounded,
-                                        color: Colors.white,
-                                        size: 18,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Entrada',
-                                        style: font.label.copyWith(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: colors.surface,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.arrow_upward_rounded,
-                                        color: colors.hint,
-                                        size: 18,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Salida',
-                                        style: font.label.copyWith(
-                                          color: colors.hint,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: colors.surface,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.sync_rounded,
-                                        color: colors.hint,
-                                        size: 18,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Ajuste',
-                                        style: font.label.copyWith(
-                                          color: colors.hint,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 22),
-                          Text(
-                            'INFORMACIÓN DEL MOVIMIENTO',
-                            style: font.caption.copyWith(
-                              fontSize: 11,
-                              letterSpacing: 0.5,
-                              fontWeight: FontWeight.w700,
-                              color: colors.brownMid,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  'Cantidad *',
-                                  style: font.caption.copyWith(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: colors.brownMid,
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    'Fecha *',
-                                    style: font.caption.copyWith(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: colors.brownMid,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  height: 48,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: colors.surface,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: TextField(
-                                          controller: _cantidadController,
-                                          keyboardType:
-                                              const TextInputType.numberWithOptions(
-                                                decimal: true,
-                                              ),
-                                          style: font.bodySmall.copyWith(
-                                            fontSize: 14,
-                                            color: colors.titleText,
-                                          ),
-                                          decoration: const InputDecoration(
-                                            border: InputBorder.none,
-                                            isDense: true,
-                                            contentPadding: EdgeInsets.zero,
-                                          ),
-                                        ),
-                                      ),
-                                      Text(
-                                        'kg',
-                                        style: font.label.copyWith(
-                                          color: colors.titleText,
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Container(
-                                  height: 48,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: colors.surface,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        '06/05/2026',
-                                        style: font.bodySmall.copyWith(
-                                          fontSize: 14,
-                                          color: colors.titleText,
-                                        ),
-                                      ),
-                                      Icon(
-                                        Icons.calendar_today_rounded,
-                                        size: 18,
-                                        color: colors.brownMid,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 18),
-                          Text(
-                            'Descripción *',
-                            style: font.caption.copyWith(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: colors.brownMid,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            height: 56,
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            decoration: BoxDecoration(
-                              color: colors.surface,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: TextField(
-                                controller: _observacionController,
-                                style: font.bodySmall.copyWith(
-                                  fontSize: 14,
-                                  color: colors.titleText,
-                                ),
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.zero,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-                          Container(
-                            width: double.infinity,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF2C7A4B),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.save_alt_rounded,
-                                  color: Colors.white,
-                                  size: 18,
-                                ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  'Guardar movimiento',
-                                  style: font.label.copyWith(
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'HISTORIAL DE MOVIMIENTOS',
-                                style: font.caption.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  color: colors.brownMid,
-                                  fontSize: 11,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                              Text(
-                                'Ver todos →',
-                                style: font.caption.copyWith(
-                                  color: colors.primary,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: colors.surface,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        'FECHA',
-                                        style: font.caption.copyWith(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700,
-                                          color: colors.brownMid,
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        'TIPO',
-                                        style: font.caption.copyWith(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700,
-                                          color: colors.brownMid,
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        'CANT.',
-                                        style: font.caption.copyWith(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700,
-                                          color: colors.brownMid,
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        'STOCK',
-                                        style: font.caption.copyWith(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700,
-                                          color: colors.brownMid,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                _buildHistoryRow(
-                                  '06/05/2026',
-                                  'Entrada',
-                                  '+10 kg',
-                                  '5.2 kg',
-                                  colors,
-                                  font,
-                                  true,
-                                ),
-                                _buildHistoryRow(
-                                  '05/05/2026',
-                                  'Salida',
-                                  '-2 kg',
-                                  '-4.8 kg',
-                                  colors,
-                                  font,
-                                  false,
-                                ),
-                                _buildHistoryRow(
-                                  '04/05/2026',
-                                  'Ajuste',
-                                  '+0.5 kg',
-                                  '-2.8 kg',
-                                  colors,
-                                  font,
-                                  false,
-                                ),
-                                _buildHistoryRow(
-                                  '02/05/2026',
-                                  'Entrada',
-                                  '+5 kg',
-                                  '-3.3 kg',
-                                  colors,
-                                  font,
-                                  true,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEBF5EE),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.check_circle_rounded,
-                                  color: Color(0xFF2C7A4B),
-                                  size: 18,
-                                ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  'Impacto del movimiento',
-                                  style: font.label.copyWith(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    color: const Color(0xFF2C7A4B),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
+      appBar: HoTopBar(
+        title: 'Registrar movimientos',
+        subtitle: 'Historial y registro de movimientos',
+        onBack: () =>
+            context.canPop() ? context.pop() : context.go('/dashboard'),
       ),
-    );
-  }
-
-  Widget _buildHistoryRow(
-    String fecha,
-    String tipo,
-    String cant,
-    String stock,
-    AppColors colors,
-    AppFont font,
-    bool positive,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              fecha,
-              style: font.caption.copyWith(
-                fontSize: 10,
-                color: colors.titleText,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              tipo,
-              style: font.caption.copyWith(
-                fontSize: 10,
-                color: positive ? const Color(0xFF2C7A4B) : colors.titleText,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              cant,
-              style: font.caption.copyWith(
-                fontSize: 10,
-                color: positive
-                    ? const Color(0xFF2C7A4B)
-                    : colors.statusCritical,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              stock,
-              style: font.caption.copyWith(
-                fontSize: 10,
-                color: colors.titleText,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader(AppColors colors, AppFont font) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(18, 14, 18, 16),
-      decoration: BoxDecoration(color: colors.bg),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => context.pop(),
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: colors.surface,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                Icons.arrow_back_rounded,
-                color: colors.titleText,
-                size: 18,
-              ),
-            ),
-          ),
-          const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Registrar movimientos',
-                style: font.h3.copyWith(fontSize: 22),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                'Historial y registro de movimientos',
-                style: font.caption.copyWith(color: colors.accentDark),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String titulo, AppFont font) {
-    return Text(
-      titulo,
-      style: font.label.copyWith(fontSize: 14, fontWeight: FontWeight.w600),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    required AppColors colors,
-    required AppFont font,
-    int maxLines = 1,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.card,
-        borderRadius: AppTheme.radius.brSm,
-        border: Border.all(color: colors.border),
-        boxShadow: AppTheme.shadows.cardSm,
-      ),
-      child: TextField(
-        controller: controller,
-        maxLines: maxLines,
-        keyboardType: maxLines == 1 ? TextInputType.number : TextInputType.text,
-        style: font.bodySmall.copyWith(fontSize: 13, color: colors.titleText),
-        decoration: InputDecoration(
-          hintText: label,
-          hintStyle: font.hint.copyWith(fontSize: 13),
-          prefixIcon: Icon(icon, color: colors.primary, size: 16),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 12,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSelectorArticulo(AppColors colors, AppFont font) {
-    return GestureDetector(
-      onTap: _seleccionarArticulo,
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(
-          horizontal: AppTheme.spacing.md,
-          vertical: AppTheme.spacing.sm + 4,
-        ),
-        decoration: BoxDecoration(
-          color: colors.card,
-          borderRadius: AppTheme.radius.brSm,
-          border: Border.all(color: colors.border),
-          boxShadow: AppTheme.shadows.cardSm,
-        ),
-        child: Row(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Icon(
-              _articuloSeleccionado != null
-                  ? Icons.inventory_2_outlined
-                  : Icons.add_circle_outline,
-              color: _articuloSeleccionado != null
-                  ? colors.primary
-                  : colors.hint,
-              size: 16,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _articuloSeleccionado?.nombre ?? 'Seleccionar artículo...',
-                    style: font.bodySmall.copyWith(
-                      fontSize: 12,
-                      color: _articuloSeleccionado != null
-                          ? colors.titleText
-                          : colors.hint,
+            _buildSelectorArticulo(colors),
+            const SizedBox(height: 20),
+            const HoSectionLabel('Tipo de movimiento'),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: _tipoButton(
+                    colors,
+                    label: 'Entrada',
+                    icon: Icons.download_rounded,
+                    color: colors.statusNormal,
+                    selected: true,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _tipoButton(
+                    colors,
+                    label: 'Salida',
+                    icon: Icons.upload_rounded,
+                    color: colors.primary,
+                    selected: false,
+                    onTap: () => context.pushReplacement('/movimientos/salida'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _tipoButton(
+                    colors,
+                    label: 'Ajuste',
+                    icon: Icons.sync_rounded,
+                    color: const Color(0xFF7C3AED),
+                    selected: false,
+                    // TODO: movimiento de ajuste.
+                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Próximamente')),
                     ),
                   ),
-                  if (_articuloSeleccionado != null)
-                    Text(
-                      'Stock actual: ${_articuloSeleccionado!.stockActual} ${_articuloSeleccionado!.unidad}',
-                      style: font.caption.copyWith(fontSize: 10),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            const HoSectionLabel('Información del movimiento'),
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _campo(
+                    colors,
+                    'Cantidad *',
+                    TextField(
+                      controller: _cantidadController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      onChanged: (_) => setState(() {}),
+                      style: TextStyle(fontSize: 15, color: colors.titleText),
+                      decoration: hoInputDecoration(
+                        context,
+                        hint: '0',
+                        suffixText: unidad,
+                      ),
                     ),
-                ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _campo(
+                    colors,
+                    'Fecha',
+                    InputDecorator(
+                      decoration: hoInputDecoration(
+                        context,
+                        suffixIcon: Icon(
+                          Icons.calendar_today_rounded,
+                          size: 18,
+                          color: colors.bodyText,
+                        ),
+                      ),
+                      child: Text(
+                        DateFormat('dd/MM/yyyy').format(DateTime.now()),
+                        style: TextStyle(fontSize: 15, color: colors.titleText),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _campo(
+                    colors,
+                    'Precio unit. (S/)',
+                    TextField(
+                      controller: _precioController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      style: TextStyle(fontSize: 15, color: colors.titleText),
+                      decoration: hoInputDecoration(context, hint: '0.00'),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _campo(
+                    colors,
+                    'Proveedor',
+                    TextField(
+                      controller: _proveedorController,
+                      style: TextStyle(fontSize: 15, color: colors.titleText),
+                      decoration: hoInputDecoration(context, hint: 'Opcional'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _campo(
+              colors,
+              'Descripción *',
+              TextField(
+                controller: _observacionController,
+                style: TextStyle(fontSize: 15, color: colors.titleText),
+                decoration: hoInputDecoration(
+                  context,
+                  hint: 'Ej. Compra a proveedor La Molina',
+                ),
               ),
             ),
-            if (_articuloSeleccionado != null)
-              GestureDetector(
-                onTap: () => setState(() => _articuloSeleccionado = null),
-                child: Icon(Icons.close_rounded, color: colors.hint, size: 16),
-              )
-            else
-              Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: colors.hint,
-                size: 16,
-              ),
+            const SizedBox(height: 20),
+            HoPrimaryButton(
+              label: 'Registrar Entrada',
+              icon: Icons.save_outlined,
+              color: colors.statusNormal,
+              loading: _isSaving,
+              onPressed: _guardar,
+            ),
+            if (art != null) ...[
+              const SizedBox(height: 20),
+              _buildHistorial(colors, art),
+              const SizedBox(height: 16),
+              _buildImpacto(colors, art, cantidad),
+            ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBotonGuardar(AppColors colors, AppFont font) {
-    return GestureDetector(
-      onTap: _isSaving ? null : _guardar,
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.md),
-        decoration: BoxDecoration(
-          color: _isSaving ? colors.hint : colors.accent,
-          borderRadius: AppTheme.radius.brSm,
-        ),
-        child: _isSaving
-            ? SizedBox(
-                height: 18,
-                width: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: colors.titleText,
+  Widget _campo(AppColors colors, String label, Widget child) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(label, style: TextStyle(fontSize: 11, color: colors.bodyText)),
+        const SizedBox(height: 6),
+        child,
+      ],
+    );
+  }
+
+  Widget _tipoButton(
+    AppColors colors, {
+    required String label,
+    required IconData icon,
+    required Color color,
+    required bool selected,
+    VoidCallback? onTap,
+  }) {
+    return Material(
+      color: selected ? color : colors.card,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: selected ? color : colors.border),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, size: 20, color: selected ? colors.white : color),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: selected ? colors.white : colors.titleText,
                 ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.save_outlined, color: colors.titleText, size: 16),
-                  const SizedBox(width: 8),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHistorial(AppColors colors, Articulo art) {
+    final movimientos =
+        (ref.watch(movimientosViewModelProvider).valueOrNull ?? [])
+            .where((m) => m.articuloId == art.id)
+            .take(5)
+            .toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        HoSectionLabel(
+          'Historial de movimientos',
+          trailing: GestureDetector(
+            onTap: () => context.push('/catalogo/historial/${art.id}'),
+            child: Text(
+              'Ver todos →',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: colors.primary,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: colors.card,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colors.border),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            children: [
+              Container(
+                color: colors.bg,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(child: _th(colors, 'Fecha')),
+                    Expanded(child: _th(colors, 'Tipo')),
+                    Expanded(child: _th(colors, 'Cant.', end: true)),
+                  ],
+                ),
+              ),
+              if (movimientos.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Text(
+                    'Sin movimientos registrados',
+                    style: TextStyle(fontSize: 12, color: colors.hint),
+                  ),
+                )
+              else
+                for (final m in movimientos) _buildHistoryRow(colors, m, art),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _th(AppColors colors, String t, {bool end = false}) => Text(
+    t.toUpperCase(),
+    textAlign: end ? TextAlign.right : TextAlign.left,
+    style: TextStyle(
+      fontSize: 10,
+      fontWeight: FontWeight.w700,
+      color: colors.bodyText,
+    ),
+  );
+
+  Widget _buildHistoryRow(AppColors colors, Movimiento m, Articulo art) {
+    final entrada = m.tipoMovimiento == TipoMovimiento.entrada;
+    final color = entrada ? colors.statusNormal : colors.primary;
+    final cant = m.cantidad % 1 == 0
+        ? m.cantidad.toInt().toString()
+        : m.cantidad.toStringAsFixed(2);
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: colors.border)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              DateFormat('dd/MM/yyyy').format(m.fecha),
+              style: TextStyle(fontSize: 11, color: colors.bodyText),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              entrada ? 'Entrada' : 'Salida',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              '${entrada ? '+' : '-'}$cant ${art.unidad.dbValue}',
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: colors.titleText,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImpacto(AppColors colors, Articulo art, double cantidad) {
+    String fmt(double v) =>
+        v % 1 == 0 ? v.toInt().toString() : v.toStringAsFixed(2);
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.successLight,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: colors.statusNormal,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.check_rounded, size: 16, color: colors.white),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Impacto del movimiento',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: colors.successDeep,
+                  ),
+                ),
+                Text(
+                  'Stock: ${fmt(art.stockActual)} → ${fmt(art.stockActual + cantidad)} ${art.unidad.dbValue}',
+                  style: TextStyle(fontSize: 13, color: colors.bodyText),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSelectorArticulo(AppColors colors) {
+    final art = _articuloSeleccionado;
+    return HoCard(
+      onTap: _seleccionarArticulo,
+      padding: const EdgeInsets.all(14),
+      radius: 16,
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: colors.primaryLight,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              art != null ? Icons.grain_rounded : Icons.add_rounded,
+              color: colors.primary,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Insumo seleccionado',
+                  style: TextStyle(fontSize: 11, color: colors.bodyText),
+                ),
+                Text(
+                  art?.nombre ?? 'Seleccionar artículo...',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: art != null ? colors.titleText : colors.hint,
+                  ),
+                ),
+                if (art != null)
                   Text(
-                    'Registrar Entrada',
-                    style: font.label.copyWith(
-                      fontSize: 14,
+                    'Stock actual: ${art.stockActual} ${art.unidad.dbValue}',
+                    style: TextStyle(
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
+                      color: colors.successDeep,
                     ),
                   ),
-                ],
-              ),
+              ],
+            ),
+          ),
+          Icon(Icons.chevron_right_rounded, color: colors.bodyText),
+        ],
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
+import 'package:happy_oven/core/widgets/ho_ui.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
 class RecuperarPasswordView extends ConsumerStatefulWidget {
@@ -41,250 +42,160 @@ class _RecuperarPasswordViewState extends ConsumerState<RecuperarPasswordView> {
       }
     });
 
+    final c = AppTheme.colorsOf(context);
     return Scaffold(
-      backgroundColor: AppTheme.colors.bg,
+      backgroundColor: c.card,
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(flex: 5, child: _buildHero(context)),
-            Expanded(
-              flex: 5,
-              child: _buildFormCard(context, authState, authViewModel),
-            ),
-          ],
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              HoIconButton(
+                icon: Icons.arrow_back_rounded,
+                onTap: () => context.go('/login'),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 24, 8, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: c.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Icon(
+                          Icons.mark_email_unread_outlined,
+                          color: c.primary,
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Recuperar contraseña',
+                      style: AppTheme.serif(
+                        TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          color: c.titleText,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        height: 1.5,
+                        color: c.bodyText,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    _buildFormCard(context, c, authState, authViewModel),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildHero(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.fromLTRB(
-        AppTheme.spacing.lg,
-        AppTheme.spacing.md,
-        AppTheme.spacing.lg,
-        0,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Botón atrás
-          GestureDetector(
-            onTap: () => context.go('/login'),
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                borderRadius: AppTheme.radius.brSm,
-                border: Border.all(color: AppTheme.colors.border, width: 0.5),
-                boxShadow: AppTheme.shadows.cardSm,
-              ),
-              child: Icon(
-                Icons.arrow_back_rounded,
-                color: AppTheme.colors.titleText,
-                size: 18,
-              ),
-            ),
-          ),
-          const SizedBox(height: 32),
-
-          // Ícono
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: AppTheme.colors.primaryLight,
-              borderRadius: BorderRadius.circular(AppTheme.radius.xl),
-              border: Border.all(color: AppTheme.colors.border, width: 0.5),
-              boxShadow: AppTheme.shadows.cardSm,
-            ),
-            child: Icon(
-              Icons.forward_to_inbox_outlined,
-              color: AppTheme.colors.primary,
-              size: 32,
-            ),
-          ),
-          SizedBox(height: AppTheme.spacing.lg),
-
-          Text('Recuperar contraseña', style: AppTheme.font.h3),
-          SizedBox(height: AppTheme.spacing.sm),
-          Text(
-            'Ingresa tu correo y te enviaremos un enlace\npara restablecer tu contraseña.',
-            style: AppTheme.font.bodySmall.copyWith(height: 1.6),
-          ),
-        ],
       ),
     );
   }
 
   Widget _buildFormCard(
     BuildContext context,
+    AppColors c,
     AuthState authState,
     AuthViewModel authViewModel,
   ) {
     return Container(
-      width: double.infinity,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppTheme.colors.card,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(AppTheme.radius.xl),
-          topRight: Radius.circular(AppTheme.radius.xl),
-        ),
-        border: Border(
-          top: BorderSide(color: AppTheme.colors.border, width: 0.5),
-        ),
-        boxShadow: AppTheme.shadows.cardSm,
+        color: c.bg,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: c.border),
       ),
-      child: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(
-          AppTheme.spacing.xl,
-          AppTheme.spacing.xl,
-          AppTheme.spacing.xl,
-          AppTheme.spacing.lg,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (_emailEnviado)
-              Container(
-                padding: EdgeInsets.all(AppTheme.spacing.md),
-                decoration: BoxDecoration(
-                  color: AppTheme.colors.successLight,
-                  borderRadius: AppTheme.radius.brSm,
-                  border: Border.all(color: AppTheme.colors.successBorder),
-                  boxShadow: AppTheme.shadows.cardSm,
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.check_circle_outline,
-                      color: AppTheme.colors.statusNormal,
-                      size: 20,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (_emailEnviado)
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: c.successLight,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: c.successBorder),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle_outline, color: c.statusNormal, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Email enviado correctamente.\nRevisa tu bandeja de entrada.',
+                      style: TextStyle(fontSize: 12, color: c.successDeep),
                     ),
-                    SizedBox(width: AppTheme.spacing.md),
-                    Expanded(
-                      child: Text(
-                        'Email enviado correctamente.\nRevisa tu bandeja de entrada.',
-                        style: AppTheme.font.bodySmall.copyWith(
-                          fontSize: 12,
-                          color: AppTheme.colors.statusNormal,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            else ...[
+                  ),
+                ],
+              ),
+            )
+          else ...[
+            Text('CORREO ELECTRÓNICO', style: AppTheme.fontOf(context).section),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              enabled: !authState.cargando,
+              style: TextStyle(fontSize: 14, color: c.titleText),
+              decoration: hoInputDecoration(
+                context,
+                hint: 'correo@happyoven.com',
+                icon: Icons.mail_outline_rounded,
+              ).copyWith(fillColor: c.card),
+            ),
+            const SizedBox(height: 16),
+            HoPrimaryButton(
+              label: 'Enviar enlace',
+              pill: true,
+              loading: authState.cargando,
+              onPressed: () async {
+                final exito = await authViewModel.recuperarPassword(
+                  _emailController.text.trim(),
+                );
+                if (exito && mounted) {
+                  setState(() => _emailEnviado = true);
+                }
+              },
+            ),
+          ],
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
               Text(
-                'CORREO ELECTRÓNICO',
-                style: AppTheme.font.label.copyWith(
-                  fontSize: 11,
-                  color: AppTheme.colors.brownMid,
-                  letterSpacing: 0.5,
-                ),
+                '¿Recordaste tu contraseña? ',
+                style: TextStyle(fontSize: 12, color: c.bodyText),
               ),
-              SizedBox(height: AppTheme.spacing.sm),
-
-              Container(
-                decoration: BoxDecoration(
-                  color: AppTheme.colors.primaryLight,
-                  borderRadius: AppTheme.radius.brSm,
-                  border: Border.all(color: AppTheme.colors.border, width: 0.5),
-                  boxShadow: AppTheme.shadows.cardSm,
-                ),
-                child: TextField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  enabled: !authState.cargando,
-                  style: AppTheme.font.bodySmall.copyWith(
-                    color: AppTheme.colors.titleText,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'usuario@gmail.com',
-                    hintStyle: AppTheme.font.hint,
-                    prefixIcon: Icon(
-                      Icons.mail_outline_rounded,
-                      color: AppTheme.colors.brownMid,
-                      size: 18,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: AppTheme.spacing.md,
-                      vertical: AppTheme.spacing.md,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: AppTheme.spacing.xl),
-
-              // Botón enviar
               GestureDetector(
-                onTap: authState.cargando
-                    ? null
-                    : () async {
-                        final exito = await authViewModel.recuperarPassword(
-                          _emailController.text.trim(),
-                        );
-                        if (exito && mounted) {
-                          setState(() => _emailEnviado = true);
-                        }
-                      },
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.md),
-                  decoration: BoxDecoration(
-                    color: authState.cargando
-                        ? AppTheme.colors.hint
-                        : AppTheme.colors.primary,
-                    borderRadius: AppTheme.radius.brMd,
+                onTap: () => context.go('/login'),
+                child: Text(
+                  'Inicia sesión',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: c.primary,
                   ),
-                  child: authState.cargando
-                      ? const SizedBox(
-                          height: 20,
-                          child: Center(
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
-                                ),
-                                strokeWidth: 2,
-                              ),
-                            ),
-                          ),
-                        )
-                      : Text(
-                          'Enviar enlace',
-                          textAlign: TextAlign.center,
-                          style: AppTheme.font.button,
-                        ),
                 ),
               ),
             ],
-            SizedBox(height: AppTheme.spacing.lg),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '¿Ya recordaste tu contraseña? ',
-                  style: AppTheme.font.bodySmall.copyWith(fontSize: 13),
-                ),
-                GestureDetector(
-                  onTap: () => context.go('/login'),
-                  child: Text(
-                    'Inicia sesión',
-                    style: AppTheme.font.label.copyWith(
-                      color: AppTheme.colors.primary,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

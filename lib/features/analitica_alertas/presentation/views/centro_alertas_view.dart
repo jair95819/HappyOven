@@ -112,7 +112,13 @@ class _CentroAlertasViewState extends ConsumerState<CentroAlertasView> {
     final noLeidas = alertasState.value?.where((a) => !a.leida).length ?? 0;
 
     return Container(
-      color: colors.accent,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [colors.khaki, colors.khakiSoft],
+        ),
+      ),
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -184,15 +190,15 @@ class _CentroAlertasViewState extends ConsumerState<CentroAlertasView> {
                         margin: const EdgeInsets.only(right: 6, bottom: 16),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                         decoration: BoxDecoration(
-                          color: activo ? colors.titleText : colors.accent,
+                          color: activo ? colors.primary : colors.card,
                           borderRadius: BorderRadius.circular(AppTheme.radius.full),
                           border: Border.all(
-                            color: activo ? colors.titleText : colors.accentDark, width: 0.5),
+                            color: activo ? colors.primary : colors.border),
                         ),
                         child: Text(entry.value,
                             style: font.caption.copyWith(
                               fontWeight: activo ? FontWeight.w500 : FontWeight.normal,
-                              color: activo ? colors.white : colors.accentDark)),
+                              color: activo ? colors.white : colors.bodyText)),
                       ),
                     );
                   }).toList(),

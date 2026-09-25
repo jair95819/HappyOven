@@ -239,7 +239,13 @@ class _NuevaOrdenProduccionViewState extends ConsumerState<NuevaOrdenProduccionV
 
   Widget _buildHeader(AppColors colors, AppFont font) {
     return Container(
-      color: colors.accent,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [colors.khaki, colors.khakiSoft],
+        ),
+      ),
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -260,11 +266,11 @@ class _NuevaOrdenProduccionViewState extends ConsumerState<NuevaOrdenProduccionV
                 child: Container(
                   padding: EdgeInsets.all(AppTheme.spacing.sm),
                   decoration: BoxDecoration(
-                    color: colors.titleText,
+                    color: colors.primary,
                     borderRadius: AppTheme.radius.brSm,
                     boxShadow: AppTheme.shadows.cardSm,
                   ),
-                  child: Icon(Icons.close_rounded, color: colors.accent, size: 18),
+                  child: Icon(Icons.close_rounded, color: colors.white, size: 18),
                 ),
               ),
             ],
@@ -358,7 +364,7 @@ class _NuevaOrdenProduccionViewState extends ConsumerState<NuevaOrdenProduccionV
         width: double.infinity,
         padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.md),
         decoration: BoxDecoration(
-          color: _isSaving ? colors.hint : colors.accent,
+          color: _isSaving ? colors.hint : colors.primary,
           borderRadius: AppTheme.radius.brSm,
           boxShadow: AppTheme.shadows.cardSm,
         ),
@@ -366,14 +372,14 @@ class _NuevaOrdenProduccionViewState extends ConsumerState<NuevaOrdenProduccionV
             ? SizedBox(
                 height: 18,
                 width: 18,
-                child: CircularProgressIndicator(strokeWidth: 2, color: colors.titleText),
+                child: CircularProgressIndicator(strokeWidth: 2, color: colors.white),
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.save_outlined, color: colors.titleText, size: 16),
+                  Icon(Icons.save_outlined, color: colors.white, size: 16),
                   const SizedBox(width: 8),
-                  Text('Crear Orden de Producción', style: font.label.copyWith(fontSize: 14, fontWeight: FontWeight.w600)),
+                  Text('Crear Orden de Producción', style: font.label.copyWith(fontSize: 14, fontWeight: FontWeight.w600, color: colors.white)),
                 ],
               ),
       ),

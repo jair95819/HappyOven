@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:happy_oven/core/theme/theme.dart';
+import 'package:happy_oven/core/widgets/ho_ui.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
 class LoginView extends ConsumerStatefulWidget {
@@ -15,6 +16,8 @@ class _LoginViewState extends ConsumerState<LoginView> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _hidePassword = true;
+  // TODO: persistir "Recordarme".
+  bool _recordarme = true;
 
   @override
   void dispose() {
@@ -52,46 +55,62 @@ class _LoginViewState extends ConsumerState<LoginView> {
       }
     });
 
+    final c = AppTheme.colorsOf(context);
     return Scaffold(
-      backgroundColor: AppTheme.colors.bg,
+      backgroundColor: c.bg,
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(flex: 4, child: _buildHero()),
-            Expanded(
-              flex: 6,
-              child: _buildFormCard(context, authState, authViewModel),
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Column(
+                // Espacio vacío arriba + héroe + formulario: el héroe queda
+                // centrado en el espacio libre y el formulario abajo.
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox.shrink(),
+                  _buildHero(c),
+                  _buildForm(context, c, authState, authViewModel),
+                ],
+              ),
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHero() {
-    return SizedBox(
-      width: double.infinity,
+  Widget _buildHero(AppColors c) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 110,
-            height: 110,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: AppTheme.colors.border, width: 2),
-              color: AppTheme.colors.card,
-            ),
-            clipBehavior: Clip.hardEdge,
-            child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
-          ),
-          const SizedBox(height: 16),
-          Text('Happy Oven', style: AppTheme.font.h2),
-          const SizedBox(height: 4),
+          const HoLogo(),
+          const SizedBox(height: 20),
           Text(
-            'Panadería artesanal',
-            style: AppTheme.font.bodySmall.copyWith(
-              color: AppTheme.colors.hint,
+            'Bienvenido a Happy Oven',
+            textAlign: TextAlign.center,
+            style: AppTheme.serif(
+              TextStyle(
+                fontSize: 28,
+                height: 1.15,
+                fontWeight: FontWeight.w800,
+                color: c.titleText,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 280),
+            child: Text(
+              'Panadería artesanal, horneado fresco y siempre delicioso.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                height: 1.5,
+                fontWeight: FontWeight.w500,
+                color: c.bodyText,
+              ),
             ),
           ),
         ],
@@ -99,208 +118,187 @@ class _LoginViewState extends ConsumerState<LoginView> {
     );
   }
 
-  Widget _buildFormCard(
+  Widget _buildForm(
     BuildContext context,
+    AppColors c,
     AuthState authState,
     AuthViewModel authViewModel,
   ) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppTheme.colors.card,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(AppTheme.radius.xl),
-          topRight: Radius.circular(AppTheme.radius.xl),
-        ),
-        border: Border(
-          top: BorderSide(color: AppTheme.colors.border, width: 0.5),
-        ),
-        boxShadow: AppTheme.shadows.cardMd,
-      ),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(28, 32, 28, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('Bienvenido', style: AppTheme.font.h3),
-            const SizedBox(height: 4),
-            Text(
-              'Ingresa tus credenciales para continuar',
-              style: AppTheme.font.bodySmall,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildLabel(c, 'Correo electrónico'),
+          const SizedBox(height: 6),
+          _buildTextField(
+            c,
+            controller: _emailController,
+            hint: 'correo@happyoven.com',
+            keyboardType: TextInputType.emailAddress,
+            enabled: !authState.cargando,
+          ),
+          const SizedBox(height: 16),
+          _buildLabel(c, 'Contraseña'),
+          const SizedBox(height: 6),
+          _buildTextField(
+            c,
+            controller: _passwordController,
+            hint: '••••••••',
+            obscure: _hidePassword,
+            enabled: !authState.cargando,
+            suffix: IconButton(
+              icon: Icon(
+                _hidePassword
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
+                color: c.bodyText,
+                size: 20,
+              ),
+              onPressed: () => setState(() => _hidePassword = !_hidePassword),
             ),
-            SizedBox(height: AppTheme.spacing.lg + 4),
-
-            _buildLabel('Correo electrónico'),
-            SizedBox(height: AppTheme.spacing.sm),
-            _buildTextField(
-              controller: _emailController,
-              hint: 'usuario@gmail.com',
-              icon: Icons.mail_outline_rounded,
-              keyboardType: TextInputType.emailAddress,
-              enabled: !authState.cargando,
-            ),
-            SizedBox(height: AppTheme.spacing.lg),
-
-            _buildLabel('Contraseña'),
-            SizedBox(height: AppTheme.spacing.sm),
-            _buildPasswordField(authState.cargando),
-            SizedBox(height: AppTheme.spacing.sm + 2),
-
-            Align(
-              alignment: Alignment.centerRight,
-              child: GestureDetector(
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: Checkbox(
+                  value: _recordarme,
+                  onChanged: (v) => setState(() => _recordarme = v ?? false),
+                  activeColor: c.primary,
+                  side: BorderSide(color: c.border, width: 1.5),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Recordarme',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: c.bodyText,
+                ),
+              ),
+              const Spacer(),
+              GestureDetector(
                 onTap: () => context.go('/recuperar-password'),
                 child: Text(
-                  'Olvidé mi contraseña',
-                  style: AppTheme.font.label.copyWith(
-                    color: AppTheme.colors.primary,
-                    fontSize: 13,
+                  '¿Olvidaste tu contraseña?',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: c.primary,
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: AppTheme.spacing.xl),
-
-            _buildPrimaryButton(authState, () async {
-              final exito = await authViewModel.login(
-                _emailController.text.trim(),
-                _passwordController.text,
-              );
-              if (!exito && mounted) {
-                // El error se muestra por el listener
-              }
-            }),
-            const SizedBox(height: 20),
-
-            Text(
-              'Acceso exclusivo para personal autorizado',
-              textAlign: TextAlign.center,
-              style: AppTheme.font.caption,
-            ),
-          ],
-        ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: HoPrimaryButton(
+                  label: 'Iniciar sesión',
+                  pill: true,
+                  loading: authState.cargando,
+                  onPressed: () => authViewModel.login(
+                    _emailController.text.trim(),
+                    _passwordController.text,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Tooltip(
+                message: 'Ingreso por huella dactilar',
+                child: Material(
+                  color: c.accent,
+                  shape: const CircleBorder(),
+                  elevation: 2,
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    // TODO: autenticación biométrica.
+                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Próximamente')),
+                    ),
+                    child: const SizedBox(
+                      width: 56,
+                      height: 56,
+                      child: Icon(
+                        Icons.fingerprint_rounded,
+                        color: Colors.white,
+                        size: 26,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Acceso exclusivo para personal autorizado',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 11, color: c.hint),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildLabel(String text) {
+  Widget _buildLabel(AppColors c, String text) {
     return Text(
-      text.toUpperCase(),
-      style: AppTheme.font.label.copyWith(
-        fontSize: 11,
-        color: AppTheme.colors.brownMid,
-        letterSpacing: 0.5,
+      text,
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+        color: c.titleText,
       ),
     );
   }
 
-  Widget _buildTextField({
+  Widget _buildTextField(
+    AppColors c, {
     required TextEditingController controller,
     required String hint,
-    required IconData icon,
     TextInputType keyboardType = TextInputType.text,
     bool enabled = true,
+    bool obscure = false,
+    Widget? suffix,
   }) {
+    final border = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: BorderSide(color: c.border),
+    );
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.colors.primaryLight,
-        borderRadius: AppTheme.radius.brSm,
-        border: Border.all(color: AppTheme.colors.border, width: 0.5),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: AppTheme.shadows.cardSm,
       ),
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
         enabled: enabled,
-        style: AppTheme.font.bodySmall.copyWith(
-          color: AppTheme.colors.titleText,
-        ),
+        obscureText: obscure,
+        style: TextStyle(fontSize: 14, color: c.titleText),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: AppTheme.font.hint,
-          prefixIcon: Icon(icon, color: AppTheme.colors.brownMid, size: 18),
-          border: InputBorder.none,
+          hintStyle: TextStyle(fontSize: 14, color: c.hint),
+          suffixIcon: suffix,
+          filled: true,
+          fillColor: c.card,
+          border: border,
+          enabledBorder: border,
+          disabledBorder: border,
+          focusedBorder: border.copyWith(
+            borderSide: BorderSide(color: c.primary, width: 2),
+          ),
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 14,
+            horizontal: 16,
+            vertical: 15,
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildPasswordField(bool cargando) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.colors.primaryLight,
-        borderRadius: AppTheme.radius.brSm,
-        border: Border.all(color: AppTheme.colors.border, width: 0.5),
-      ),
-      child: TextField(
-        controller: _passwordController,
-        obscureText: _hidePassword,
-        enabled: !cargando,
-        style: AppTheme.font.bodySmall.copyWith(
-          color: AppTheme.colors.titleText,
-        ),
-        decoration: InputDecoration(
-          hintText: '••••••••',
-          hintStyle: AppTheme.font.hint,
-          prefixIcon: Icon(
-            Icons.lock_outline_rounded,
-            color: AppTheme.colors.brownMid,
-            size: 18,
-          ),
-          suffixIcon: IconButton(
-            icon: Icon(
-              _hidePassword
-                  ? Icons.visibility_off_outlined
-                  : Icons.visibility_outlined,
-              color: AppTheme.colors.brownMid,
-              size: 18,
-            ),
-            onPressed: () => setState(() => _hidePassword = !_hidePassword),
-          ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 14,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPrimaryButton(AuthState authState, VoidCallback onPressed) {
-    return GestureDetector(
-      onTap: authState.cargando ? null : onPressed,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: authState.cargando
-              ? AppTheme.colors.hint
-              : AppTheme.colors.primary,
-          borderRadius: AppTheme.radius.brMd,
-          boxShadow: authState.cargando ? null : AppTheme.shadows.cardSm,
-        ),
-        child: authState.cargando
-            ? const SizedBox(
-                height: 20,
-                child: Center(
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      strokeWidth: 2,
-                    ),
-                  ),
-                ),
-              )
-            : Text(
-                'Iniciar sesión',
-                textAlign: TextAlign.center,
-                style: AppTheme.font.button,
-              ),
       ),
     );
   }
