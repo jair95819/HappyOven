@@ -25,133 +25,137 @@ class PerfilAjustesView extends ConsumerWidget {
             .length ??
         0;
 
-    return Scaffold(
-      backgroundColor: c.bg,
-      body: SafeArea(
-        bottom: false,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-          physics: const BouncingScrollPhysics(),
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Configuración',
-                      style: AppTheme.serif(
-                        TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                          color: c.titleText,
+    return HoLoadingOverlay(
+      loading: ref.watch(authViewModelProvider).cargando,
+      message: 'Cerrando sesión...',
+      child: Scaffold(
+        backgroundColor: c.bg,
+        body: SafeArea(
+          bottom: false,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            physics: const BouncingScrollPhysics(),
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Configuración',
+                        style: AppTheme.serif(
+                          TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                            color: c.titleText,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      HoIconButton(
-                        icon: Icons.notifications_none_rounded,
-                        round: true,
-                        tooltip: 'Alertas',
-                        onTap: () => context.go('/alertas'),
-                      ),
-                      if (noLeidas > 0)
-                        Positioned(
-                          right: 2,
-                          top: 2,
-                          child: Container(
-                            width: 15,
-                            height: 15,
-                            decoration: BoxDecoration(
-                              color: c.statusCritical,
-                              shape: BoxShape.circle,
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              noLeidas > 9 ? '9+' : '$noLeidas',
-                              style: const TextStyle(
-                                fontSize: 8,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        HoIconButton(
+                          icon: Icons.notifications_none_rounded,
+                          round: true,
+                          tooltip: 'Alertas',
+                          onTap: () => context.go('/alertas'),
+                        ),
+                        if (noLeidas > 0)
+                          Positioned(
+                            right: 2,
+                            top: 2,
+                            child: Container(
+                              width: 15,
+                              height: 15,
+                              decoration: BoxDecoration(
+                                color: c.statusCritical,
+                                shape: BoxShape.circle,
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                noLeidas > 9 ? '9+' : '$noLeidas',
+                                style: const TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            _buildProfileCard(context, ref),
-            const SizedBox(height: 16),
-            const HoSectionLabel('Preferencias del sistema'),
-            const SizedBox(height: 8),
-            _buildSettingsGroup(context, [
-              _SettingItem(
-                icon: Icons.notifications_outlined,
-                title: 'Notificaciones',
-                subtitle: 'Alertas y recordatorios de vencimiento',
-                // TODO: preferencia real de notificaciones.
-                trailing: HoSwitch(value: true, onChanged: (_) {}),
-              ),
-              _SettingItem(
-                icon: Icons.settings_outlined,
-                title: 'Tema de la aplicación',
-                subtitle: isDarkMode ? 'Oscuro' : 'Claro (Panadería Warm)',
-                onTap: () =>
-                    ref.read(themeProvider.notifier).toggleTheme(!isDarkMode),
-              ),
-              _SettingItem(
-                icon: Icons.language_rounded,
-                title: 'Idioma',
-                subtitle: 'Español (Perú)',
-                onTap: () => _proximamente(context),
-              ),
-              _SettingItem(
-                icon: Icons.shield_outlined,
-                title: 'Seguridad & Biometría',
-                subtitle: 'Contraseña y huella dactilar',
-                onTap: () => context.push('/perfil/password'),
-              ),
-              _SettingItem(
-                icon: Icons.lock_outline_rounded,
-                title: 'Privacidad',
-                subtitle: 'Gestionar datos y copia de seguridad',
-                onTap: () => _proximamente(context),
-              ),
-            ]),
-            const SizedBox(height: 16),
-            const HoSectionLabel('Atajos'),
-            const SizedBox(height: 8),
-            _buildSettingsGroup(context, [
-              _SettingItem(
-                icon: Icons.receipt_long_outlined,
-                title: 'Historial Kárdex',
-                subtitle: 'Todos los movimientos de almacén',
-                onTap: () => context.push('/movimientos'),
-              ),
-              if (esAdmin)
-                _SettingItem(
-                  icon: Icons.folder_outlined,
-                  title: 'Categorías',
-                  subtitle: 'Organiza insumos y productos',
-                  onTap: () => context.push('/categorias'),
+                      ],
+                    ),
+                  ],
                 ),
-            ]),
-            const SizedBox(height: 20),
-            _buildLogoutButton(context, ref),
-            const SizedBox(height: 16),
-            Center(
-              child: Text(
-                'Happy Oven v1.0.0',
-                style: TextStyle(fontSize: 12, color: c.hint),
               ),
-            ),
-          ],
+              const SizedBox(height: 12),
+              _buildProfileCard(context, ref),
+              const SizedBox(height: 16),
+              const HoSectionLabel('Preferencias del sistema'),
+              const SizedBox(height: 8),
+              _buildSettingsGroup(context, [
+                _SettingItem(
+                  icon: Icons.notifications_outlined,
+                  title: 'Notificaciones',
+                  subtitle: 'Alertas y recordatorios de vencimiento',
+                  // TODO: preferencia real de notificaciones.
+                  trailing: HoSwitch(value: true, onChanged: (_) {}),
+                ),
+                _SettingItem(
+                  icon: Icons.settings_outlined,
+                  title: 'Tema de la aplicación',
+                  subtitle: isDarkMode ? 'Oscuro' : 'Claro (Panadería Warm)',
+                  onTap: () =>
+                      ref.read(themeProvider.notifier).toggleTheme(!isDarkMode),
+                ),
+                _SettingItem(
+                  icon: Icons.language_rounded,
+                  title: 'Idioma',
+                  subtitle: 'Español (Perú)',
+                  onTap: () => _proximamente(context),
+                ),
+                _SettingItem(
+                  icon: Icons.shield_outlined,
+                  title: 'Seguridad & Biometría',
+                  subtitle: 'Contraseña y huella dactilar',
+                  onTap: () => context.push('/perfil/password'),
+                ),
+                _SettingItem(
+                  icon: Icons.lock_outline_rounded,
+                  title: 'Privacidad',
+                  subtitle: 'Gestionar datos y copia de seguridad',
+                  onTap: () => _proximamente(context),
+                ),
+              ]),
+              const SizedBox(height: 16),
+              const HoSectionLabel('Atajos'),
+              const SizedBox(height: 8),
+              _buildSettingsGroup(context, [
+                _SettingItem(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Historial Kárdex',
+                  subtitle: 'Todos los movimientos de almacén',
+                  onTap: () => context.push('/movimientos'),
+                ),
+                if (esAdmin)
+                  _SettingItem(
+                    icon: Icons.folder_outlined,
+                    title: 'Categorías',
+                    subtitle: 'Organiza insumos y productos',
+                    onTap: () => context.push('/categorias'),
+                  ),
+              ]),
+              const SizedBox(height: 20),
+              _buildLogoutButton(context, ref),
+              const SizedBox(height: 16),
+              Center(
+                child: Text(
+                  'Happy Oven v1.0.0',
+                  style: TextStyle(fontSize: 12, color: c.hint),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

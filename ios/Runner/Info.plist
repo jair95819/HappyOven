@@ -81,6 +81,8 @@
 	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>Happy Oven necesita acceso a la cámara para escanear boletas de insumos (OCR).</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Happy Oven usa Face ID para que ingreses sin escribir tu contraseña.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Happy Oven necesita acceso a la galería para subir fotos de boletas y extraer datos.</string>
 </dict>

@@ -804,3 +804,71 @@ class HoPhoto extends StatelessWidget {
     return ClipRRect(borderRadius: radius ?? BorderRadius.zero, child: child);
   }
 }
+
+/// Capa de carga a pantalla completa: bloquea la interacción y muestra un
+/// spinner con [message] mientras [loading] es `true`. Envuelve el cuerpo de
+/// las pantallas que ejecutan acciones con espera (login, guardar, etc.).
+class HoLoadingOverlay extends StatelessWidget {
+  final bool loading;
+  final String message;
+  final Widget child;
+
+  const HoLoadingOverlay({
+    super.key,
+    required this.loading,
+    required this.child,
+    this.message = 'Un momento...',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = AppTheme.colorsOf(context);
+    return Stack(
+      children: [
+        child,
+        Positioned.fill(
+          child: IgnorePointer(
+            ignoring: !loading,
+            child: AnimatedOpacity(
+              opacity: loading ? 1 : 0,
+              duration: const Duration(milliseconds: 150),
+              child: ColoredBox(
+                color: Colors.black.withValues(alpha: 0.35),
+                child: Center(
+                  child: HoCard(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 28,
+                      vertical: 24,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 32,
+                          height: 32,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                            valueColor: AlwaysStoppedAnimation(c.primary),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          message,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: c.titleText,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}

@@ -83,6 +83,19 @@ class SupabaseService {
     return _client.auth.currentSession;
   }
 
+  // ── Auth: Refresh session
+
+  /// Renueva la sesión persistida usando su refresh token. Lanza si el
+  /// refresh token fue revocado o expiró.
+  Future<Session?> refreshSession() async {
+    try {
+      final response = await _client.auth.refreshSession();
+      return response.session;
+    } on AuthException catch (e) {
+      throw Exception('Error al renovar sesión: ${e.message}');
+    }
+  }
+
   // ── Auth: Reset password
 
   /// Envía un correo electrónico de recuperación de contraseña a la dirección especificada.

@@ -4,6 +4,7 @@ import 'package:happy_oven/core/services/local_storage_service.dart';
 import 'package:happy_oven/core/services/notification_service.dart';
 import 'package:happy_oven/core/services/stock_monitor_service.dart';
 import 'package:happy_oven/core/services/ocr_service.dart';
+import 'package:happy_oven/core/services/biometric_service.dart';
 import 'package:happy_oven/core/repositories/articulos_repository.dart';
 import 'package:happy_oven/core/repositories/categorias_repository.dart';
 import 'package:happy_oven/core/repositories/movimientos_repository.dart';
@@ -45,6 +46,10 @@ final ordenesProduccionRepositoryProvider = Provider<OrdenesProduccionRepository
 
 final notificationServiceProvider = Provider<NotificationService>((ref) {
   return NotificationService();
+});
+
+final biometricServiceProvider = Provider<BiometricService>((ref) {
+  return BiometricService();
 });
 
 final ocrServiceProvider = Provider<OcrService>((ref) {
