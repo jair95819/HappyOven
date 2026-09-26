@@ -16,8 +16,22 @@ class _LoginViewState extends ConsumerState<LoginView> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _hidePassword = true;
-  // TODO: persistir "Recordarme".
-  bool _recordarme = true;
+  late bool _recordarme;
+
+  @override
+  void initState() {
+    super.initState();
+    final authState = ref.read(authViewModelProvider);
+    _recordarme = authState.recordarme;
+    _emailController.text = authState.ultimoEmail ?? '';
+
+    // Sesión guardada con biometría: pedir la huella en cuanto se abre.
+    if (authState.sesionBloqueada && authState.biometriaDisponible) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) ref.read(authViewModelProvider.notifier).loginBiometrico();
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -56,22 +70,26 @@ class _LoginViewState extends ConsumerState<LoginView> {
     });
 
     final c = AppTheme.colorsOf(context);
-    return Scaffold(
-      backgroundColor: c.bg,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) => SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: Column(
-                // Espacio vacío arriba + héroe + formulario: el héroe queda
-                // centrado en el espacio libre y el formulario abajo.
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const SizedBox.shrink(),
-                  _buildHero(c),
-                  _buildForm(context, c, authState, authViewModel),
-                ],
+    return HoLoadingOverlay(
+      loading: authState.cargando,
+      message: 'Iniciando sesión...',
+      child: Scaffold(
+        backgroundColor: c.bg,
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) => SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Column(
+                  // Espacio vacío arriba + héroe + formulario: el héroe queda
+                  // centrado en el espacio libre y el formulario abajo.
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const SizedBox.shrink(),
+                    _buildHero(c),
+                    _buildForm(context, c, authState, authViewModel),
+                  ],
+                ),
               ),
             ),
           ),
@@ -206,34 +224,36 @@ class _LoginViewState extends ConsumerState<LoginView> {
                   onPressed: () => authViewModel.login(
                     _emailController.text.trim(),
                     _passwordController.text,
+                    recordarme: _recordarme,
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
-              Tooltip(
-                message: 'Ingreso por huella dactilar',
-                child: Material(
-                  color: c.accent,
-                  shape: const CircleBorder(),
-                  elevation: 2,
-                  child: InkWell(
-                    customBorder: const CircleBorder(),
-                    // TODO: autenticación biométrica.
-                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Próximamente')),
-                    ),
-                    child: const SizedBox(
-                      width: 56,
-                      height: 56,
-                      child: Icon(
-                        Icons.fingerprint_rounded,
-                        color: Colors.white,
-                        size: 26,
+              if (authState.biometriaDisponible) ...[
+                const SizedBox(width: 10),
+                Tooltip(
+                  message: 'Ingreso por huella dactilar',
+                  child: Material(
+                    color: c.accent,
+                    shape: const CircleBorder(),
+                    elevation: 2,
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: authState.cargando
+                          ? null
+                          : authViewModel.loginBiometrico,
+                      child: const SizedBox(
+                        width: 56,
+                        height: 56,
+                        child: Icon(
+                          Icons.fingerprint_rounded,
+                          color: Colors.white,
+                          size: 26,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ],
           ),
           const SizedBox(height: 16),

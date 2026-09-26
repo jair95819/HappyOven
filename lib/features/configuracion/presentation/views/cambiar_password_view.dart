@@ -40,110 +40,115 @@ class _CambiarPasswordViewState extends ConsumerState<CambiarPasswordView> {
     final authViewModel = ref.read(authViewModelProvider.notifier);
     final isResetFlow = widget.resetFlow;
 
-    return Scaffold(
-      backgroundColor: AppTheme.colorsOf(context).bg,
-      appBar: HoTopBar(
-        title: isResetFlow ? 'Restablecer contraseña' : 'Cambiar contraseña',
-        subtitle: 'Protege el acceso a tu cuenta',
-        onBack: () =>
-            context.canPop() ? context.pop() : context.go('/login'),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (!isResetFlow) ...[
-                _buildLabel('Contraseña actual'),
+    return HoLoadingOverlay(
+      loading: authState.cargando,
+      message: 'Actualizando contraseña...',
+      child: Scaffold(
+        backgroundColor: AppTheme.colorsOf(context).bg,
+        appBar: HoTopBar(
+          title: isResetFlow ? 'Restablecer contraseña' : 'Cambiar contraseña',
+          subtitle: 'Protege el acceso a tu cuenta',
+          onBack: () => context.canPop() ? context.pop() : context.go('/login'),
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (!isResetFlow) ...[
+                  _buildLabel('Contraseña actual'),
+                  SizedBox(height: AppTheme.spacing.sm),
+                  _buildPasswordField(
+                    controller: _currentPasswordController,
+                    hidePassword: _hideCurrentPassword,
+                    onVisibilityChanged: () => setState(
+                      () => _hideCurrentPassword = !_hideCurrentPassword,
+                    ),
+                    enabled: !authState.cargando,
+                  ),
+                  SizedBox(height: AppTheme.spacing.lg),
+                ],
+
+                _buildLabel('Nueva contraseña'),
                 SizedBox(height: AppTheme.spacing.sm),
                 _buildPasswordField(
-                  controller: _currentPasswordController,
-                  hidePassword: _hideCurrentPassword,
-                  onVisibilityChanged: () => setState(
-                    () => _hideCurrentPassword = !_hideCurrentPassword,
-                  ),
+                  controller: _newPasswordController,
+                  hidePassword: _hideNewPassword,
+                  onVisibilityChanged: () =>
+                      setState(() => _hideNewPassword = !_hideNewPassword),
                   enabled: !authState.cargando,
                 ),
                 SizedBox(height: AppTheme.spacing.lg),
-              ],
 
-              _buildLabel('Nueva contraseña'),
-              SizedBox(height: AppTheme.spacing.sm),
-              _buildPasswordField(
-                controller: _newPasswordController,
-                hidePassword: _hideNewPassword,
-                onVisibilityChanged: () =>
-                    setState(() => _hideNewPassword = !_hideNewPassword),
-                enabled: !authState.cargando,
-              ),
-              SizedBox(height: AppTheme.spacing.lg),
-
-              _buildLabel('Confirmar nueva contraseña'),
-              SizedBox(height: AppTheme.spacing.sm),
-              _buildPasswordField(
-                controller: _confirmPasswordController,
-                hidePassword: _hideConfirmPassword,
-                onVisibilityChanged: () => setState(
-                  () => _hideConfirmPassword = !_hideConfirmPassword,
+                _buildLabel('Confirmar nueva contraseña'),
+                SizedBox(height: AppTheme.spacing.sm),
+                _buildPasswordField(
+                  controller: _confirmPasswordController,
+                  hidePassword: _hideConfirmPassword,
+                  onVisibilityChanged: () => setState(
+                    () => _hideConfirmPassword = !_hideConfirmPassword,
+                  ),
+                  enabled: !authState.cargando,
                 ),
-                enabled: !authState.cargando,
-              ),
-              SizedBox(height: AppTheme.spacing.xxl),
+                SizedBox(height: AppTheme.spacing.xxl),
 
-              _buildPrimaryButton(
-                authState,
-                isResetFlow ? 'Establecer contraseña' : 'Actualizar contraseña',
-                () async {
-                  if (_newPasswordController.text !=
-                      _confirmPasswordController.text) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('Las contraseñas no coinciden'),
-                        backgroundColor: AppTheme.colors.statusCritical,
-                      ),
-                    );
-                    return;
-                  }
-
-                  final exito = isResetFlow
-                      ? await authViewModel.resetPassword(
-                          _newPasswordController.text,
-                        )
-                      : await authViewModel.updatePassword(
-                          _currentPasswordController.text,
-                          _newPasswordController.text,
-                        );
-
-                  if (exito && mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          isResetFlow
-                              ? 'Contraseña restablecida exitosamente'
-                              : 'Contraseña actualizada exitosamente',
+                _buildPrimaryButton(
+                  authState,
+                  isResetFlow
+                      ? 'Establecer contraseña'
+                      : 'Actualizar contraseña',
+                  () async {
+                    if (_newPasswordController.text !=
+                        _confirmPasswordController.text) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('Las contraseñas no coinciden'),
+                          backgroundColor: AppTheme.colors.statusCritical,
                         ),
-                        backgroundColor: Colors.green.shade600,
-                      ),
-                    );
-                    if (isResetFlow) {
-                      context.go('/login');
-                    } else {
-                      context.pop();
+                      );
+                      return;
                     }
-                  } else if (!exito && mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          authState.error ?? 'Error al actualizar contraseña',
+
+                    final exito = isResetFlow
+                        ? await authViewModel.resetPassword(
+                            _newPasswordController.text,
+                          )
+                        : await authViewModel.updatePassword(
+                            _currentPasswordController.text,
+                            _newPasswordController.text,
+                          );
+
+                    if (exito && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isResetFlow
+                                ? 'Contraseña restablecida exitosamente'
+                                : 'Contraseña actualizada exitosamente',
+                          ),
+                          backgroundColor: Colors.green.shade600,
                         ),
-                        backgroundColor: AppTheme.colors.statusCritical,
-                      ),
-                    );
-                  }
-                },
-              ),
-            ],
+                      );
+                      if (isResetFlow) {
+                        context.go('/login');
+                      } else {
+                        context.pop();
+                      }
+                    } else if (!exito && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            authState.error ?? 'Error al actualizar contraseña',
+                          ),
+                          backgroundColor: AppTheme.colors.statusCritical,
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),

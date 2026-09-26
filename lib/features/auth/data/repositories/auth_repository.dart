@@ -2,6 +2,7 @@ import '../../domain/repositories/i_auth_repository.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/entities/auth_request.dart';
 import '../../domain/entities/auth_response.dart';
+import '../../domain/entities/preferencias_acceso.dart';
 import 'package:happy_oven/core/services/supabase_service.dart';
 import 'package:happy_oven/core/services/local_storage_service.dart';
 import 'package:happy_oven/core/models/enums.dart';
@@ -162,7 +163,7 @@ class AuthRepository implements IAuthRepository {
   Future<void> logout() async {
     try {
       await _supabaseService.signOut();
-      await _localStorageService.clearAll();
+      await _localStorageService.clearSession();
     } catch (e) {
       throw Exception('Error al cerrar sesión: ${e.toString()}');
     }
@@ -382,5 +383,47 @@ class AuthRepository implements IAuthRepository {
         mensaje: 'Error al actualizar contraseña: ${e.toString()}',
       );
     }
+  }
+
+  @override
+  Future<User?> restaurarSesion() async {
+    try {
+      final session = _supabaseService.getCurrentSession();
+      if (session == null) return null;
+
+      final vigente = session.isExpired
+          ? await _supabaseService.refreshSession()
+          : session;
+      if (vigente == null) return null;
+
+      await _localStorageService.saveToken(vigente.accessToken);
+      return await obtenerUsuarioActual();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  PreferenciasAcceso obtenerPreferencias() {
+    return PreferenciasAcceso(
+      recordarme: _localStorageService.getRecordarme(),
+      biometriaHabilitada: _localStorageService.getBiometriaHabilitada(),
+      ultimoEmail: _localStorageService.getUltimoEmail(),
+    );
+  }
+
+  @override
+  Future<void> guardarRecordarme(bool value) async {
+    await _localStorageService.saveRecordarme(value);
+  }
+
+  @override
+  Future<void> guardarBiometriaHabilitada(bool value) async {
+    await _localStorageService.saveBiometriaHabilitada(value);
+  }
+
+  @override
+  Future<void> guardarUltimoEmail(String email) async {
+    await _localStorageService.saveUltimoEmail(email);
   }
 }

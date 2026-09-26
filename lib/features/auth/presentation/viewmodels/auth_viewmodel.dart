@@ -5,6 +5,7 @@ import '../../domain/entities/user.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../domain/repositories/i_auth_repository.dart';
 import 'package:happy_oven/core/providers.dart';
+import 'package:happy_oven/core/services/biometric_service.dart';
 
 // ── Proveedores de dependencias
 final authRepositoryProvider = Provider<IAuthRepository>((ref) {
@@ -53,6 +54,18 @@ final updatePasswordUseCaseProvider = Provider<UpdatePasswordUseCase>((ref) {
   return UpdatePasswordUseCase(repository);
 });
 
+final restaurarSesionUseCaseProvider = Provider<RestaurarSesionUseCase>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return RestaurarSesionUseCase(repository);
+});
+
+final preferenciasAccesoUseCaseProvider = Provider<PreferenciasAccesoUseCase>((
+  ref,
+) {
+  final repository = ref.watch(authRepositoryProvider);
+  return PreferenciasAccesoUseCase(repository);
+});
+
 final obtenerUsuarioActualUseCaseProvider =
     Provider<ObtenerUsuarioActualUseCase>((ref) {
       final repository = ref.watch(authRepositoryProvider);
@@ -73,6 +86,21 @@ class AuthState {
   /// login y dashboard, evitando el parpadeo de la pantalla de login.
   final bool inicializando;
 
+  /// Preferencia "Recordarme": mantener la sesión entre reinicios.
+  final bool recordarme;
+
+  /// El usuario activó el ingreso con huella / Face ID.
+  final bool biometriaHabilitada;
+
+  /// El dispositivo tiene biometría con huellas/rostros registrados.
+  final bool biometriaDisponible;
+
+  /// Hay una sesión guardada esperando ser desbloqueada con biometría.
+  final bool sesionBloqueada;
+
+  /// Último correo usado, para prellenar el login.
+  final String? ultimoEmail;
+
   AuthState({
     this.cargando = false,
     this.usuario,
@@ -81,6 +109,11 @@ class AuthState {
     this.mensaje,
     this.autenticado = false,
     this.inicializando = false,
+    this.recordarme = false,
+    this.biometriaHabilitada = false,
+    this.biometriaDisponible = false,
+    this.sesionBloqueada = false,
+    this.ultimoEmail,
   });
 
   AuthState copyWith({
@@ -91,6 +124,11 @@ class AuthState {
     String? mensaje,
     bool? autenticado,
     bool? inicializando,
+    bool? recordarme,
+    bool? biometriaHabilitada,
+    bool? biometriaDisponible,
+    bool? sesionBloqueada,
+    String? ultimoEmail,
     bool clearError = false,
     bool clearMensaje = false,
   }) {
@@ -102,6 +140,11 @@ class AuthState {
       mensaje: clearMensaje ? null : (mensaje ?? this.mensaje),
       autenticado: autenticado ?? this.autenticado,
       inicializando: inicializando ?? this.inicializando,
+      recordarme: recordarme ?? this.recordarme,
+      biometriaHabilitada: biometriaHabilitada ?? this.biometriaHabilitada,
+      biometriaDisponible: biometriaDisponible ?? this.biometriaDisponible,
+      sesionBloqueada: sesionBloqueada ?? this.sesionBloqueada,
+      ultimoEmail: ultimoEmail ?? this.ultimoEmail,
     );
   }
 
@@ -120,6 +163,12 @@ class AuthViewModel extends StateNotifier<AuthState> {
   final ResetPasswordUseCase _resetPasswordUseCase;
   final UpdateProfileUseCase _updateProfileUseCase;
   final UpdatePasswordUseCase _updatePasswordUseCase;
+  final RestaurarSesionUseCase _restaurarSesionUseCase;
+  final PreferenciasAccesoUseCase _preferencias;
+  final BiometricService _biometricService;
+
+  /// Usuario de la sesión guardada, a la espera del desbloqueo biométrico.
+  User? _usuarioPendiente;
 
   AuthViewModel({
     required LoginUseCase loginUseCase,
@@ -129,6 +178,9 @@ class AuthViewModel extends StateNotifier<AuthState> {
     required ResetPasswordUseCase resetPasswordUseCase,
     required UpdateProfileUseCase updateProfileUseCase,
     required UpdatePasswordUseCase updatePasswordUseCase,
+    required RestaurarSesionUseCase restaurarSesionUseCase,
+    required PreferenciasAccesoUseCase preferenciasAccesoUseCase,
+    required BiometricService biometricService,
     ObtenerUsuarioActualUseCase? obtenerUsuarioActualUseCase,
   }) : _loginUseCase = loginUseCase,
        _registerUseCase = registerUseCase,
@@ -137,20 +189,107 @@ class AuthViewModel extends StateNotifier<AuthState> {
        _resetPasswordUseCase = resetPasswordUseCase,
        _updateProfileUseCase = updateProfileUseCase,
        _updatePasswordUseCase = updatePasswordUseCase,
+       _restaurarSesionUseCase = restaurarSesionUseCase,
+       _preferencias = preferenciasAccesoUseCase,
+       _biometricService = biometricService,
        super(AuthState(inicializando: true)) {
     _restaurarSesion();
   }
 
   // ── Restaurar sesión persistida
-  /// Comprueba si existe una sesión guardada, pero NO auto-autentica.
-  /// El usuario siempre ve la pantalla de login y debe iniciar sesión
-  /// explícitamente. El flag [autenticado] solo se activa mediante login().
+  /// Decide qué hacer con la sesión que Supabase dejó persistida:
+  /// - Sin "Recordarme" ni biometría: se descarta y se pide contraseña.
+  /// - Con biometría: queda bloqueada hasta que [loginBiometrico] la abra.
+  /// - Solo "Recordarme": se entra directamente.
   Future<void> _restaurarSesion() async {
-    state = state.copyWith(inicializando: false);
+    final prefs = _preferencias.obtener();
+    var nuevo = state.copyWith(
+      recordarme: prefs.recordarme,
+      biometriaHabilitada: prefs.biometriaHabilitada,
+      biometriaDisponible: await _biometricService.disponible(),
+      ultimoEmail: prefs.ultimoEmail,
+    );
+
+    try {
+      final usuario = await _restaurarSesionUseCase();
+      if (usuario != null) {
+        if (!prefs.conservarSesion) {
+          await _logoutUseCase();
+        } else if (prefs.biometriaHabilitada) {
+          _usuarioPendiente = usuario;
+          nuevo = nuevo.copyWith(sesionBloqueada: true);
+        } else {
+          nuevo = nuevo.copyWith(usuario: usuario, autenticado: true);
+        }
+      }
+    } catch (_) {
+      // Sin red o sesión inválida: se cae al login con contraseña.
+    }
+
+    state = nuevo.copyWith(inicializando: false);
+  }
+
+  // ── Login biométrico
+  /// Desbloquea con huella / Face ID la sesión guardada al arrancar.
+  Future<bool> loginBiometrico() async {
+    final usuario = _usuarioPendiente;
+    if (!state.sesionBloqueada || usuario == null) {
+      state = state.copyWith(clearError: true);
+      state = state.copyWith(
+        error:
+            'Inicia sesión con tu contraseña para usar el ingreso con huella',
+        clearMensaje: true,
+      );
+      return false;
+    }
+
+    final ok = await _biometricService.autenticar(
+      'Confirma tu identidad para ingresar a Happy Oven',
+    );
+    if (!ok) return false;
+
+    _usuarioPendiente = null;
+    state = state.copyWith(
+      usuario: usuario,
+      autenticado: true,
+      sesionBloqueada: false,
+      clearError: true,
+      clearMensaje: true,
+    );
+    return true;
+  }
+
+  // ── Activar / desactivar biometría
+  Future<bool> cambiarBiometria(bool activar) async {
+    if (activar) {
+      if (!await _biometricService.disponible()) {
+        state = state.copyWith(
+          biometriaDisponible: false,
+          error: 'Este dispositivo no tiene huella ni Face ID registrados',
+        );
+        return false;
+      }
+      final ok = await _biometricService.autenticar(
+        'Confirma tu identidad para activar el ingreso biométrico',
+      );
+      if (!ok) return false;
+    }
+
+    await _preferencias.guardarBiometria(activar);
+    state = state.copyWith(
+      biometriaHabilitada: activar,
+      biometriaDisponible: activar ? true : null,
+      clearError: true,
+    );
+    return true;
   }
 
   // ── Login
-  Future<bool> login(String email, String password) async {
+  Future<bool> login(
+    String email,
+    String password, {
+    bool recordarme = false,
+  }) async {
     state = state.copyWith(cargando: true);
 
     try {
@@ -158,10 +297,16 @@ class AuthViewModel extends StateNotifier<AuthState> {
       final response = await _loginUseCase(request);
 
       if (response.exito) {
+        _usuarioPendiente = null;
+        await _preferencias.guardarRecordarme(recordarme);
+        await _preferencias.guardarUltimoEmail(email);
         state = state.copyWith(
           usuario: response.usuario,
           token: response.token,
           autenticado: true,
+          recordarme: recordarme,
+          ultimoEmail: email,
+          sesionBloqueada: false,
           cargando: false,
           clearError: true,
           clearMensaje: true,
@@ -261,7 +406,14 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
     try {
       await _logoutUseCase();
-      state = AuthState();
+      _usuarioPendiente = null;
+      // Conservar las preferencias de acceso para el próximo login.
+      state = AuthState(
+        recordarme: state.recordarme,
+        biometriaHabilitada: state.biometriaHabilitada,
+        biometriaDisponible: state.biometriaDisponible,
+        ultimoEmail: state.ultimoEmail,
+      );
     } catch (e) {
       state = state.copyWith(
         error: 'Error al cerrar sesión: ${e.toString()}',
@@ -421,6 +573,11 @@ final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((
   final resetPasswordUseCase = ref.watch(resetPasswordUseCaseProvider);
   final updateProfileUseCase = ref.watch(updateProfileUseCaseProvider);
   final updatePasswordUseCase = ref.watch(updatePasswordUseCaseProvider);
+  final restaurarSesionUseCase = ref.watch(restaurarSesionUseCaseProvider);
+  final preferenciasAccesoUseCase = ref.watch(
+    preferenciasAccesoUseCaseProvider,
+  );
+  final biometricService = ref.watch(biometricServiceProvider);
 
   return AuthViewModel(
     loginUseCase: loginUseCase,
@@ -430,5 +587,8 @@ final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((
     resetPasswordUseCase: resetPasswordUseCase,
     updateProfileUseCase: updateProfileUseCase,
     updatePasswordUseCase: updatePasswordUseCase,
+    restaurarSesionUseCase: restaurarSesionUseCase,
+    preferenciasAccesoUseCase: preferenciasAccesoUseCase,
+    biometricService: biometricService,
   );
 });

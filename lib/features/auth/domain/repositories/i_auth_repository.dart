@@ -1,6 +1,7 @@
 import '../entities/user.dart';
 import '../entities/auth_request.dart';
 import '../entities/auth_response.dart';
+import '../entities/preferencias_acceso.dart';
 
 abstract class IAuthRepository {
   /// Login con email y password
@@ -35,4 +36,14 @@ abstract class IAuthRepository {
     String currentPassword,
     String newPassword,
   );
+
+  /// Recupera la sesión persistida por Supabase (renovándola si expiró) y
+  /// devuelve el usuario, o null si no hay sesión válida.
+  Future<User?> restaurarSesion();
+
+  /// Preferencias de acceso locales: "Recordarme", biometría y último correo.
+  PreferenciasAcceso obtenerPreferencias();
+  Future<void> guardarRecordarme(bool value);
+  Future<void> guardarBiometriaHabilitada(bool value);
+  Future<void> guardarUltimoEmail(String email);
 }

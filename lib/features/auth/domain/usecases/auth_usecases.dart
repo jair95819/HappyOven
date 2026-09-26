@@ -2,6 +2,7 @@ import '../repositories/i_auth_repository.dart';
 import '../entities/auth_request.dart';
 import '../entities/auth_response.dart';
 import '../entities/user.dart';
+import '../entities/preferencias_acceso.dart';
 
 class LoginUseCase {
   final IAuthRepository repository;
@@ -91,4 +92,33 @@ class UpdatePasswordUseCase {
   Future<AuthResponse> call(String currentPassword, String newPassword) {
     return repository.updatePassword(currentPassword, newPassword);
   }
+}
+
+class RestaurarSesionUseCase {
+  final IAuthRepository repository;
+
+  RestaurarSesionUseCase(this.repository);
+
+  Future<User?> call() {
+    return repository.restaurarSesion();
+  }
+}
+
+/// Lee y guarda las preferencias de acceso ("Recordarme", biometría,
+/// último correo).
+class PreferenciasAccesoUseCase {
+  final IAuthRepository repository;
+
+  PreferenciasAccesoUseCase(this.repository);
+
+  PreferenciasAcceso obtener() => repository.obtenerPreferencias();
+
+  Future<void> guardarRecordarme(bool value) =>
+      repository.guardarRecordarme(value);
+
+  Future<void> guardarBiometria(bool value) =>
+      repository.guardarBiometriaHabilitada(value);
+
+  Future<void> guardarUltimoEmail(String email) =>
+      repository.guardarUltimoEmail(email);
 }

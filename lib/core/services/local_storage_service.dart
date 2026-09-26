@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Servicio singleton que maneja el almacenamiento local persistente 
+/// Servicio singleton que maneja el almacenamiento local persistente
 /// utilizando SharedPreferences. Útil para guardar tokens de sesión,
 /// configuración del usuario u otros datos ligeros.
 class LocalStorageService {
@@ -13,14 +13,14 @@ class LocalStorageService {
     return _instance;
   }
 
-  /// Inicializa la instancia de SharedPreferences. 
+  /// Inicializa la instancia de SharedPreferences.
   /// Debe llamarse al inicio de la aplicación antes de usar otros métodos.
   Future<void> initialize() async {
     _prefs = await SharedPreferences.getInstance();
   }
 
   // ── Token
-  
+
   /// Guarda el token de autenticación principal del usuario.
   Future<bool> saveToken(String token) async {
     return await _prefs.setString('auth_token', token);
@@ -37,7 +37,7 @@ class LocalStorageService {
   }
 
   // ── Refresh Token
-  
+
   /// Guarda el refresh token para poder renovar la sesión sin volver a pedir credenciales.
   Future<bool> saveRefreshToken(String refreshToken) async {
     return await _prefs.setString('refresh_token', refreshToken);
@@ -82,10 +82,50 @@ class LocalStorageService {
     return _prefs.getString('user_email');
   }
 
+  // ── Preferencias de acceso (sobreviven al cierre de sesión)
+
+  /// Mantener la sesión abierta entre reinicios de la app ("Recordarme").
+  Future<bool> saveRecordarme(bool value) async {
+    return await _prefs.setBool('recordarme', value);
+  }
+
+  bool getRecordarme() {
+    return _prefs.getBool('recordarme') ?? false;
+  }
+
+  /// Exigir huella / Face ID para reabrir la sesión guardada.
+  Future<bool> saveBiometriaHabilitada(bool value) async {
+    return await _prefs.setBool('biometria_habilitada', value);
+  }
+
+  bool getBiometriaHabilitada() {
+    return _prefs.getBool('biometria_habilitada') ?? false;
+  }
+
+  /// Último correo con el que se inició sesión, para prellenar el login.
+  Future<bool> saveUltimoEmail(String email) async {
+    return await _prefs.setString('ultimo_email', email);
+  }
+
+  String? getUltimoEmail() {
+    return _prefs.getString('ultimo_email');
+  }
+
+  // ── Limpiar sesión
+
+  /// Elimina solo los datos de la sesión (tokens, id y correo del usuario).
+  /// Conserva tema y preferencias de acceso. Usado al cerrar sesión.
+  Future<void> clearSession() async {
+    await _prefs.remove('auth_token');
+    await _prefs.remove('refresh_token');
+    await _prefs.remove('user_id');
+    await _prefs.remove('user_email');
+  }
+
   // ── Limpiar todo
-  
-  /// Borra absolutamente toda la información almacenada en SharedPreferences.
-  /// Generalmente usado al cerrar sesión.
+
+  /// Borra absolutamente toda la información almacenada en SharedPreferences,
+  /// incluido el tema y las preferencias de acceso.
   Future<bool> clearAll() async {
     return await _prefs.clear();
   }

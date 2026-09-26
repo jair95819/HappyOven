@@ -57,10 +57,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == '/recuperar-password' ||
           state.matchedLocation == '/reset-password';
 
-      // Terminada la restauración: ir al login siempre.
-      // Nunca redirigimos del splash al dashboard: el usuario debe
-      // iniciar sesión explícitamente.
-      if (enSplash) return '/login';
+      // Terminada la restauración: solo se entra directo al dashboard si
+      // "Recordarme" restauró la sesión. Con biometría activada la sesión
+      // queda bloqueada y el login pide la huella.
+      if (enSplash) return autenticado ? '/dashboard' : '/login';
 
       if (!autenticado && !enLogin) return '/login';
 
